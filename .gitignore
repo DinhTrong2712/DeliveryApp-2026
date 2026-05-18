@@ -1,0 +1,62 @@
+# ─── .NET ────────────────────────────────────────────────────────────────
+**/bin/
+**/obj/
+**/publish_out/
+*.user
+*.suo
+*.userprefs
+*.dbmdl
+*.jfm
+*.swp
+*.lock.json
+
+# ─── Node / Vite ──────────────────────────────────────────────────────────
+**/node_modules/
+**/dist/
+**/.vite/
+**/dev-dist/
+*.local
+
+# ─── IDE / Editor ─────────────────────────────────────────────────────────
+.vs/
+.vscode/
+.idea/
+*.iml
+*.sln.docstates
+
+# ─── OS ───────────────────────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# ─── Logs ─────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Build artifacts / archives ───────────────────────────────────────────
+*.zip
+*.tar.gz
+*.7z
+
+# ─── Environment / local overrides ────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+appsettings.Local.json
+
+# ─── Backups / database dumps ─────────────────────────────────────────────
+backups/
+*.sql.gz
+*.bak
+
+# ─── Dev tools / scratch ──────────────────────────────────────────────────
+test_sepay_secret.sh
+*.tmp
+*.cache
+
+# ─── Claude Code local settings ───────────────────────────────────────────
+.claude/settings.local.json

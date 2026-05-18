@@ -1,0 +1,190 @@
+@import "tailwindcss";
+
+:root {
+  --sans: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: #f8fafc;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+p {
+  margin: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+  background-clip: padding-box;
+}
+
+/* Remove number input spinners */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.18s ease-out both;
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   Global polish — narrow scope to avoid flicker on re-render.
+   Rule: only target interactive elements (button/input) and explicitly
+   marked containers. Never animate something that re-renders on data fetch.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* Soft focus ring on inputs (replaces default Tailwind ring with softer one) */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/* Primary button — subtle inner highlight + hover/active feedback.
+   Use only color + shadow transitions (no transform) to avoid jitter
+   when buttons re-render or when the button is inside a flex layout
+   that recalculates on hover. */
+button.bg-gray-900,
+button.bg-blue-600,
+button.bg-red-600 {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.04));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset, 0 1px 2px rgba(15, 23, 42, 0.08);
+  transition: box-shadow 0.15s ease, filter 0.15s ease;
+}
+button.bg-gray-900:hover:not(:disabled),
+button.bg-blue-600:hover:not(:disabled),
+button.bg-red-600:hover:not(:disabled) {
+  box-shadow: 0 3px 10px -4px rgba(15, 23, 42, 0.25);
+  filter: brightness(1.05);
+}
+button.bg-gray-900:active:not(:disabled),
+button.bg-blue-600:active:not(:disabled),
+button.bg-red-600:active:not(:disabled) {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.1) inset;
+  filter: brightness(0.97);
+}
+
+/* Modal backdrop fade + content rise — only the very specific selector
+   used by Modal components, so it doesn't fire on other fixed elements. */
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.fixed.inset-0.bg-black\/40 {
+  animation: backdropIn 0.16s ease-out both;
+}
+.fixed.inset-0.bg-black\/40 > .bg-white {
+  animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Toast slide-in — match the exact toast wrapper class combo so it
+   doesn't accidentally hit other fixed top-right elements. */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.fixed.top-4.right-4.z-50 {
+  animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Sidebar nav active item — subtle shadow */
+aside button.bg-gray-900 {
+  box-shadow: 0 3px 10px -5px rgba(15, 23, 42, 0.35);
+}
+
+/* Disabled state */
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Honor user motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
