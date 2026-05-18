@@ -251,8 +251,8 @@ public class AdminController : ControllerBase
         return Ok(new VietQrConfigDto(
             get("vietqr_client_id"),
             !string.IsNullOrEmpty(get("vietqr_api_key")),
-            get("vietqr_bank_1"), get("vietqr_account_number_1"), get("vietqr_account_name_1"),
-            get("vietqr_bank_2"), get("vietqr_account_number_2"), get("vietqr_account_name_2")
+            get("vietqr_bank_1"), get("vietqr_account_number_1"), get("vietqr_account_name_1"), get("vietqr_template_1"),
+            get("vietqr_bank_2"), get("vietqr_account_number_2"), get("vietqr_account_name_2"), get("vietqr_template_2")
         ));
     }
 
@@ -272,9 +272,11 @@ public class AdminController : ControllerBase
         Upsert("vietqr_bank_1", req.Bank1 ?? "");
         Upsert("vietqr_account_number_1", req.AccountNumber1 ?? "");
         Upsert("vietqr_account_name_1", req.AccountName1 ?? "");
+        Upsert("vietqr_template_1", req.Template1 ?? "");
         Upsert("vietqr_bank_2", req.Bank2 ?? "");
         Upsert("vietqr_account_number_2", req.AccountNumber2 ?? "");
         Upsert("vietqr_account_name_2", req.AccountName2 ?? "");
+        Upsert("vietqr_template_2", req.Template2 ?? "");
         await _db.SaveChangesAsync();
         return Ok();
     }
@@ -285,41 +287,22 @@ public class AdminController : ControllerBase
         var configs = await _db.SystemConfigs.ToListAsync();
         var get = (string key) => configs.FirstOrDefault(c => c.Key == key)?.Value ?? "";
 
-        var clientId = get("vietqr_client_id");
-        var apiKey = get("vietqr_api_key");
-        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(apiKey))
-            return BadRequest(new { message = "Chưa cấu hình VietQR Client ID / API Key" });
-
         var suffix = req.AccountIndex == 2 ? "_2" : "_1";
         var accountNo = get($"vietqr_account_number{suffix}");
         var accountName = get($"vietqr_account_name{suffix}");
         var bank = get($"vietqr_bank{suffix}");
+        var template = get($"vietqr_template{suffix}");
+        if (string.IsNullOrWhiteSpace(template)) template = "compact2";
 
-        if (string.IsNullOrEmpty(accountNo))
+        if (string.IsNullOrEmpty(bank) || string.IsNullOrEmpty(accountNo))
             return BadRequest(new { message = "Chưa cấu hình tài khoản ngân hàng" });
 
-        var body = JsonSerializer.Serialize(new
-        {
-            accountNo,
-            accountName,
-            acqId = int.TryParse(bank, out var bankId) ? bankId : 0,
-            amount = req.Amount > 0 ? req.Amount : 0,
-            addInfo = req.Content,
-            format = "text",
-            template = "compact"
-        });
+        var amount = req.Amount > 0 ? req.Amount : 0;
+        var info = Uri.EscapeDataString(req.Content ?? "");
+        var nameEnc = Uri.EscapeDataString(accountName);
+        var url = $"https://img.vietqr.io/image/{bank}-{accountNo}-{template}.png?amount={amount}&addInfo={info}&accountName={nameEnc}";
 
-        var client = _http.CreateClient();
-        var httpReq = new HttpRequestMessage(HttpMethod.Post, "https://api.vietqr.io/v2/generate")
-        {
-            Content = new StringContent(body, Encoding.UTF8, "application/json")
-        };
-        httpReq.Headers.Add("x-client-id", clientId);
-        httpReq.Headers.Add("x-api-key", apiKey);
-
-        var resp = await client.SendAsync(httpReq);
-        var respBody = await resp.Content.ReadAsStringAsync();
-        return Content(respBody, "application/json");
+        return Ok(new { code = "00", desc = "OK", data = new { qrDataURL = url } });
     }
 
     // ── Backup ────────────────────────────────────────────────────────────

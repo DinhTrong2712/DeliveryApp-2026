@@ -290,6 +290,7 @@ Key/Value uniqueness. Các key dùng:
 - `sepay_apikey` — API key/HMAC secret SePay
 - `vietqr_clientid`, `vietqr_apikey`
 - `vietqr_bank_1` / `_2`, `vietqr_account_number_1` / `_2`, `vietqr_account_name_1` / `_2`
+- `vietqr_template_1` / `_2` — Quicklink template ID từ my.vietqr.io (vd `7e6yn7j`). Trống = `compact2` mặc định.
 - `qr_bank_name`, `qr_account_number`, `qr_account_name` (legacy)
 - `ai_api_key`, `ai_provider`, `ai_model`
 
@@ -339,7 +340,7 @@ MatchStatus : Unmatched, AutoMatched, ManualMatched
 | PATCH | `/{id}/accountant-note` | Accountant/Admin | |
 | PATCH | `/{id}/override` | Accountant/Admin | Body: `{field, value, reason}` — ghi đè Status / AmountPaid / ShipperNote |
 | GET | `/{id}/history` | Accountant/Admin | |
-| GET | `/{id}/qr?account=1` | Auth | Trả VietQR URL |
+| GET | `/{id}/qr?account=1` | Auth | Trả VietQR URL (`img.vietqr.io/image/{bank}-{acc}-{template}.png?amount=&addInfo=&accountName=`), template lấy từ `vietqr_template_{account}` |
 
 ### 5.3 Routes (`/routes`) — đơn gộp
 | Method | Path | Role |
@@ -379,8 +380,8 @@ MatchStatus : Unmatched, AutoMatched, ManualMatched
 | GET / POST / PUT / DELETE | `/users` | CRUD user |
 | GET | `/config` | Lấy lock_time, qr_* |
 | PUT | `/config` | Cập nhật |
-| GET / PUT | `/config/vietqr` | Cấu hình VietQR + AES-256 cho API key |
-| POST | `/config/vietqr/generate-qr` | Test tạo QR |
+| GET / PUT | `/config/vietqr` | Cấu hình VietQR (bank/account/template per account 1+2) + AES-256 cho API key |
+| POST | `/config/vietqr/generate-qr` | Test tạo QR — trả URL `img.vietqr.io/image/...` dùng template đã cấu hình (không gọi `/v2/generate`, không cần clientId/apiKey) |
 | PUT | `/config/sepay-apikey` | |
 | GET / PUT | `/config/ai`, `/config/ai-key` | Provider + model + key |
 | GET | `/audit-logs` | Query: `page`, `pageSize`, `search`, `action` |
@@ -562,7 +563,7 @@ dotnet ef database update
 
 ### 10.3 Tài khoản dịch vụ ngoài (tuỳ chọn)
 - **OpenRouter** / **OpenAI** / **Anthropic** / **Google AI Studio** — cho AI chat.
-- **VietQR.io** — clientId + apiKey để generate QR thanh toán.
+- **VietQR.io** — clientId + apiKey (tuỳ chọn, chỉ cần nếu sau này dùng API `/v2/generate`). QR thanh toán hiện build qua `img.vietqr.io/image/{bank}-{acc}-{template}.png?amount=&addInfo=&accountName=` (public, không cần auth). Template ID cấu hình per-account: paste Quicklink từ my.vietqr.io vào ô Template ID (Admin → Cài đặt → VietQR), để trống = `compact2`.
 - **SePay** — webhook auto-match giao dịch.
 - **Cloudflare R2** — lưu ảnh giao hàng (tuỳ chọn; nếu không có, server trả URL placeholder).
 

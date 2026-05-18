@@ -51,8 +51,8 @@ const AI_FEATURES = [
 
 interface VietQrConfig {
   clientId: string; apiKeySet: boolean
-  bank1: string; accountNumber1: string; accountName1: string
-  bank2: string; accountNumber2: string; accountName2: string
+  bank1: string; accountNumber1: string; accountName1: string; template1: string
+  bank2: string; accountNumber2: string; accountName2: string; template2: string
 }
 
 interface BackupItem {
@@ -298,8 +298,8 @@ export default function AdminConfig() {
   // VietQR
   const [vqConfig, setVqConfig] = useState<VietQrConfig>({
     clientId: '', apiKeySet: false,
-    bank1: '', accountNumber1: '', accountName1: '',
-    bank2: '', accountNumber2: '', accountName2: '',
+    bank1: '', accountNumber1: '', accountName1: '', template1: '',
+    bank2: '', accountNumber2: '', accountName2: '', template2: '',
   })
   const [vqApiKey, setVqApiKey] = useState('')
   const [showApiKey, setShowApiKey] = useState(false)
@@ -343,8 +343,8 @@ export default function AdminConfig() {
       setVqConfig({
         clientId: vq.data.clientId ?? '',
         apiKeySet: vq.data.apiKeySet ?? false,
-        bank1: vq.data.bank1 ?? '', accountNumber1: vq.data.accountNumber1 ?? '', accountName1: vq.data.accountName1 ?? '',
-        bank2: vq.data.bank2 ?? '', accountNumber2: vq.data.accountNumber2 ?? '', accountName2: vq.data.accountName2 ?? '',
+        bank1: vq.data.bank1 ?? '', accountNumber1: vq.data.accountNumber1 ?? '', accountName1: vq.data.accountName1 ?? '', template1: vq.data.template1 ?? '',
+        bank2: vq.data.bank2 ?? '', accountNumber2: vq.data.accountNumber2 ?? '', accountName2: vq.data.accountName2 ?? '', template2: vq.data.template2 ?? '',
       })
       setAiKeySet(ai.data.apiKeySet ?? false)
       setAiProvider(ai.data.provider ?? 'openrouter')
@@ -374,8 +374,8 @@ export default function AdminConfig() {
     try {
       await api.put('/admin/config/vietqr', {
         clientId: vqConfig.clientId,
-        bank1: vqConfig.bank1, accountNumber1: vqConfig.accountNumber1, accountName1: vqConfig.accountName1,
-        bank2: vqConfig.bank2, accountNumber2: vqConfig.accountNumber2, accountName2: vqConfig.accountName2,
+        bank1: vqConfig.bank1, accountNumber1: vqConfig.accountNumber1, accountName1: vqConfig.accountName1, template1: vqConfig.template1,
+        bank2: vqConfig.bank2, accountNumber2: vqConfig.accountNumber2, accountName2: vqConfig.accountName2, template2: vqConfig.template2,
       })
       showToast('Đã lưu tài khoản ngân hàng')
     } catch { showToast('Lưu thất bại', false) }
@@ -599,6 +599,9 @@ export default function AdminConfig() {
                       <Field label="Tên chủ tài khoản" description="Không dấu, viết hoa.">
                         <TextInput value={vqConfig.accountName1} onChange={v => setVqConfig(c => ({ ...c, accountName1: v }))} placeholder="Không dấu, viết hoa" />
                       </Field>
+                      <Field label="Template ID (Quicklink)" description="Để trống = compact2 mặc định. Template phải gắn đúng với ngân hàng/số tài khoản trên my.vietqr.io.">
+                        <TextInput value={vqConfig.template1} onChange={v => setVqConfig(c => ({ ...c, template1: v.trim() }))} placeholder="vd: 7e6yn7j (hoặc compact2)" />
+                      </Field>
                     </div>
 
                     <div className="border border-gray-200 rounded-xl p-4 space-y-3">
@@ -615,6 +618,9 @@ export default function AdminConfig() {
                       </Field>
                       <Field label="Tên chủ tài khoản" description="Không dấu, viết hoa.">
                         <TextInput value={vqConfig.accountName2} onChange={v => setVqConfig(c => ({ ...c, accountName2: v }))} placeholder="Không dấu, viết hoa" />
+                      </Field>
+                      <Field label="Template ID (Quicklink)" description="Để trống = compact2 mặc định.">
+                        <TextInput value={vqConfig.template2} onChange={v => setVqConfig(c => ({ ...c, template2: v.trim() }))} placeholder="vd: 7e6yn7j (hoặc compact2)" />
                       </Field>
                     </div>
                   </div>

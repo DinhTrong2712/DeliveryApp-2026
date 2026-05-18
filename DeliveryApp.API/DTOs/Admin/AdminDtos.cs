@@ -42,15 +42,15 @@ public record TestWebhookResponse(bool Success, int LatencyMs, bool SignatureVal
 public record VietQrConfigDto(
     string ClientId,
     bool ApiKeySet,
-    string Bank1, string AccountNumber1, string AccountName1,
-    string Bank2, string AccountNumber2, string AccountName2
+    string Bank1, string AccountNumber1, string AccountName1, string Template1,
+    string Bank2, string AccountNumber2, string AccountName2, string Template2
 );
 
 public record SaveVietQrRequest(
     string? ClientId,
     string? ApiKey,
-    string? Bank1, string? AccountNumber1, string? AccountName1,
-    string? Bank2, string? AccountNumber2, string? AccountName2
+    string? Bank1, string? AccountNumber1, string? AccountName1, string? Template1,
+    string? Bank2, string? AccountNumber2, string? AccountName2, string? Template2
 );
 
 public record GenerateQrRequest(int AccountIndex, decimal Amount, string Content);

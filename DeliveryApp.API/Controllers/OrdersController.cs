@@ -114,6 +114,8 @@ public class OrdersController : ControllerBase
         var bank = get($"vietqr_bank{suffix}");
         var accountNo = get($"vietqr_account_number{suffix}");
         var accountName = get($"vietqr_account_name{suffix}");
+        var template = get($"vietqr_template{suffix}");
+        if (string.IsNullOrWhiteSpace(template)) template = "compact2";
 
         if (string.IsNullOrEmpty(bank) || string.IsNullOrEmpty(accountNo))
             return NotFound(new { message = "Chưa cấu hình tài khoản ngân hàng" });
@@ -121,7 +123,7 @@ public class OrdersController : ControllerBase
         var amount = order.Amount - order.AmountPaid;
         var info = Uri.EscapeDataString(order.OrderCode);
         var nameEnc = Uri.EscapeDataString(accountName);
-        var url = $"https://img.vietqr.io/image/{bank}-{accountNo}-compact2.png?amount={amount}&addInfo={info}&accountName={nameEnc}";
+        var url = $"https://img.vietqr.io/image/{bank}-{accountNo}-{template}.png?amount={amount}&addInfo={info}&accountName={nameEnc}";
 
         return Ok(new { qrUrl = url, bank, accountNo, accountName, amount, orderCode = order.OrderCode });
     }
