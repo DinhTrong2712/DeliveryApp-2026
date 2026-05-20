@@ -129,6 +129,13 @@ public class AdminController : ControllerBase
         return Ok();
     }
 
+    [HttpGet("config/sepay")]
+    public async Task<IActionResult> GetSePayConfig()
+    {
+        var cfg = await _db.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "sepay_apikey");
+        return Ok(new { apiKeySet = !string.IsNullOrEmpty(cfg?.Value) });
+    }
+
     [HttpPut("config/sepay-apikey")]
     public async Task<IActionResult> UpdateSePayApiKey([FromBody] UpdateSePayApiKeyRequest req)
     {

@@ -31,9 +31,10 @@ public class OrdersController : ControllerBase
     public async Task<IActionResult> GetOrders(
         [FromQuery] string? status, [FromQuery] Guid? shipperId,
         [FromQuery] DateTime? date, [FromQuery] string? search,
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        [FromQuery] int page = 1, [FromQuery] int pageSize = 20,
+        [FromQuery] string? sort = null)
     {
-        var result = await _orders.GetOrdersAsync(status, shipperId, date, search, page, pageSize, CallerRole, CallerId);
+        var result = await _orders.GetOrdersAsync(status, shipperId, date, search, page, pageSize, CallerRole, CallerId, sort);
         return Ok(result);
     }
 
@@ -51,7 +52,17 @@ public class OrdersController : ControllerBase
     {
         var result = await _orders.UpdateStatusAsync(id, req, CallerName, CallerId);
         if (result == null) return BadRequest(new { message = "Không thể cập nhật trạng thái" });
-        return Ok(result);
+        return Ok(new
+        {
+            id = result.Id,
+            orderCode = result.OrderCode,
+            status = result.Status.ToString(),
+            amountPaid = result.AmountPaid,
+            amountRemaining = result.Amount - result.AmountPaid,
+            unpaidReason = result.UnpaidReason,
+            scheduledDate = result.ScheduledDate,
+            deliveredAt = result.DeliveredAt
+        });
     }
 
     [HttpPatch("{id:guid}/delivered")]
@@ -60,7 +71,12 @@ public class OrdersController : ControllerBase
     {
         var result = await _orders.SetDeliveredAsync(id, CallerId);
         if (result == null) return BadRequest();
-        return Ok(result);
+        return Ok(new
+        {
+            id = result.Id,
+            orderCode = result.OrderCode,
+            deliveredAt = result.DeliveredAt
+        });
     }
 
     [HttpPatch("{id:guid}/note")]
@@ -101,7 +117,11 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet("{id:guid}/qr")]
-    public async Task<IActionResult> GetQr(Guid id, [FromQuery] int account = 1)
+    public async Task<IActionResult> GetQr(
+        Guid id,
+        [FromQuery] int account = 1,
+        [FromQuery] decimal? amount = null,
+        [FromQuery] string? addInfo = null)
     {
         var order = await _db.Orders.FindAsync(id);
         if (order == null) return NotFound();
@@ -120,11 +140,13 @@ public class OrdersController : ControllerBase
         if (string.IsNullOrEmpty(bank) || string.IsNullOrEmpty(accountNo))
             return NotFound(new { message = "Chưa cấu hình tài khoản ngân hàng" });
 
-        var amount = order.Amount - order.AmountPaid;
-        var info = Uri.EscapeDataString(order.OrderCode);
+        var qrAmount = amount.HasValue && amount.Value > 0 ? amount.Value : order.Amount - order.AmountPaid;
+        var infoRaw = string.IsNullOrWhiteSpace(addInfo) ? order.OrderCode : addInfo!.Trim();
+        if (infoRaw.Length > 50) infoRaw = infoRaw[..50];
+        var info = Uri.EscapeDataString(infoRaw);
         var nameEnc = Uri.EscapeDataString(accountName);
-        var url = $"https://img.vietqr.io/image/{bank}-{accountNo}-{template}.png?amount={amount}&addInfo={info}&accountName={nameEnc}";
+        var url = $"https://img.vietqr.io/image/{bank}-{accountNo}-{template}.png?amount={qrAmount}&addInfo={info}&accountName={nameEnc}";
 
-        return Ok(new { qrUrl = url, bank, accountNo, accountName, amount, orderCode = order.OrderCode });
+        return Ok(new { qrUrl = url, bank, accountNo, accountName, amount = qrAmount, orderCode = order.OrderCode, addInfo = infoRaw });
     }
 }

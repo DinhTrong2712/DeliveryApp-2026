@@ -20,6 +20,20 @@ public class ImportPreviewItem
     public decimal AmountPaid { get; set; }
     public string Status { get; set; } = "Pending";
     public string? OriginNote { get; set; }
+    public DateTime? ScheduledDate { get; set; }
+}
+
+public class ShipperOption
+{
+    public Guid Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+}
+
+public class ImportOverride
+{
+    public string OrderCode { get; set; } = string.Empty;
+    public Guid? ShipperId { get; set; }
+    public DateTime? ScheduledDate { get; set; }
 }
 
 public class ColumnMapping
@@ -40,6 +54,7 @@ public class ImportPreviewResponse
     public List<ColumnMapping> ColumnMappings { get; set; } = new();
     public int HeaderRow { get; set; } = 1;
     public string FileName { get; set; } = string.Empty;
+    public List<ShipperOption> Shippers { get; set; } = new();
 }
 
 public class ImportSummary
@@ -58,6 +73,7 @@ public class ImportService
     private const int MaxHeaderScanRows = 5;
 
     private readonly AppDbContext _db;
+    private readonly NotificationService _notifications;
     private static readonly ConcurrentDictionary<Guid, (ImportPreviewResponse Data, DateTime CreatedAt)> _pendingImports = new();
 
     private static readonly FieldDef[] FieldDefs =
@@ -84,9 +100,10 @@ public class ImportService
             ["diễn giải", "ghi chú", "dien giai", "ghi chu", "note", "notes", "nội dung", "noi dung", "mô tả", "mo ta"]),
     ];
 
-    public ImportService(AppDbContext db)
+    public ImportService(AppDbContext db, NotificationService notifications)
     {
         _db = db;
+        _notifications = notifications;
     }
 
     private static (Dictionary<string, int> colMap, List<ColumnMapping> mappings, List<string> missing, int headerRow)
@@ -265,7 +282,11 @@ public class ImportService
             ImportId = importId,
             ColumnMappings = mappings,
             HeaderRow = headerRow,
-            FileName = fileName
+            FileName = fileName,
+            Shippers = users
+                .OrderBy(u => u.FullName)
+                .Select(u => new ShipperOption { Id = u.Id, FullName = u.FullName })
+                .ToList()
         };
 
         _pendingImports[importId] = (response, DateTime.UtcNow);
@@ -281,79 +302,156 @@ public class ImportService
                 _pendingImports.TryRemove(key, out _);
     }
 
-    public async Task<ImportConfirmResult> ConfirmImportAsync(Guid importId, string importedBy)
+    public async Task<ImportConfirmResult> ConfirmImportAsync(Guid importId, string importedBy, List<ImportOverride>? overrides = null)
     {
         if (!_pendingImports.TryGetValue(importId, out var entry))
             throw new InvalidOperationException("Import ID không hợp lệ hoặc đã hết hạn");
         var pending = entry.Data;
+
+        var overrideMap = overrides?
+            .Where(o => !string.IsNullOrEmpty(o.OrderCode))
+            .GroupBy(o => o.OrderCode)
+            .ToDictionary(g => g.Key, g => g.Last())
+            ?? new Dictionary<string, ImportOverride>();
+
+        var shipperLookup = await _db.Users
+            .Where(u => u.Role == UserRole.Shipper)
+            .ToDictionaryAsync(u => u.Id, u => u.FullName);
+
+        // Validate upfront — any single failure aborts the whole import.
+        var duplicateCodes = pending.Preview
+            .GroupBy(p => p.OrderCode)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateCodes.Count > 0)
+            throw new InvalidOperationException($"Có mã đơn trùng trong file: {string.Join(", ", duplicateCodes.Take(5))}. Huỷ toàn bộ import.");
+
+        foreach (var p in pending.Preview)
+        {
+            if (string.IsNullOrWhiteSpace(p.OrderCode))
+                throw new InvalidOperationException("Có dòng thiếu mã đơn. Huỷ toàn bộ import.");
+            if (string.IsNullOrWhiteSpace(p.CustomerName))
+                throw new InvalidOperationException($"Đơn {p.OrderCode} thiếu tên khách hàng. Huỷ toàn bộ import.");
+            if (p.Amount <= 0)
+                throw new InvalidOperationException($"Đơn {p.OrderCode} có số tiền không hợp lệ. Huỷ toàn bộ import.");
+
+            if (overrideMap.TryGetValue(p.OrderCode, out var ov)
+                && ov.ShipperId.HasValue
+                && !shipperLookup.ContainsKey(ov.ShipperId.Value))
+                throw new InvalidOperationException($"Đơn {p.OrderCode}: nhân viên không tồn tại. Huỷ toàn bộ import.");
+        }
+
+        // Apply overrides into preview so the returned items reflect what was saved.
+        foreach (var p in pending.Preview)
+        {
+            if (!overrideMap.TryGetValue(p.OrderCode, out var ov)) continue;
+            p.ShipperId = ov.ShipperId;
+            p.ShipperName = ov.ShipperId.HasValue && shipperLookup.TryGetValue(ov.ShipperId.Value, out var name)
+                ? name
+                : p.ShipperName;
+            p.ScheduledDate = ov.ScheduledDate;
+            p.Status = ComputeOrderStatus(p.Amount, p.AmountPaid, p.ShipperId.HasValue).ToString();
+        }
 
         var orderCodes = pending.Preview.Select(p => p.OrderCode).ToList();
         var existingOrders = await _db.Orders
             .Where(o => orderCodes.Contains(o.OrderCode))
             .ToDictionaryAsync(o => o.OrderCode);
 
-        var log = new ImportLog
+        await using var tx = await _db.Database.BeginTransactionAsync();
+        try
         {
-            FileName = pending.FileName,
-            ImportedBy = importedBy,
-            TotalRows = pending.Preview.Count
-        };
-        _db.ImportLogs.Add(log);
-        await _db.SaveChangesAsync();
-
-        var newItems = new List<ImportPreviewItem>();
-        var updatedItems = new List<ImportPreviewItem>();
-        var toInsert = new List<Order>();
-
-        foreach (var p in pending.Preview)
-        {
-            if (existingOrders.TryGetValue(p.OrderCode, out var existing))
+            var log = new ImportLog
             {
-                // Trùng OrderCode → cập nhật shipper/route theo lần import mới nhất.
-                // Giữ nguyên dữ liệu shipper đã làm việc (DeliveredAt, ShipperNote, AmountPaid, Status nếu đã thu).
-                existing.ShipperNameXlsx = p.ShipperName;
-                existing.ShipperId = p.ShipperId;
-                existing.RouteCode = p.RouteCode;
-                existing.OriginNote = p.OriginNote;
-                existing.UpdatedAt = DateTime.UtcNow;
-                if (existing.Status == OrderStatus.Pending || existing.Status == OrderStatus.Unassigned)
-                    existing.Status = p.ShipperId.HasValue ? OrderStatus.Pending : OrderStatus.Unassigned;
-                updatedItems.Add(p);
-            }
-            else
+                FileName = pending.FileName,
+                ImportedBy = importedBy,
+                TotalRows = pending.Preview.Count
+            };
+            _db.ImportLogs.Add(log);
+            await _db.SaveChangesAsync();
+
+            var newItems = new List<ImportPreviewItem>();
+            var updatedItems = new List<ImportPreviewItem>();
+            var toInsert = new List<Order>();
+
+            foreach (var p in pending.Preview)
             {
-                toInsert.Add(new Order
+                if (existingOrders.TryGetValue(p.OrderCode, out var existing))
                 {
-                    OrderCode = p.OrderCode,
-                    RouteCode = p.RouteCode,
-                    CustomerName = p.CustomerName,
-                    Amount = p.Amount,
-                    AmountPaid = p.AmountPaid,
-                    OriginNote = p.OriginNote,
-                    ShipperId = p.ShipperId,
-                    ShipperNameXlsx = p.ShipperName,
-                    ImportId = log.Id,
-                    Status = ComputeOrderStatus(p.Amount, p.AmountPaid, p.ShipperId.HasValue)
-                });
-                newItems.Add(p);
+                    existing.ShipperNameXlsx = p.ShipperName;
+                    existing.ShipperId = p.ShipperId;
+                    existing.RouteCode = p.RouteCode;
+                    existing.OriginNote = p.OriginNote;
+                    if (p.ScheduledDate.HasValue) existing.ScheduledDate = p.ScheduledDate;
+                    existing.UpdatedAt = DateTime.UtcNow;
+                    if (existing.Status == OrderStatus.Pending || existing.Status == OrderStatus.Unassigned)
+                        existing.Status = p.ShipperId.HasValue ? OrderStatus.Pending : OrderStatus.Unassigned;
+                    updatedItems.Add(p);
+                }
+                else
+                {
+                    toInsert.Add(new Order
+                    {
+                        OrderCode = p.OrderCode,
+                        RouteCode = p.RouteCode,
+                        CustomerName = p.CustomerName,
+                        Amount = p.Amount,
+                        AmountPaid = p.AmountPaid,
+                        OriginNote = p.OriginNote,
+                        ShipperId = p.ShipperId,
+                        ShipperNameXlsx = p.ShipperName,
+                        ScheduledDate = p.ScheduledDate,
+                        ImportId = log.Id,
+                        Status = ComputeOrderStatus(p.Amount, p.AmountPaid, p.ShipperId.HasValue)
+                    });
+                    newItems.Add(p);
+                }
             }
+
+            _db.Orders.AddRange(toInsert);
+            log.ImportedRows = toInsert.Count;
+            log.SkippedRows = 0;
+            log.UpdatedRows = updatedItems.Count;
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
+
+            _pendingImports.TryRemove(importId, out _);
+
+            var newByShipper = newItems
+                .Where(p => p.ShipperId.HasValue)
+                .GroupBy(p => p.ShipperId!.Value);
+            foreach (var g in newByShipper)
+            {
+                var count = g.Count();
+                var sample = g.Take(3).Select(p => p.OrderCode).ToList();
+                var more = count > sample.Count ? $" và {count - sample.Count} đơn khác" : "";
+                var totalAmount = g.Sum(p => p.Amount);
+                try
+                {
+                    await _notifications.CreateAsync(
+                        g.Key,
+                        title: $"Bạn có {count} đơn mới từ kế toán",
+                        body: $"{string.Join(", ", sample)}{more} — tổng {totalAmount:N0}đ",
+                        link: "/shipper/orders",
+                        type: "ImportAssigned");
+                }
+                catch { /* notification lỗi không được làm fail import đã commit */ }
+            }
+
+            return new ImportConfirmResult
+            {
+                Imported = toInsert.Count,
+                Updated = updatedItems.Count,
+                Skipped = 0,
+                Items = newItems.Concat(updatedItems).ToList()
+            };
         }
-
-        _db.Orders.AddRange(toInsert);
-        log.ImportedRows = toInsert.Count;
-        log.SkippedRows = 0;
-        log.UpdatedRows = updatedItems.Count;
-        await _db.SaveChangesAsync();
-
-        _pendingImports.TryRemove(importId, out _);
-
-        return new ImportConfirmResult
+        catch (Exception ex)
         {
-            Imported = toInsert.Count,
-            Updated = updatedItems.Count,
-            Skipped = 0,
-            Items = newItems.Concat(updatedItems).ToList()
-        };
+            await tx.RollbackAsync();
+            throw new InvalidOperationException($"Import thất bại — đã huỷ toàn bộ. ({ex.Message})", ex);
+        }
     }
 }
 

@@ -1,8 +1,14 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import { formatVND } from '../../lib/formatters'
 import AccountantLayout from '../../components/AccountantLayout'
+
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Mới nhất' },
+  { value: 'amount_asc', label: 'Tiền: ít → nhiều' },
+  { value: 'amount_desc', label: 'Tiền: nhiều → ít' },
+]
 
 interface RouteSummary {
   routeCode: string
@@ -27,7 +33,20 @@ export default function AccountantRoutes() {
   const [search, setSearch] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [sort, setSort] = useState('')
+  const [showSort, setShowSort] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setShowSort(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const fetchRoutes = useCallback(async () => {
     setLoading(true)
@@ -58,7 +77,14 @@ export default function AccountantRoutes() {
     setSearch('')
     setFrom('')
     setTo('')
+    setSort('')
   }
+
+  const sortedRoutes = [...routes].sort((a, b) => {
+    if (sort === 'amount_asc') return a.totalAmount - b.totalAmount
+    if (sort === 'amount_desc') return b.totalAmount - a.totalAmount
+    return 0
+  })
 
   return (
     <AccountantLayout>
@@ -114,6 +140,41 @@ export default function AccountantRoutes() {
           />
         </div>
 
+        {/* Sort */}
+        <div className="relative" ref={sortRef}>
+          <button
+            onClick={() => setShowSort(v => !v)}
+            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
+              sort
+                ? 'border-gray-900 bg-gray-900 text-white'
+                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m4 0l4 4m0 0l4-4m-4 4V4" />
+            </svg>
+            {SORT_OPTIONS.find(o => o.value === sort)?.label ?? 'Sắp xếp'}
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {showSort && (
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value || 'default'}
+                  onClick={() => { setSort(opt.value); setShowSort(false) }}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                    sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button
           onClick={handleRefresh}
           className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
@@ -141,16 +202,16 @@ export default function AccountantRoutes() {
               <tr>
                 <td colSpan={7} className="text-center py-16 text-gray-400">Đang tải...</td>
               </tr>
-            ) : routes.length === 0 ? (
+            ) : sortedRoutes.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center py-16 text-gray-400">Không có đơn gộp</td>
               </tr>
-            ) : routes.map((r, i) => {
+            ) : sortedRoutes.map((r, i) => {
               const remaining = r.totalAmount - r.totalPaid
               return (
                 <tr
                   key={r.routeCode}
-                  className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${i === routes.length - 1 ? 'border-b-0' : ''}`}
+                  className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${i === sortedRoutes.length - 1 ? 'border-b-0' : ''}`}
                 >
                   <td className="px-4 py-3">
                     <span className="font-mono text-sm font-semibold text-gray-900">{r.routeCode}</span>

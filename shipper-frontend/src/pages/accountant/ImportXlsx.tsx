@@ -9,10 +9,12 @@ interface PreviewItem {
   routeCode?: string
   customerName: string
   shipperName?: string
+  shipperId?: string | null
   amount: number
   amountPaid: number
   status: string
   originNote?: string
+  scheduledDate?: string | null
 }
 
 interface ColMapping {
@@ -23,6 +25,11 @@ interface ColMapping {
   required: boolean
 }
 
+interface ShipperOption {
+  id: string
+  fullName: string
+}
+
 interface Preview {
   preview: PreviewItem[]
   summary: { total: number; matched: number; unmatched: number; totalAmount: number }
@@ -30,6 +37,12 @@ interface Preview {
   importId: string
   columnMappings: ColMapping[]
   headerRow: number
+  shippers: ShipperOption[]
+}
+
+interface RowOverride {
+  shipperId: string | null
+  scheduledDate: string | null
 }
 
 interface ImportResult {
@@ -126,6 +139,9 @@ function OrderTable({ items, unmatchedLabel, showFooter }: {
 export default function ImportXlsx() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<Preview | null>(null)
+  const [overrides, setOverrides] = useState<Record<string, RowOverride>>({})
+  const [bulkDate, setBulkDate] = useState('')
+  const [bulkShipper, setBulkShipper] = useState('')
   const [loading, setLoading] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [result, setResult] = useState<ImportResult | null>(null)
@@ -133,6 +149,9 @@ export default function ImportXlsx() {
 
   const reset = () => {
     setPreview(null)
+    setOverrides({})
+    setBulkDate('')
+    setBulkShipper('')
     setResult(null)
     setError('')
     if (fileRef.current) fileRef.current.value = ''
@@ -145,11 +164,23 @@ export default function ImportXlsx() {
     setError('')
     setPreview(null)
     setResult(null)
+    setOverrides({})
+    setBulkDate('')
+    setBulkShipper('')
     try {
       const form = new FormData()
       form.append('file', file)
       const res = await api.post('/import', form, { headers: { 'Content-Type': 'multipart/form-data' } })
-      setPreview(res.data)
+      const data: Preview = res.data
+      setPreview(data)
+      const init: Record<string, RowOverride> = {}
+      data.preview.forEach(p => {
+        init[p.orderCode] = {
+          shipperId: p.shipperId ?? null,
+          scheduledDate: p.scheduledDate ? p.scheduledDate.slice(0, 10) : null,
+        }
+      })
+      setOverrides(init)
     } catch (err: any) {
       setError(err?.response?.data?.message ?? 'Không thể đọc file. Kiểm tra định dạng .xlsx')
     } finally {
@@ -157,12 +188,45 @@ export default function ImportXlsx() {
     }
   }
 
+  const setRow = (code: string, patch: Partial<RowOverride>) =>
+    setOverrides(o => ({ ...o, [code]: { ...o[code], ...patch } }))
+
+  const applyBulkDate = () => {
+    if (!preview) return
+    setOverrides(o => {
+      const next = { ...o }
+      preview.preview.forEach(p => {
+        next[p.orderCode] = { ...next[p.orderCode], scheduledDate: bulkDate || null }
+      })
+      return next
+    })
+  }
+
+  const applyBulkShipper = () => {
+    if (!preview) return
+    setOverrides(o => {
+      const next = { ...o }
+      preview.preview.forEach(p => {
+        next[p.orderCode] = { ...next[p.orderCode], shipperId: bulkShipper || null }
+      })
+      return next
+    })
+  }
+
   const handleConfirm = async () => {
     if (!preview) return
     setConfirming(true)
     setError('')
     try {
-      const res = await api.post('/import/confirm', { importId: preview.importId })
+      const payloadOverrides = preview.preview.map(p => {
+        const o = overrides[p.orderCode] ?? { shipperId: p.shipperId ?? null, scheduledDate: null }
+        return {
+          orderCode: p.orderCode,
+          shipperId: o.shipperId || null,
+          scheduledDate: o.scheduledDate ? new Date(o.scheduledDate).toISOString() : null,
+        }
+      })
+      const res = await api.post('/import/confirm', { importId: preview.importId, overrides: payloadOverrides })
       setResult(res.data)
       setPreview(null)
     } catch (err: any) {
@@ -300,11 +364,85 @@ export default function ImportXlsx() {
               </div>
             )}
 
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <p className="font-semibold text-gray-900 mb-1">Chỉnh sửa trước khi import</p>
+              <p className="text-xs text-gray-500 mb-3">Đổi nhân viên giao hàng / ngày giao cho từng đơn, hoặc dùng "Áp dụng cho tất cả" để gán hàng loạt.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs font-medium text-gray-600 mb-1.5">Ngày giao hàng (áp dụng tất cả)</p>
+                  <div className="flex gap-2">
+                    <input type="date" value={bulkDate} onChange={e => setBulkDate(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                    <button type="button" onClick={applyBulkDate}
+                      className="px-3 py-2 text-sm rounded-lg bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-50"
+                      disabled={!bulkDate}>
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+                <div className="border border-gray-200 rounded-xl p-3">
+                  <p className="text-xs font-medium text-gray-600 mb-1.5">Nhân viên giao hàng (áp dụng tất cả)</p>
+                  <div className="flex gap-2">
+                    <select value={bulkShipper} onChange={e => setBulkShipper(e.target.value)}
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-200">
+                      <option value="">-- Không phân công --</option>
+                      {preview.shippers.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+                    </select>
+                    <button type="button" onClick={applyBulkShipper}
+                      className="px-3 py-2 text-sm rounded-lg bg-gray-900 text-white hover:bg-gray-700">
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <p className="font-medium text-gray-900 px-4 pt-4 mb-2">
                 Xem trước ({preview.preview.length} đơn)
               </p>
-              <OrderTable items={preview.preview} unmatchedLabel="Chưa khớp" showFooter={false} />
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr className="text-left">
+                      <th className="px-3 py-2 font-medium text-gray-500">Mã đơn</th>
+                      <th className="px-3 py-2 font-medium text-gray-500">Khách hàng</th>
+                      <th className="px-3 py-2 font-medium text-gray-500">Nhân viên giao</th>
+                      <th className="px-3 py-2 font-medium text-gray-500 text-right">Tổng tiền</th>
+                      <th className="px-3 py-2 font-medium text-gray-500 text-right">Đã thu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.preview.map(item => {
+                      const ov = overrides[item.orderCode] ?? { shipperId: null, scheduledDate: null }
+                      return (
+                        <tr key={item.orderCode} className="border-t border-gray-50 hover:bg-gray-50">
+                          <td className="px-3 py-2 font-mono text-xs text-gray-700 align-top">
+                            {item.orderCode}
+                            {item.routeCode && <div className="text-gray-400">{item.routeCode}</div>}
+                          </td>
+                          <td className="px-3 py-2 text-gray-800 align-top">{item.customerName}</td>
+                          <td className="px-3 py-2 align-top">
+                            <select value={ov.shipperId ?? ''}
+                              onChange={e => setRow(item.orderCode, { shipperId: e.target.value || null })}
+                              className="w-full min-w-[160px] border border-gray-200 rounded-md px-2 py-1.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-200">
+                              <option value="">-- Chưa phân công --</option>
+                              {preview.shippers.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+                            </select>
+                            {item.shipperName && (
+                              <div className="text-[10px] text-gray-400 mt-0.5">Excel: {item.shipperName}</div>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right font-medium text-gray-800 align-top">{formatVND(item.amount)}</td>
+                          <td className="px-3 py-2 text-right font-semibold text-green-600 align-top">
+                            {item.amountPaid > 0 ? formatVND(item.amountPaid) : <Dash />}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="flex gap-3">

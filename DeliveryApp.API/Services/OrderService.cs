@@ -26,7 +26,7 @@ public class OrderService
 
     public async Task<PagedResult<OrderListItem>> GetOrdersAsync(
         string? status, Guid? shipperId, DateTime? date, string? search,
-        int page, int pageSize, UserRole callerRole, Guid callerId)
+        int page, int pageSize, UserRole callerRole, Guid callerId, string? sort = null)
     {
         var q = _db.Orders
             .Include(o => o.Shipper)
@@ -49,9 +49,15 @@ public class OrderService
         if (!string.IsNullOrEmpty(search))
             q = q.Where(o => o.OrderCode.Contains(search) || o.CustomerName.Contains(search));
 
+        q = sort switch
+        {
+            "amount_asc" => q.OrderBy(o => o.Amount).ThenByDescending(o => o.CreatedAt),
+            "amount_desc" => q.OrderByDescending(o => o.Amount).ThenByDescending(o => o.CreatedAt),
+            _ => q.OrderByDescending(o => o.CreatedAt),
+        };
+
         var total = await q.CountAsync();
         var items = await q
-            .OrderByDescending(o => o.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(o => new OrderListItem(
@@ -103,9 +109,15 @@ public class OrderService
         else if (newStatus == OrderStatus.Partial && req.AmountPaid.HasValue)
             order.AmountPaid = req.AmountPaid.Value;
         else if (newStatus == OrderStatus.Unpaid)
+        {
             order.UnpaidReason = req.UnpaidReason;
+            if (req.ScheduledDate.HasValue)
+                order.ScheduledDate = DateTime.SpecifyKind(req.ScheduledDate.Value, DateTimeKind.Utc);
+        }
         else if (newStatus == OrderStatus.Scheduled)
-            order.ScheduledDate = req.ScheduledDate;
+            order.ScheduledDate = req.ScheduledDate.HasValue
+                ? DateTime.SpecifyKind(req.ScheduledDate.Value, DateTimeKind.Utc)
+                : null;
 
         if (req.Note != null) order.ShipperNote = req.Note;
         order.UpdatedAt = DateTime.UtcNow;

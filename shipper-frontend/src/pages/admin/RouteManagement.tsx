@@ -1,9 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../../lib/api'
 import { formatVND, formatDateOnly, formatDate } from '../../lib/formatters'
 import AdminLayout from '../../components/AdminLayout'
 import { useAuthStore } from '../../stores/authStore'
 import { StatusBadge } from '../../components/StatusBadge'
+
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Mới nhất' },
+  { value: 'amount_asc', label: 'Tiền: ít → nhiều' },
+  { value: 'amount_desc', label: 'Tiền: nhiều → ít' },
+]
 
 interface RouteSummary {
   routeCode: string
@@ -112,6 +118,17 @@ export default function RouteManagement() {
   const [to, setTo] = useState(today())
   const [search, setSearch] = useState('')
   const [allDates, setAllDates] = useState(true)
+  const [sort, setSort] = useState('')
+  const [showSort, setShowSort] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setShowSort(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const [detail, setDetail] = useState<RouteDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
@@ -198,6 +215,12 @@ export default function RouteManagement() {
 
   const NotAssigned = () => <span className="text-orange-500 text-xs">Chưa phân công</span>
 
+  const sortedRoutes = [...routes].sort((a, b) => {
+    if (sort === 'amount_asc') return a.totalAmount - b.totalAmount
+    if (sort === 'amount_desc') return b.totalAmount - a.totalAmount
+    return 0
+  })
+
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-4">
@@ -240,6 +263,38 @@ export default function RouteManagement() {
           }`}>
           Tất cả ngày
         </button>
+
+        <div className="relative" ref={sortRef}>
+          <button
+            onClick={() => setShowSort(v => !v)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+              sort ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m4 0l4 4m0 0l4-4m-4 4V4" />
+            </svg>
+            {SORT_OPTIONS.find(o => o.value === sort)?.label ?? 'Sắp xếp'}
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {showSort && (
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value || 'default'}
+                  onClick={() => { setSort(opt.value); setShowSort(false) }}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                    sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
@@ -258,9 +313,9 @@ export default function RouteManagement() {
           <tbody>
             {loading ? (
               <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-400">Đang tải...</td></tr>
-            ) : routes.length === 0 ? (
+            ) : sortedRoutes.length === 0 ? (
               <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-400">Không có đơn gộp</td></tr>
-            ) : routes.map(r => (
+            ) : sortedRoutes.map(r => (
               <tr key={r.routeCode} onClick={() => openDetail(r.routeCode)}
                 className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
                 <td className="px-5 py-3.5 font-semibold text-gray-800">{r.routeCode}</td>
@@ -287,15 +342,15 @@ export default function RouteManagement() {
             ))}
           </tbody>
 
-          {routes.length > 0 && !loading && (
+          {sortedRoutes.length > 0 && !loading && (
             <tfoot className="border-t border-gray-200 bg-gray-50">
               <tr>
                 <td colSpan={4} className="px-5 py-3 text-sm font-medium text-gray-600">Tổng ({total} đơn gộp)</td>
                 <td className="px-5 py-3 text-right font-semibold text-gray-800">
-                  {formatVND(routes.reduce((s, r) => s + r.totalAmount, 0))}
+                  {formatVND(sortedRoutes.reduce((s, r) => s + r.totalAmount, 0))}
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-green-600">
-                  {formatVND(routes.reduce((s, r) => s + r.totalPaid, 0))}
+                  {formatVND(sortedRoutes.reduce((s, r) => s + r.totalPaid, 0))}
                 </td>
                 <td />
               </tr>

@@ -312,6 +312,7 @@ export default function AdminConfig() {
 
   // SePay
   const [sePayKey, setSePayKey] = useState('')
+  const [sePayKeySet, setSePayKeySet] = useState(false)
   const [showSePayKey, setShowSePayKey] = useState(false)
   const [savingSePay, setSavingSePay] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -338,7 +339,8 @@ export default function AdminConfig() {
       api.get('/admin/config'),
       api.get('/admin/config/vietqr'),
       api.get('/admin/config/ai'),
-    ]).then(([cfg, vq, ai]) => {
+      api.get('/admin/config/sepay'),
+    ]).then(([cfg, vq, ai, sp]) => {
       setLockTime(cfg.data.lockTime ?? '23:59')
       setVqConfig({
         clientId: vq.data.clientId ?? '',
@@ -349,6 +351,7 @@ export default function AdminConfig() {
       setAiKeySet(ai.data.apiKeySet ?? false)
       setAiProvider(ai.data.provider ?? 'openrouter')
       setAiModel(ai.data.model ?? 'deepseek/deepseek-chat-v3.1')
+      setSePayKeySet(sp.data.apiKeySet ?? false)
     }).finally(() => setLoading(false))
   }, [])
 
@@ -397,8 +400,10 @@ export default function AdminConfig() {
 
   const handleSaveSePay = async (e: React.FormEvent) => {
     e.preventDefault(); if (!sePayKey.trim()) return; setSavingSePay(true)
-    try { await api.put('/admin/config/sepay-apikey', { apiKey: sePayKey }); setSePayKey(''); showToast('Đã cập nhật SePay API Key') }
-    catch { showToast('Cập nhật thất bại', false) }
+    try {
+      await api.put('/admin/config/sepay-apikey', { apiKey: sePayKey })
+      setSePayKey(''); setSePayKeySet(true); showToast('Đã cập nhật SePay API Key')
+    } catch { showToast('Cập nhật thất bại', false) }
     finally { setSavingSePay(false) }
   }
 
@@ -699,10 +704,13 @@ export default function AdminConfig() {
                 </div>
 
                 <div className="border border-gray-200 rounded-xl p-4">
-                  <p className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-3">
-                    <span className="w-5 h-5 bg-gray-900 text-white rounded-full text-xs flex items-center justify-center">1</span>
-                    API Key xác thực
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                      <span className="w-5 h-5 bg-gray-900 text-white rounded-full text-xs flex items-center justify-center">1</span>
+                      API Key xác thực
+                    </p>
+                    {sePayKeySet && <ConfiguredBadge text="API Key đã cấu hình" />}
+                  </div>
 
                   <form onSubmit={handleSaveSePay} className="space-y-3">
                     <Field label="API Key" description="Mã hoá AES-256 trước khi lưu. Chỉ cập nhật khi có key mới.">

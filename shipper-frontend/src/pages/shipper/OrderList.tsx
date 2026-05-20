@@ -1,9 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import { OrderCard } from '../../components/OrderCard'
 import { useAuthStore } from '../../stores/authStore'
 import { useSignalR } from '../../hooks/useSignalR'
+
+const SORT_OPTIONS = [
+  { value: 'default', label: 'Mặc định' },
+  { value: 'amount_asc', label: 'Tiền: ít → nhiều' },
+  { value: 'amount_desc', label: 'Tiền: nhiều → ít' },
+]
 
 interface Order {
   id: string
@@ -18,8 +24,21 @@ export default function ShipperOrderList() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('default')
+  const [showSort, setShowSort] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setShowSort(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -49,6 +68,12 @@ export default function ShipperOrderList() {
   }
 
   const progress = summary.total > 0 ? Math.round((summary.done / summary.total) * 100) : 0
+
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (sort === 'amount_asc') return a.amount - b.amount
+    if (sort === 'amount_desc') return b.amount - a.amount
+    return 0
+  })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -114,9 +139,9 @@ export default function ShipperOrderList() {
           )}
         </div>
 
-        {/* Search */}
-        <div className="px-4 pb-3">
-          <div className="relative">
+        {/* Search + sort */}
+        <div className="px-4 pb-3 flex items-center gap-2">
+          <div className="relative flex-1">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -129,6 +154,30 @@ export default function ShipperOrderList() {
               placeholder="Tìm mã đơn, tên khách..."
               className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
             />
+          </div>
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => setShowSort(v => !v)}
+              className="flex items-center gap-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 whitespace-nowrap"
+            >
+              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m4 0l4 4m0 0l4-4m-4 4V4" />
+              </svg>
+              {SORT_OPTIONS.find(o => o.value === sort)?.label ?? 'Sắp xếp'}
+            </button>
+            {showSort && (
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSort(opt.value); setShowSort(false) }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -162,9 +211,9 @@ export default function ShipperOrderList() {
         ) : (
           <>
             <p className="text-xs text-gray-400 mb-3 px-1">
-              {search ? `Kết quả cho "${search}" · ` : ''}{orders.length} đơn hàng
+              {search ? `Kết quả cho "${search}" · ` : ''}{sortedOrders.length} đơn hàng
             </p>
-            {orders.map(o => (
+            {sortedOrders.map(o => (
               <OrderCard key={o.id} order={o} basePath="/shipper/orders" />
             ))}
           </>

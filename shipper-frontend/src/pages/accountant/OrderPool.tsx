@@ -24,29 +24,38 @@ function pageWindow(current: number, total: number): (number | '...')[] {
   return [1, '...', current - 1, current, current + 1, '...', total]
 }
 
+const SORT_OPTIONS: { value: string; label: string }[] = [
+  { value: '', label: 'Mới nhất' },
+  { value: 'amount_asc', label: 'Tiền: ít → nhiều' },
+  { value: 'amount_desc', label: 'Tiền: nhiều → ít' },
+]
+
 export default function AccountantOrderPool() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
+  const [sort, setSort] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const filterRef = useRef<HTMLDivElement>(null)
+  const sortRef = useRef<HTMLDivElement>(null)
   const [showFilter, setShowFilter] = useState(false)
+  const [showSort, setShowSort] = useState(false)
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
     try {
       const res = await api.get('/orders', {
-        params: { search: search || undefined, status: status || undefined, page, pageSize: PAGE_SIZE },
+        params: { search: search || undefined, status: status || undefined, sort: sort || undefined, page, pageSize: PAGE_SIZE },
       })
       setOrders(res.data.items)
       setTotal(res.data.total)
     } finally {
       setLoading(false)
     }
-  }, [search, status, page])
+  }, [search, status, sort, page])
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 
@@ -55,6 +64,9 @@ export default function AccountantOrderPool() {
     const handler = (e: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
         setShowFilter(false)
+      }
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setShowSort(false)
       }
     }
     document.addEventListener('mousedown', handler)
@@ -73,10 +85,17 @@ export default function AccountantOrderPool() {
     setShowFilter(false)
   }
 
+  const handleSortChange = (v: string) => {
+    setSort(v)
+    setPage(1)
+    setShowSort(false)
+  }
+
   const handleRefresh = () => {
     setSearchInput('')
     setSearch('')
     setStatus('')
+    setSort('')
     setPage(1)
   }
 
@@ -115,6 +134,41 @@ export default function AccountantOrderPool() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
         </form>
+
+        {/* Sort dropdown */}
+        <div className="relative" ref={sortRef}>
+          <button
+            onClick={() => setShowSort(v => !v)}
+            className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
+              sort
+                ? 'border-gray-900 bg-gray-900 text-white'
+                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m4 0l4 4m0 0l4-4m-4 4V4" />
+            </svg>
+            {SORT_OPTIONS.find(o => o.value === sort)?.label ?? 'Sắp xếp'}
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {showSort && (
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value || 'default'}
+                  onClick={() => handleSortChange(opt.value)}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                    sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Status filter dropdown */}
         <div className="relative" ref={filterRef}>

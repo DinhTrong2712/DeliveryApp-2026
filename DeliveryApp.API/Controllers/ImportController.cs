@@ -41,7 +41,7 @@ public class ImportController : ControllerBase
     {
         try
         {
-            var result = await _import.ConfirmImportAsync(req.ImportId, CallerName);
+            var result = await _import.ConfirmImportAsync(req.ImportId, CallerName, req.Overrides);
             await _audit.LogAsync("IMPORT", "ImportLog",
                 description: $"Import Excel: {result.Imported} mới, {result.Updated} cập nhật, {result.Skipped} bỏ qua");
             return Ok(result);
@@ -63,4 +63,4 @@ public class ImportController : ControllerBase
     }
 }
 
-public record ConfirmImportRequest(Guid ImportId);
+public record ConfirmImportRequest(Guid ImportId, List<ImportOverride>? Overrides);

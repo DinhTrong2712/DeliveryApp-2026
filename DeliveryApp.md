@@ -332,7 +332,7 @@ MatchStatus : Unmatched, AutoMatched, ManualMatched
 ### 5.2 Orders (`/orders`)
 | Method | Path | Role | Mô tả |
 |---|---|---|---|
-| GET | `/` | Auth | Query: `status`, `shipperId`, `date`, `search`, `page`, `pageSize` |
+| GET | `/` | Auth | Query: `status`, `shipperId`, `date`, `search`, `page`, `pageSize`, `sort` (`amount_asc` \| `amount_desc`, mặc định: mới nhất) |
 | GET | `/{id}` | Auth | Detail (Shipper chỉ xem đơn của mình) |
 | PATCH | `/{id}/status` | Shipper | Body: `{status, amountPaid?, unpaidReason?, scheduledDate?, note?}` |
 | PATCH | `/{id}/delivered` | Shipper | Đánh dấu đã giao |
@@ -601,6 +601,19 @@ dotnet ef database update
 
 ## 13. Roadmap (đề xuất)
 
+### Đã làm gần đây (session 20/05/2026)
+- **Sắp xếp theo số tiền** cho tất cả màn quản lý đơn hàng & đơn gộp:
+  - Shipper: `OrderList.tsx`, `ShipperRoutes.tsx` (client-side sort theo `Order.amount` / `RouteGroup.totalAmount`).
+  - Kế toán: `OrderPool.tsx` (server-side qua `?sort=amount_asc|amount_desc`), `AccountantRoutes.tsx` (client-side).
+  - Admin: `RouteManagement.tsx` (client-side, dùng chung trang đơn hàng `/accountant/orders` đã hỗ trợ).
+  - Backend: thêm tham số `sort` cho `GET /orders` (`OrdersController.cs` + `OrderService.GetOrdersAsync`).
+- **Sửa luồng UI shipper đơn gộp** (`ShipperRoutes.tsx`):
+  - Click vào đơn gộp giờ mở **modal danh sách đơn** (template tương tự admin) thay vì expand inline.
+  - Modal mobile-optimized: bottom sheet 92dvh, drag handle, sticky header/sort, safe-area-inset cho iOS, tap target ≥ 44 px, sort toolbar đặt cố định trên cùng.
+  - Modal tự đồng bộ dữ liệu khi SignalR `OrderStatusUpdated` / `SePayMatched` fire (effect theo `orders`).
+  - Click 1 đơn trong modal vẫn mở `PaymentMethodSheet` nếu chưa thanh toán, hoặc điều hướng tới detail nếu đã thanh toán.
+- **Filter row shipper**: tách thành 2 hàng (date+all-days / search+sort) để tránh overflow trên màn 360 px, đồng bộ height 40 px cho mọi control.
+
 ### Đã làm gần đây (session 08–09/05/2026)
 - Audit log đầy đủ 17 action (login/logout/match/edit/...)
 - Refactor & clean code 7 file lớn
@@ -628,4 +641,4 @@ dotnet ef database update
 
 ---
 
-*Tài liệu được cập nhật ngày 2026-05-09. Cập nhật lại khi schema/API/luồng nghiệp vụ thay đổi đáng kể.*
+*Tài liệu được cập nhật ngày 2026-05-20. Cập nhật lại khi schema/API/luồng nghiệp vụ thay đổi đáng kể.*
