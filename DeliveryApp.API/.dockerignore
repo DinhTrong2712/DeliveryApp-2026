@@ -1,0 +1,13 @@
+**/bin
+**/obj
+**/.vs
+**/.idea
+**/.vscode
+**/appsettings.Local.json
+**/appsettings.Development.json
+**/wwwroot/photos
+**/backups
+**/*.user
+**/*.suo
+**/.DS_Store
+**/node_modules

@@ -1,0 +1,17 @@
+# Production overlay — used on the VPS.
+# Pulls pre-built images from GHCR instead of building from source.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+services:
+  api:
+    build: !reset null
+    image: ghcr.io/${GHCR_OWNER}/deliveryapp-api:${IMAGE_TAG:-latest}
+    pull_policy: always
+
+  web:
+    build: !reset null
+    image: ghcr.io/${GHCR_OWNER}/deliveryapp-web:${IMAGE_TAG:-latest}
+    pull_policy: always
