@@ -12,6 +12,7 @@
 
 # ─── Database dumps (chứa data khách hàng — không commit) ────────────────
 *.dump
+*.sql
 *.sql.gz
 
 # ─── Node / Vite ──────────────────────────────────────────────────────────
