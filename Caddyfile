@@ -1,0 +1,29 @@
+# Caddy reverse proxy — TLS terminator in front of the nginx `web` container.
+# Auto-issues Let's Encrypt cert for $PUBLIC_DOMAIN, auto-renews.
+#
+# Required: $PUBLIC_DOMAIN must point to this VPS (A record) before first start,
+# otherwise Let's Encrypt HTTP-01 challenge will fail.
+
+{
+	email {$ACME_EMAIL:admin@{$PUBLIC_DOMAIN}}
+}
+
+{$PUBLIC_DOMAIN} {
+	encode zstd gzip
+
+	# Forward everything to the nginx container.
+	# Caddy automatically sets X-Forwarded-{For,Proto,Host}.
+	reverse_proxy web:80 {
+		header_up X-Real-IP {remote_host}
+	}
+
+	# Generous body size for Excel imports + photo uploads.
+	request_body {
+		max_size 50MB
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}

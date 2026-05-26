@@ -1,5 +1,6 @@
 # Production overlay — used on the VPS.
-# Pulls pre-built images from GHCR instead of building from source.
+# Pulls pre-built images from GHCR instead of building from source,
+# and fronts the stack with Caddy for automatic Let's Encrypt TLS.
 #
 # Usage:
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
@@ -15,3 +16,31 @@ services:
     build: !reset null
     image: ghcr.io/${GHCR_OWNER}/deliveryapp-web:${IMAGE_TAG:-latest}
     pull_policy: always
+    # Caddy terminates TLS and proxies to the web container over the
+    # internal docker network — web is no longer published to the host.
+    ports: !reset []
+    expose:
+      - "80"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: deliveryapp-caddy
+    restart: unless-stopped
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:?PUBLIC_DOMAIN is required (e.g. delivery.example.com)}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [app_net]
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -41,12 +41,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── API image ────────────────────────────────────────
+      # ── QEMU for cross-arch builds (linux/arm64 on amd64 runner) ─
+      - uses: docker/setup-qemu-action@v3
+
+      # ── API image (multi-arch: amd64 + arm64 for Oracle Ampere) ──
       - name: Build & push API
         uses: docker/build-push-action@v6
         with:
           context: .
           file: DeliveryApp.API/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ steps.meta.outputs.owner_lc }}/${{ env.IMAGE_API }}:latest
@@ -54,12 +58,13 @@ jobs:
           cache-from: type=gha,scope=api
           cache-to: type=gha,scope=api,mode=max
 
-      # ── Web image ────────────────────────────────────────
+      # ── Web image (multi-arch) ───────────────────────────
       - name: Build & push Web
         uses: docker/build-push-action@v6
         with:
           context: .
           file: shipper-frontend/Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ steps.meta.outputs.owner_lc }}/${{ env.IMAGE_WEB }}:latest

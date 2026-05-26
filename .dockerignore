@@ -1,0 +1,33 @@
+# Root .dockerignore — applied to both api and web builds
+# (compose uses context: . so per-folder .dockerignore files are not read)
+
+# ── .NET / Visual Studio ─────────────────────────────────────
+**/bin
+**/obj
+**/.vs
+**/.idea
+**/.vscode
+**/*.user
+**/*.suo
+
+# ── Local-only config (must never leak into image) ───────────
+**/appsettings.Local.json
+**/appsettings.Development.json
+
+# ── Runtime artefacts that mustn't be baked in ───────────────
+**/wwwroot/photos
+**/backups
+
+# ── Node / Vite ──────────────────────────────────────────────
+**/node_modules
+**/dist
+**/.vite
+**/npm-debug.log*
+
+# ── Misc ─────────────────────────────────────────────────────
+**/.DS_Store
+**/.git
+**/.gitignore
+**/.env
+**/.env.local
+**/*.log

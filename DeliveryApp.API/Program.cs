@@ -3,6 +3,7 @@ using DeliveryApp.API.Data;
 using DeliveryApp.API.Hubs;
 using DeliveryApp.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -90,6 +91,18 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
+
+// Trust X-Forwarded-* headers from Caddy + Nginx so Request.IsHttps,
+// Request.Host and the remote IP reflect the original client, not the proxy.
+// KnownNetworks/Proxies are cleared because proxies live in the docker network.
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor
+                     | ForwardedHeaders.XForwardedProto
+                     | ForwardedHeaders.XForwardedHost,
+    KnownNetworks = { },
+    KnownProxies = { },
+});
 
 app.UseCors();
 app.UseStaticFiles();

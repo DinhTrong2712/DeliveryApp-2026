@@ -6,7 +6,9 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY shipper-frontend/package*.json ./
-RUN npm ci --no-audit --no-fund
+# Use `npm install` (not `npm ci`) — the lockfile is generated on Windows
+# and may omit Linux-only optional deps like @emnapi/core that Alpine needs.
+RUN npm install --no-audit --no-fund
 
 COPY shipper-frontend/ ./
 RUN npm run build

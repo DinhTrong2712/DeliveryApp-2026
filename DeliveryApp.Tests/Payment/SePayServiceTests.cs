@@ -2,6 +2,7 @@ using DeliveryApp.API.Hubs;
 using DeliveryApp.API.Models;
 using DeliveryApp.API.Services;
 using DeliveryApp.Tests.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Moq;
@@ -34,7 +35,11 @@ public class SePayServiceTests
             .AddInMemoryCollection(new Dictionary<string, string?> { ["SePay:ApiKey"] = "" })
             .Build();
 
-        return new SePayService(db, hub.Object, config);
+        var httpCtx = new Mock<IHttpContextAccessor>();
+        var audit = new AuditService(db, httpCtx.Object);
+        var notif = new NotificationService(db, hub.Object);
+
+        return new SePayService(db, hub.Object, config, audit, notif);
     }
 
     // ── VerifyApiKey ──────────────────────────────────────────────────────────

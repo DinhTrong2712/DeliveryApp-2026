@@ -24,8 +24,9 @@ RUN dotnet publish DeliveryApp.API/DeliveryApp.API.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# Non-root user for safety
-RUN groupadd -r app && useradd -r -g app app \
+# Non-root user for safety (idempotent — newer aspnet:8.0 images ship an 'app' user)
+RUN (getent group app  || groupadd -r app) \
+ && (getent passwd app || useradd  -r -g app app) \
  && mkdir -p /app/wwwroot /backups \
  && chown -R app:app /app /backups
 

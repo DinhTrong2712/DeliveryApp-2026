@@ -1,29 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import iconSrc from '../assets/landing/icon.png'
+import heroImg from '../assets/landing/hero.jpg'
+import aboutImg from '../assets/landing/about.jpg'
+import abbottLogo from '../assets/landing/abbott.png'
+import nutifoodLogo from '../assets/landing/nutifood.jpg'
+import orionLogo from '../assets/landing/orion.png'
+import bibicaLogo from '../assets/landing/bibica.webp'
+import danisaLogo from '../assets/landing/danisa.png'
 
 const BRAND = '#F26B2C'
 
 function Logo({ size = 36 }: { size?: number }) {
   return (
     <div className="flex items-center gap-2">
-      <svg width={size} height={size} viewBox="0 0 64 64" fill="none">
-        <defs>
-          <linearGradient id="lg" x1="0" y1="0" x2="64" y2="64">
-            <stop offset="0%" stopColor="#F26B2C" />
-            <stop offset="100%" stopColor="#D9521A" />
-          </linearGradient>
-        </defs>
-        <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#lg)" />
-        <path
-          d="M18 20 L32 14 L46 20 L46 44 L32 50 L18 44 Z"
-          fill="none"
-          stroke="white"
-          strokeWidth="3"
-          strokeLinejoin="round"
-        />
-        <path d="M32 14 L32 50" stroke="white" strokeWidth="2.5" />
-        <path d="M18 20 L46 20" stroke="white" strokeWidth="2.5" />
-      </svg>
+      <img
+        src={iconSrc}
+        alt="Hương Cường"
+        width={size}
+        height={size}
+        className="rounded-xl object-cover"
+      />
       <div className="leading-none">
         <div className="font-extrabold text-[15px] tracking-wide text-gray-900">HƯƠNG</div>
         <div className="font-extrabold text-[15px] tracking-wide" style={{ color: BRAND }}>CƯỜNG</div>
@@ -43,15 +40,15 @@ function Stat({ value, label }: { value: string; label: string }) {
   )
 }
 
-function PartnerLogo({ name, color, italic }: { name: string; color: string; italic?: boolean }) {
+function PartnerLogo({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="h-24 md:h-28 rounded-xl border border-gray-200 bg-white flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-      <span
-        className={`text-2xl md:text-3xl font-extrabold tracking-tight ${italic ? 'italic' : ''}`}
-        style={{ color }}
-      >
-        {name}
-      </span>
+    <div className="h-24 md:h-28 rounded-xl border border-gray-200 bg-white flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-4">
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="max-h-full max-w-full object-contain"
+      />
     </div>
   )
 }
@@ -104,20 +101,24 @@ export default function Home() {
           </a>
 
           <nav className="hidden md:flex items-center gap-1">
-            {[
-              { href: '#home', label: 'Trang chủ' },
-              { href: '#about', label: 'Về chúng tôi' },
-              { href: '#partners', label: 'Đối tác' },
-              { href: '#contact', label: 'Liên hệ' },
-            ].map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
-              >
-                {item.label}
-              </a>
-            ))}
+            <a
+              href="#home"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+            >
+              Trang chủ
+            </a>
+            <Link
+              to="/about"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+            >
+              Về chúng tôi
+            </Link>
+            <Link
+              to="/contact"
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+            >
+              Liên hệ
+            </Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -132,13 +133,13 @@ export default function Home() {
               <span className="hidden sm:inline">Đăng nhập nội bộ</span>
               <span className="sm:hidden">Đăng nhập</span>
             </Link>
-            <a
-              href="#contact"
+            <Link
+              to="/contact"
               className="hidden sm:inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold text-white shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
               style={{ backgroundColor: BRAND }}
             >
               Liên hệ ngay
-            </a>
+            </Link>
           </div>
         </div>
       </header>
@@ -167,37 +168,19 @@ export default function Home() {
           </svg>
         </div>
 
-        {/* Stacked box silhouettes (right side) */}
-        <div className="hidden lg:block absolute right-0 bottom-0 top-16 w-1/2 pointer-events-none">
-          <svg viewBox="0 0 600 800" className="w-full h-full opacity-60">
-            <defs>
-              <linearGradient id="box1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#5a3a1f" />
-                <stop offset="100%" stopColor="#2a1d10" />
-              </linearGradient>
-              <linearGradient id="box2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7a4a26" />
-                <stop offset="100%" stopColor="#3a2515" />
-              </linearGradient>
-            </defs>
-            {[
-              { x: 60, y: 500, w: 130, h: 120, fill: 'url(#box1)' },
-              { x: 200, y: 470, w: 130, h: 150, fill: 'url(#box2)' },
-              { x: 340, y: 490, w: 130, h: 130, fill: 'url(#box1)' },
-              { x: 480, y: 510, w: 110, h: 110, fill: 'url(#box2)' },
-              { x: 100, y: 350, w: 150, h: 140, fill: 'url(#box2)' },
-              { x: 270, y: 320, w: 140, h: 150, fill: 'url(#box1)' },
-              { x: 420, y: 360, w: 140, h: 130, fill: 'url(#box2)' },
-              { x: 180, y: 200, w: 160, h: 130, fill: 'url(#box1)' },
-              { x: 360, y: 220, w: 130, h: 130, fill: 'url(#box2)' },
-            ].map((b, i) => (
-              <g key={i}>
-                <rect x={b.x} y={b.y} width={b.w} height={b.h} fill={b.fill} stroke="#F26B2C" strokeWidth="1" opacity="0.85" />
-                <rect x={b.x + 8} y={b.y + 16} width={b.w - 16} height={3} fill="#F26B2C" opacity="0.6" />
-                <rect x={b.x + 8} y={b.y + b.h - 22} width={b.w - 16} height={3} fill="#F26B2C" opacity="0.4" />
-              </g>
-            ))}
-          </svg>
+        {/* Hero photo (right side) — fades into dark background on left */}
+        <div className="hidden lg:block absolute right-0 bottom-0 top-16 w-1/2 pointer-events-none overflow-hidden">
+          <img
+            src={heroImg}
+            alt=""
+            className="w-full h-full object-cover opacity-80"
+            style={{
+              maskImage:
+                'linear-gradient(to left, black 55%, transparent 100%)',
+              WebkitMaskImage:
+                'linear-gradient(to left, black 55%, transparent 100%)',
+            }}
+          />
         </div>
 
         {/* Hero content */}
@@ -221,8 +204,8 @@ export default function Home() {
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <a
-                href="#about"
+              <Link
+                to="/about"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-white shadow-lg hover:shadow-xl hover:opacity-95 transition-all"
                 style={{ backgroundColor: BRAND }}
               >
@@ -230,13 +213,13 @@ export default function Home() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
-              <a
-                href="#contact"
+              </Link>
+              <Link
+                to="/contact"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold border-2 border-white/40 text-white hover:bg-white/10 transition-colors"
               >
                 Liên hệ ngay
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -279,11 +262,11 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 md:gap-5">
-            <PartnerLogo name="Abbott" color="#0A4DA0" />
-            <PartnerLogo name="Nutifood" color="#1B7F3B" />
-            <PartnerLogo name="ORION" color="#E11B22" />
-            <PartnerLogo name="Bibica" color="#D11A2A" italic />
-            <PartnerLogo name="Danisa" color="#A6212A" italic />
+            <PartnerLogo src={abbottLogo} alt="Abbott" />
+            <PartnerLogo src={nutifoodLogo} alt="Nutifood" />
+            <PartnerLogo src={orionLogo} alt="ORION" />
+            <PartnerLogo src={bibicaLogo} alt="Bibica" />
+            <PartnerLogo src={danisaLogo} alt="Danisa" />
           </div>
         </div>
       </section>
@@ -326,32 +309,12 @@ export default function Home() {
             </div>
 
             <div className="relative">
-              <div
-                className="aspect-[4/3] rounded-3xl shadow-xl overflow-hidden relative"
-                style={{
-                  background:
-                    'linear-gradient(135deg, #2a1d10 0%, #4a2f15 100%)',
-                }}
-              >
-                <svg viewBox="0 0 400 300" className="w-full h-full">
-                  <defs>
-                    <pattern id="aboutBoxes" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse">
-                      <rect x="4" y="4" width="52" height="52" fill="none" stroke="#F26B2C" strokeWidth="0.5" opacity="0.3" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#aboutBoxes)" />
-                  {Array.from({ length: 12 }).map((_, i) => {
-                    const cols = 4
-                    const x = 40 + (i % cols) * 80
-                    const y = 80 + Math.floor(i / cols) * 70
-                    return (
-                      <g key={i}>
-                        <rect x={x} y={y} width={70} height={60} fill="#5a3a1f" stroke="#F26B2C" strokeWidth="1.5" opacity="0.85" />
-                        <rect x={x + 6} y={y + 12} width={58} height="3" fill="#F26B2C" opacity="0.7" />
-                      </g>
-                    )
-                  })}
-                </svg>
+              <div className="aspect-[4/3] rounded-3xl shadow-xl overflow-hidden relative">
+                <img
+                  src={aboutImg}
+                  alt="Kho hàng & đội ngũ giao hàng Hương Cường"
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div
                 className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-5 border border-gray-100 hidden md:block"
@@ -447,8 +410,11 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-gray-900 mb-1">Hotline</h3>
               <p className="text-gray-600 text-sm mb-2">Đặt hàng & hỗ trợ đại lý</p>
-              <a href="tel:0987654321" className="text-lg font-bold" style={{ color: BRAND }}>
-                0987 654 321
+              <a href="tel:0988599747" className="text-lg font-bold block" style={{ color: BRAND }}>
+                0988 599 747
+              </a>
+              <a href="tel:0974058400" className="text-sm font-semibold block mt-1" style={{ color: BRAND }}>
+                0974 058 400
               </a>
             </div>
 
@@ -460,8 +426,8 @@ export default function Home() {
               </div>
               <h3 className="font-bold text-gray-900 mb-1">Email</h3>
               <p className="text-gray-600 text-sm mb-2">Phản hồi trong 24 giờ</p>
-              <a href="mailto:lienhe@huongcuong.vn" className="text-lg font-bold" style={{ color: BRAND }}>
-                lienhe@huongcuong.vn
+              <a href="mailto:khuongmv304@gmail.com" className="text-base font-bold break-all" style={{ color: BRAND }}>
+                khuongmv304@gmail.com
               </a>
             </div>
 
@@ -475,14 +441,14 @@ export default function Home() {
               <h3 className="font-bold text-gray-900 mb-1">Văn phòng</h3>
               <p className="text-gray-600 text-sm mb-2">Trụ sở chính & kho hàng</p>
               <p className="text-base font-semibold text-gray-900">
-                TP. Thái Nguyên, tỉnh Thái Nguyên
+                TDP Kim Thái, Phường Phổ Yên, Thái Nguyên
               </p>
             </div>
           </div>
 
           <div className="mt-10 text-center">
-            <a
-              href="tel:0987654321"
+            <Link
+              to="/contact"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all"
               style={{ backgroundColor: BRAND }}
             >
@@ -490,7 +456,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               Gọi ngay để được tư vấn
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -501,12 +467,13 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8 mb-10">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
-                  <rect x="2" y="2" width="60" height="60" rx="14" fill={BRAND} />
-                  <path d="M18 20 L32 14 L46 20 L46 44 L32 50 L18 44 Z" fill="none" stroke="white" strokeWidth="3" strokeLinejoin="round" />
-                  <path d="M32 14 L32 50" stroke="white" strokeWidth="2.5" />
-                  <path d="M18 20 L46 20" stroke="white" strokeWidth="2.5" />
-                </svg>
+                <img
+                  src={iconSrc}
+                  alt="Hương Cường"
+                  width={36}
+                  height={36}
+                  className="rounded-xl object-cover"
+                />
                 <div className="leading-none">
                   <div className="font-extrabold text-base text-white">HƯƠNG</div>
                   <div className="font-extrabold text-base" style={{ color: BRAND }}>CƯỜNG</div>
@@ -522,9 +489,8 @@ export default function Home() {
               <h4 className="text-white font-bold mb-4">Liên kết</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="#home" className="hover:text-white transition-colors">Trang chủ</a></li>
-                <li><a href="#about" className="hover:text-white transition-colors">Về chúng tôi</a></li>
-                <li><a href="#partners" className="hover:text-white transition-colors">Đối tác</a></li>
-                <li><a href="#contact" className="hover:text-white transition-colors">Liên hệ</a></li>
+                <li><Link to="/about" className="hover:text-white transition-colors">Về chúng tôi</Link></li>
+                <li><Link to="/contact" className="hover:text-white transition-colors">Liên hệ</Link></li>
                 <li><Link to="/login" className="hover:text-white transition-colors">Đăng nhập nội bộ</Link></li>
               </ul>
             </div>
@@ -532,10 +498,10 @@ export default function Home() {
             <div>
               <h4 className="text-white font-bold mb-4">Thông tin liên hệ</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li>📞 0987 654 321</li>
-                <li>✉️ lienhe@huongcuong.vn</li>
-                <li>📍 TP. Thái Nguyên, tỉnh Thái Nguyên</li>
-                <li>🕐 8:00 – 17:30 (T2 – T7)</li>
+                <li>📞 0988 599 747</li>
+                <li>✉️ khuongmv304@gmail.com</li>
+                <li>📍 TDP Kim Thái, Phường Phổ Yên, Thái Nguyên</li>
+                <li>🕐 7:00 – 17:30 (T2 – T7)</li>
               </ul>
             </div>
           </div>

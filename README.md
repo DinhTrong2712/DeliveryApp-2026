@@ -93,6 +93,35 @@ Các giá trị nhạy cảm nên cập nhật qua UI Admin (lưu vào bảng `S
 - **AI** — provider + model + API key (Admin → Cài đặt → AI)
 - **Cloudflare R2** — `appsettings.R2.*` (BucketName, Endpoint, AccessKey, SecretKey)
 
+### Deploy lên VPS (HTTPS qua Caddy + Let's Encrypt)
+
+Stack production: `Caddy` (TLS, 80/443) → `web` (Nginx + SPA) → `api` (.NET) → `db` (Postgres).
+
+1. **Trỏ domain về VPS:** tạo A record `delivery.example.com → <IP-VPS>`. Đợi DNS propagate (`dig +short delivery.example.com` phải trả IP đúng).
+2. **Mở firewall** port `80` và `443` trên VPS (UFW/Security Group).
+3. **Tạo `.env`** trên VPS từ `.env.example`, đặt:
+   ```
+   PUBLIC_DOMAIN=delivery.example.com
+   ACME_EMAIL=you@example.com
+   PUBLIC_ORIGIN=https://delivery.example.com
+   ```
+4. **Start stack:**
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+   docker compose logs -f caddy   # xem Caddy issue cert
+   ```
+   Lần đầu Caddy sẽ chạy ACME HTTP-01 challenge và lấy cert (~10-30s). Cert auto-renew sau đó.
+5. **Khai báo webhook SePay** ở https://my.sepay.vn → URL: `https://delivery.example.com/api/webhooks/sepay`.
+
+### Test webhook SePay từ máy local (chưa có domain)
+
+Dùng ngrok để có HTTPS URL tạm:
+```bash
+ngrok http 5036
+# Khai trên SePay URL: https://<random>.ngrok-free.app/api/webhooks/sepay
+```
+
 ---
 
 ## Build / Publish

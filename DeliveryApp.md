@@ -5,6 +5,68 @@
 
 ---
 
+## 0. Tóm tắt nhanh (Executive Summary)
+
+**Mục tiêu:** Web app nội bộ quản lý quy trình giao hàng FMCG — từ kế toán nhập đơn Excel → phân tuyến cho shipper → shipper giao hàng & thu tiền → đối soát giao dịch ngân hàng tự động qua webhook SePay → báo cáo doanh thu.
+
+**Kiến trúc:** Monorepo 2 thành phần — Backend `DeliveryApp.API` (ASP.NET Core 8) + Frontend `shipper-frontend` (React 19 + Vite + TS) + DB PostgreSQL. Realtime qua SignalR. Triển khai qua Docker Compose (`docker-compose.yml`) hoặc on-premise (`dotnet run` + `npx vite`).
+
+**3 vai trò người dùng:**
+- **Admin** — quản lý user, cấu hình hệ thống (VietQR, SePay, AI), audit logs, backup/restore, mọi tính năng kế toán.
+- **Accountant (Kế toán)** — import Excel, dashboard, đơn pool, đơn gộp, đối soát SePay (manual match), báo cáo, AI chat.
+- **Shipper (Giao hàng)** — xem đơn được giao (theo tuyến), cập nhật trạng thái thu tiền, chụp ảnh giao hàng, ghi chú.
+
+**Số liệu code:**
+| Hạng mục | Số lượng |
+|---|---|
+| Controllers (REST) | 10 |
+| Services (business) | 8 |
+| Models (entity / table) | 9 + 1 enums |
+| EF Core migrations | 6 |
+| Trang React (frontend) | 21 (4 public + 7 shipper + 8 accountant + 5 admin, có chồng chéo) |
+| Test files (xUnit) | 3 (AI / SePay / default) — 24 tests, 21 pass |
+
+**Tech stack chính:**
+- Backend: .NET 8, EF Core 8 + Npgsql, JWT Bearer, SignalR, BCrypt, EPPlus (Excel), AWSSDK.S3 (R2), ImageSharp.
+- Frontend: React 19, Vite 8, TypeScript ~6, Tailwind CSS v4, React Router 7, Zustand, TanStack Query, axios, @microsoft/signalr.
+- DB: PostgreSQL (database `delivery_db`).
+- Tích hợp ngoài: **SePay** (webhook chuyển khoản HMAC), **VietQR** (QR thanh toán), **OpenRouter/OpenAI/Anthropic/Gemini** (AI text-to-SQL), **Cloudflare R2** (ảnh giao hàng).
+
+**Luồng nghiệp vụ cốt lõi:**
+1. Kế toán upload `.xlsx` → server detect cột → preview → confirm → insert/update đơn.
+2. Shipper xem đơn theo tuyến → cập nhật `Pending → PaidCash | WaitingTransfer | Unpaid | Scheduled` → chụp ảnh.
+3. Khách CK → SePay POST webhook → verify HMAC → tìm đơn `WaitingTransfer` có `Content ⊇ OrderCode` → auto-match → emit SignalR cho shipper + kế toán.
+4. CK không match → kế toán manual assign qua UI `/accountant/unmatched`.
+5. AI chat: kế toán/shipper hỏi tự nhiên → service build prompt SQL với schema DB → LLM trả `SELECT` → validate whitelist → execute (timeout 15s) → LLM tóm tắt kết quả.
+
+**Bảo mật:**
+- JWT 24h + BCrypt password + RBAC (`[Authorize(Roles)]` + `<RequireAuth>`).
+- Webhook SePay: static API key hoặc HMAC SHA256.
+- AI SQL: chỉ cho `SELECT`, blacklist 11 keywords, timeout 15s.
+- API key nhạy cảm lưu mã hoá AES-256 trong `SystemConfigs`.
+- Audit log 17 action (login, edit, match, delete...).
+- Lock time: đơn không sửa được sau giờ cấu hình (mặc định 23:59).
+
+**Frontend public (landing) hiện có 3 trang:**
+- `/` Home — landing marketing (hero + stats + partners + about + contact section).
+- `/about` — câu chuyện công ty, đội ngũ, gallery.
+- `/contact` — trang Liên hệ riêng (hero đen + 4 card thông tin + Google Map + giờ làm việc) — **mới thêm**.
+
+**Trạng thái test (chạy `dotnet test` ngày 2026-05-24):**
+- Build: OK (sau khi nâng `Microsoft.EntityFrameworkCore.InMemory` lên `8.0.*` và fix constructor `SePayService` trong test).
+- Pass: **21 / 24**.
+- Fail (drift giữa test và code, không phải bug thật):
+  - `AiChatServiceTests.Chat_NoApiKey_ReturnsConfigError` — message thay đổi từ "chưa được cấu hình" → "chưa được kích hoạt".
+  - `SePayServiceTests.VerifyApiKey_CorrectKey_ReturnsTrue` — method `VerifyApiKeyAsync` bị mark obsolete, dùng `VerifyWebhookAsync` thay thế.
+  - `SePayServiceTests.ProcessWebhook_DuplicateTransaction_Skipped` — bug test logic: `.First()` chạy trước `SaveChanges`.
+
+**Vận hành:**
+- Dev: `dotnet run` (port 5036) + `npx vite --port 5173`.
+- Docker: `docker compose up -d --build` (web service serve qua nginx port 80).
+- Backup tự động 2:00 AM mỗi đêm, lưu `~/backups/`, retention 14 ngày.
+
+---
+
 ## 1. Tổng quan dự án
 
 ### 1.1 Mục tiêu nghiệp vụ

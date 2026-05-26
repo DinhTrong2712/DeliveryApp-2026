@@ -1,6 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuthStore } from './stores/authStore'
 import Home from './pages/Home'
+import About from './pages/About'
+import Contact from './pages/Contact'
 import Login from './pages/Login'
 import ShipperOrderList from './pages/shipper/OrderList'
 import ShipperOrderDetail from './pages/shipper/OrderDetail'
@@ -29,11 +32,33 @@ function RequireAuth({ children, roles }: { children: React.ReactNode; roles?: s
   return <>{children}</>
 }
 
+// Reset scroll on route change; smooth-scroll to anchor when hash present.
+function ScrollToTop() {
+  const { pathname, hash } = useLocation()
+  useEffect(() => {
+    if (hash) {
+      // Defer until DOM has the new page mounted
+      const id = hash.slice(1)
+      requestAnimationFrame(() => {
+        const el = document.getElementById(id)
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        else window.scrollTo({ top: 0 })
+      })
+    } else {
+      window.scrollTo({ top: 0 })
+    }
+  }, [pathname, hash])
+  return null
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
 
         {/* Shipper */}
