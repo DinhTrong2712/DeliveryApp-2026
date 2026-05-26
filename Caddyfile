@@ -5,7 +5,7 @@
 # otherwise Let's Encrypt HTTP-01 challenge will fail.
 
 {
-	email {$ACME_EMAIL:admin@{$PUBLIC_DOMAIN}}
+	email {$ACME_EMAIL}
 }
 
 {$PUBLIC_DOMAIN} {
