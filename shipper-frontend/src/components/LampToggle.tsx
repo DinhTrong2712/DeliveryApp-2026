@@ -10,7 +10,11 @@ interface LampToggleProps {
   variant?: 'header' | 'floating'
 }
 
-const PULL_THRESHOLD = 18 // px — kéo dây vượt mức này khi thả → toggle
+const PULL_THRESHOLD = 14 // px — kéo dây vượt mức này khi thả → toggle
+const MAX_PULL = 26       // giới hạn kéo trực quan
+const CORD_REST_END_Y = 62  // y của đầu dây khi không kéo (gần lamp body hơn)
+const CORD_START_Y = 32     // y của điểm dây bắt đầu (rim chao đèn)
+const CORD_ANCHOR_X = 36    // x cố định
 
 /**
  * Bóng đèn pendant — KÉO dây xuống để bật/tắt dark mode (không click).
@@ -32,7 +36,7 @@ export default function LampToggle({ variant = 'header' }: LampToggleProps) {
 
   const onPointerMove = (e: React.PointerEvent<SVGElement>) => {
     if (!dragRef.current) return
-    const dy = Math.max(0, Math.min(38, e.clientY - dragRef.current.startY))
+    const dy = Math.max(0, Math.min(MAX_PULL, e.clientY - dragRef.current.startY))
     setPull(dy)
   }
 
@@ -65,20 +69,35 @@ export default function LampToggle({ variant = 'header' }: LampToggleProps) {
     ? 'fixed top-2 right-4 z-50 select-none pointer-events-none'
     : 'relative inline-block select-none pointer-events-none'
 
-  // Container size: keep the SVG drawing area at 48×120 but the *flow* size is
+  // Container size: keep the SVG drawing area at 48×100 but the *flow* size is
   // 48×40 so we don't push the header taller — cord+knob protrude via SVG
   // overflow into the content area below.
   const flowStyle = variant === 'header'
     ? { width: 48, height: 40 }
-    : { width: 48, height: 120 }
+    : { width: 48, height: 100 }
+
+  // Soft cord path: cubic bezier with slight S-curve at rest, straightens as
+  // user pulls. Sway amount decays linearly with pull distance — feels like
+  // real cord under tension.
+  const endY = CORD_REST_END_Y + pull
+  const span = endY - CORD_START_Y
+  const tension = Math.max(0, 1 - pull / MAX_PULL)
+  const sway = 2.6 * tension
+  const cordPath =
+    `M ${CORD_ANCHOR_X} ${CORD_START_Y} ` +
+    `C ${CORD_ANCHOR_X + sway} ${CORD_START_Y + span * 0.33}, ` +
+    `${CORD_ANCHOR_X - sway} ${CORD_START_Y + span * 0.66}, ` +
+    `${CORD_ANCHOR_X} ${endY}`
+  const knobY = endY + 5.5
+  const knobHighlightY = knobY - 2
 
   return (
     <div className={wrapperCls} style={flowStyle} aria-hidden={false}>
       <div className={swaying ? 'lamp-sway' : ''} style={{ width: 48, height: '100%' }}>
         <svg
-          viewBox="0 0 48 120"
+          viewBox="0 0 48 100"
           width="48"
-          height="120"
+          height="100"
           className="overflow-visible block"
           style={{ position: 'absolute', top: 0, left: 0 }}
         >
@@ -143,30 +162,42 @@ export default function LampToggle({ variant = 'header' }: LampToggleProps) {
                 setTimeout(() => setSwaying(false), 900)
               }
             }}
+            style={{
+              transition: dragRef.current ? 'none' : 'transform 0.35s cubic-bezier(.34,1.56,.64,1)',
+            }}
           >
-            {/* Invisible wide hit area along the cord — easy to grab */}
-            <rect x="28" y="30" width="16" height={70 + pull} fill="transparent" />
-            {/* Visible cord — stretches as user pulls */}
-            <line
-              x1="36"
-              y1="32"
-              x2="36"
-              y2={86 + pull}
+            {/* Wider invisible hit area covering cord + knob */}
+            <rect x={CORD_ANCHOR_X - 8} y={CORD_START_Y - 2} width="16" height={span + 16} fill="transparent" />
+            {/* Soft braided cord — bezier path with subtle S-sway at rest */}
+            <path
+              d={cordPath}
               stroke={cordStroke}
-              strokeWidth="1.4"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
               className="transition-[stroke] duration-200 group-hover:stroke-orange-500"
+            />
+            {/* Faint inner thread for braid feel (slightly offset) */}
+            <path
+              d={cordPath}
+              stroke="#FFFFFF"
+              strokeWidth="0.5"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.35"
+              pointerEvents="none"
             />
             {/* Knob */}
             <circle
-              cx="36"
-              cy={92 + pull}
-              r="5"
+              cx={CORD_ANCHOR_X}
+              cy={knobY}
+              r="4.5"
               fill={knobFill}
               stroke={knobStroke}
-              strokeWidth="1.2"
+              strokeWidth="1.1"
               className="transition-[fill,stroke] duration-300 group-hover:brightness-110"
             />
-            <circle cx="34.5" cy={90 + pull} r="1.1" fill="#FFFFFF" opacity="0.6" pointerEvents="none" />
+            <circle cx={CORD_ANCHOR_X - 1.4} cy={knobHighlightY} r="1" fill="#FFFFFF" opacity="0.6" pointerEvents="none" />
           </g>
         </svg>
       </div>
