@@ -56,12 +56,16 @@ public class BackupService
         var psi = new ProcessStartInfo
         {
             FileName = pgDump,
-            Arguments = $"-h {host} -p {port} -U {user} -d {db} -f \"{tempSql}\"",
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
             Environment = { ["PGPASSWORD"] = pass }
         };
+        psi.ArgumentList.Add("-h"); psi.ArgumentList.Add(host);
+        psi.ArgumentList.Add("-p"); psi.ArgumentList.Add(port);
+        psi.ArgumentList.Add("-U"); psi.ArgumentList.Add(user);
+        psi.ArgumentList.Add("-d"); psi.ArgumentList.Add(db);
+        psi.ArgumentList.Add("-f"); psi.ArgumentList.Add(tempSql);
 
         try
         {
@@ -110,12 +114,21 @@ public class BackupService
             var psi = new ProcessStartInfo
             {
                 FileName = psql,
-                Arguments = $"-h {host} -p {port} -U {user} -d {db} -f \"{tempSql}\"",
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 Environment = { ["PGPASSWORD"] = pass }
             };
+            psi.ArgumentList.Add("-h"); psi.ArgumentList.Add(host);
+            psi.ArgumentList.Add("-p"); psi.ArgumentList.Add(port);
+            psi.ArgumentList.Add("-U"); psi.ArgumentList.Add(user);
+            psi.ArgumentList.Add("-d"); psi.ArgumentList.Add(db);
+            // Fail fast + rollback toàn bộ nếu một câu SQL bất kỳ lỗi —
+            // tránh restore nửa vời rồi vẫn báo "thành công".
+            psi.ArgumentList.Add("-v"); psi.ArgumentList.Add("ON_ERROR_STOP=1");
+            psi.ArgumentList.Add("--single-transaction");
+            psi.ArgumentList.Add("-f"); psi.ArgumentList.Add(tempSql);
+
             using var proc = Process.Start(psi)!;
             var stderr = await proc.StandardError.ReadToEndAsync(ct);
             await proc.WaitForExitAsync(ct);

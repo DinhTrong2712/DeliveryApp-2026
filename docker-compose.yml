@@ -34,6 +34,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      # Container time zone — used by DateTime.Now (BackupScheduler, OrderService.IsLocked).
+      TZ: Asia/Ho_Chi_Minh
       ConnectionStrings__DefaultConnection: >-
         Host=db;Port=5432;Database=${POSTGRES_DB:-delivery_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}
       Jwt__Secret: ${JWT_SECRET:?JWT_SECRET is required (>=64 chars)}

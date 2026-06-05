@@ -24,6 +24,22 @@ RUN dotnet publish DeliveryApp.API/DeliveryApp.API.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
+# postgresql-client-16 (matches the postgres:16 server) for pg_dump / psql,
+# tzdata so DateTime.Now respects TZ=Asia/Ho_Chi_Minh, wget for HEALTHCHECK.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      curl ca-certificates gnupg lsb-release wget tzdata \
+ && install -d /usr/share/postgresql-common/pgdg \
+ && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+      -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+ && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+      > /etc/apt/sources.list.d/pgdg.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends postgresql-client-16 \
+ && apt-get purge -y --auto-remove curl gnupg lsb-release \
+ && rm -rf /var/lib/apt/lists/*
+
 # Non-root user for safety (idempotent — newer aspnet:8.0 images ship an 'app' user)
 RUN (getent group app  || groupadd -r app) \
  && (getent passwd app || useradd  -r -g app app) \
