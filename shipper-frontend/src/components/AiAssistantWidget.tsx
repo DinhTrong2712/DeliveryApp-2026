@@ -313,19 +313,23 @@ export default function AiAssistantWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Mở trợ lý AI"
-          className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-transform flex items-center justify-center overflow-hidden ring-2 ring-white dark:ring-gray-800"
+          className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-16 h-16 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group"
         >
-          <ChibiBoy className="w-12 h-12" waving />
-          <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white" />
+          <ChibiBoy
+            className="w-16 h-16 drop-shadow-[0_4px_8px_rgba(217,82,26,0.35)] group-hover:drop-shadow-[0_6px_12px_rgba(217,82,26,0.5)] transition-[filter] duration-200"
+            waving
+          />
+          {/* Notification dot trên vai chibi */}
+          <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white dark:ring-gray-900 animate-pulse" />
         </button>
       )}
 
       {open && (
         <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
-          {/* Chibi lấp ló — đầu+mũ nhô lên trên, phần thân khuất sau header chat */}
-          {/* Đặt TRƯỚC header trong DOM nên header (gradient cam) sẽ vẽ đè lên phần dưới của chibi. */}
+          {/* Chibi lấp ló — đầu+mũ nhô lên trên GÓC TRÁI, phần thân khuất sau header chat.
+              Render TRƯỚC header trong DOM → gradient cam vẽ đè lên phần dưới chibi. */}
           <div
-            className="absolute right-6 sm:right-10 pointer-events-none chibi-peek-in chibi-bob"
+            className="absolute left-4 sm:left-6 pointer-events-none chibi-peek-in chibi-bob"
             style={{ top: -22, width: 56, height: 56 }}
             aria-hidden
           >
@@ -333,6 +337,8 @@ export default function AiAssistantWidget() {
           </div>
 
           <div className="relative bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center gap-3 text-white rounded-t-2xl">
+            {/* Chỗ trống cho chibi peeking phía trên-trái */}
+            <div className="w-12 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm leading-tight">Trợ lý AI</h2>
               <p className="text-[11px] text-white/85 leading-tight">Truy vấn dữ liệu bằng tiếng Việt</p>
@@ -341,6 +347,46 @@ export default function AiAssistantWidget() {
               className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center flex-shrink-0">
               <IconClose className="w-5 h-5" />
             </button>
+          </div>
+
+          {/* HAI BÀN TAY chibi bám lên mép trên-trái khung chat.
+              Render SAU header để vẽ đè lên gradient — nhìn như bé nắm tay vào cạnh chat. */}
+          <div
+            className="absolute left-3 sm:left-5 pointer-events-none chibi-peek-in"
+            style={{ top: 18, width: 48, height: 14 }}
+            aria-hidden
+          >
+            <svg viewBox="0 0 48 14" width="48" height="14" overflow="visible">
+              {/* Bàn tay trái */}
+              <g>
+                {/* Bóng nhẹ phía dưới */}
+                <ellipse cx="10" cy="11" rx="6" ry="1.4" fill="#000000" opacity="0.18" />
+                {/* Mu bàn tay */}
+                <path
+                  d="M 4 10 Q 3 4 7 2 Q 10 1 13 2 Q 17 3 17 10 Z"
+                  fill={SKIN}
+                  stroke={SKIN_STROKE}
+                  strokeWidth="0.6"
+                  strokeLinejoin="round"
+                />
+                {/* Vết ngón tay (kẽ ngón) */}
+                <path d="M 8 4 L 8 7 M 11 3 L 11 6 M 14 4 L 14 7"
+                      stroke={SKIN_STROKE} strokeWidth="0.45" strokeLinecap="round" opacity="0.55" />
+              </g>
+              {/* Bàn tay phải */}
+              <g>
+                <ellipse cx="32" cy="11" rx="6" ry="1.4" fill="#000000" opacity="0.18" />
+                <path
+                  d="M 26 10 Q 25 4 29 2 Q 32 1 35 2 Q 39 3 39 10 Z"
+                  fill={SKIN}
+                  stroke={SKIN_STROKE}
+                  strokeWidth="0.6"
+                  strokeLinejoin="round"
+                />
+                <path d="M 30 4 L 30 7 M 33 3 L 33 6 M 36 4 L 36 7"
+                      stroke={SKIN_STROKE} strokeWidth="0.45" strokeLinecap="round" opacity="0.55" />
+              </g>
+            </svg>
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50 dark:bg-gray-950">
