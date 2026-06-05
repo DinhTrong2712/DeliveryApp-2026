@@ -89,37 +89,31 @@ p {
   animation-delay: 2s;
 }
 
-/* Chibi AI — dang tay ôm khung chat khi vừa mở */
-@keyframes chibiHugSpread {
-  from {
-    transform: scaleX(0.25);
+/* Chibi shipper — bé nhô lên lén nhìn từ phía sau khung chat */
+@keyframes chibiPeekIn {
+  0% {
+    transform: translateY(20px) scale(0.7);
     opacity: 0;
   }
   60% {
     opacity: 1;
   }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-.chibi-hug-arms {
-  transform-origin: center;
-  animation: chibiHugSpread 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-}
-
-@keyframes chibiHugDrop {
-  from {
-    transform: translateY(-18px) scale(0.7);
-    opacity: 0;
-  }
-  to {
+  100% {
     transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
-.chibi-hug-body {
-  animation: chibiHugDrop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+.chibi-peek-in {
+  animation: chibiPeekIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Idle bob — bé lắc lư rất nhẹ */
+@keyframes chibiBob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+.chibi-bob {
+  animation: chibiBob 3s ease-in-out infinite;
 }
 
 /* Lamp pull-cord toggle — sway when bóng đèn vừa được kéo */

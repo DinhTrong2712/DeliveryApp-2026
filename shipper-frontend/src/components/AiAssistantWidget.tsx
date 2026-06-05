@@ -38,69 +38,149 @@ const svgProps = { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' } 
 
 const SKIN = '#FDE2C9'
 const SKIN_STROKE = '#A87650'
-const HAIR = '#5C3317'
 const SHIRT = '#F26B2C'
 const SHIRT_DARK = '#D9521A'
+const CAP_TOP = '#F26B2C'
+const CAP_BRIM = '#9C3812'
 const EYES = '#1F2937'
 const BLUSH = '#FCA5A5'
 
 /**
- * Chibi bé trai — trợ lý AI.
- * - `waving`: tay phải vẫy nhẹ liên tục (nút FAB).
- * - Mặc định: hai tay buông xuôi (header chat — tay dài ôm khung được vẽ riêng).
+ * Chibi bé shipper đội mũ lưỡi trai — trợ lý AI.
+ * - `waving`: tay phải vẫy nhẹ (nút FAB).
+ * - `peeking`: ẩn thân, chỉ giữ đầu+mũ (chế độ lấp ló sau khung chat).
+ * - Mắt: con ngươi liếc theo vị trí chuột trên màn hình.
  */
-const ChibiBoy = ({ className, waving = false }: {
+const ChibiBoy = ({ className, waving = false, peeking = false }: {
   className?: string
   waving?: boolean
-}) => (
-  <svg className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-    {/* Áo polo cam */}
-    <path
-      d="M 18 40 Q 18 38 22 38 L 42 38 Q 46 38 46 40 L 50 64 L 14 64 Z"
-      fill={SHIRT}
-      stroke={SHIRT_DARK}
-      strokeWidth="0.8"
-    />
-    {/* Cổ */}
-    <rect x="28" y="35" width="8" height="5" fill={SKIN} />
-    {/* Mặt */}
-    <circle cx="32" cy="25" r="13" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" />
-    {/* Tóc */}
-    <path
-      d="M 19 22 Q 19 11 32 10 Q 45 11 45 22 Q 46 24 43 24 Q 41 19 32 18 Q 23 19 21 24 Q 18 24 19 22 Z"
-      fill={HAIR}
-    />
-    {/* Mắt + highlight */}
-    <ellipse cx="27" cy="26" rx="2" ry="2.6" fill={EYES} />
-    <ellipse cx="37" cy="26" rx="2" ry="2.6" fill={EYES} />
-    <circle cx="27.5" cy="25" r="0.7" fill="#FFFFFF" />
-    <circle cx="37.5" cy="25" r="0.7" fill="#FFFFFF" />
-    {/* Má hồng */}
-    <circle cx="23" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
-    <circle cx="41" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
-    {/* Cười */}
-    <path d="M 28 32 Q 32 35.5 36 32" stroke="#7A4A2F" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-    {/* Khuy áo */}
-    <circle cx="32" cy="46" r="1.4" fill="#FFFFFF" />
-    <circle cx="32" cy="52" r="1.2" fill="#FFFFFF" />
-    {/* Tay */}
-    {waving ? (
-      <>
-        <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
-        <g className="chibi-wave-hand">
-          <path d="M 47 42 Q 53 32 55 22" stroke={SKIN} strokeWidth="5" strokeLinecap="round" fill="none" />
-          <circle cx="55" cy="20" r="3.6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
-          <path d="M 53 18 L 54 16 M 55 17 L 56 15 M 57 18 L 58 16" stroke={SKIN_STROKE} strokeWidth="0.5" strokeLinecap="round" />
-        </g>
-      </>
-    ) : (
-      <>
-        <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
-        <ellipse cx="47" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
-      </>
-    )}
-  </svg>
-)
+  peeking?: boolean
+}) => {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [pupil, setPupil] = useState({ x: 0, y: 0 })
+
+  // Theo dõi vị trí chuột → tính offset con ngươi.
+  // Ghi vào state nhưng throttle bằng requestAnimationFrame để mượt.
+  useEffect(() => {
+    let raf = 0
+    let latest: { x: number; y: number } | null = null
+
+    const handle = (e: MouseEvent) => {
+      latest = { x: e.clientX, y: e.clientY }
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        if (!latest || !svgRef.current) return
+        const rect = svgRef.current.getBoundingClientRect()
+        // Tâm cụm mắt ở khoảng y=26 trên viewBox 64 → 40% chiều cao
+        const cx = rect.left + rect.width / 2
+        const cy = rect.top + rect.height * 0.4
+        const dx = latest.x - cx
+        const dy = latest.y - cy
+        const dist = Math.hypot(dx, dy)
+        const MAX_OFFSET = 1.7 // đơn vị viewBox
+        if (dist < 1) {
+          setPupil({ x: 0, y: 0 })
+          return
+        }
+        const intensity = Math.min(dist / 280, 1)
+        setPupil({
+          x: (dx / dist) * MAX_OFFSET * intensity,
+          y: (dy / dist) * MAX_OFFSET * intensity * 0.85,
+        })
+      })
+    }
+
+    window.addEventListener('mousemove', handle, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', handle)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  return (
+    <svg ref={svgRef} className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+      {/* Thân + tay — bỏ qua khi peeking để chibi chỉ hiện đầu */}
+      {!peeking && (
+        <>
+          {/* Áo polo cam */}
+          <path
+            d="M 18 40 Q 18 38 22 38 L 42 38 Q 46 38 46 40 L 50 64 L 14 64 Z"
+            fill={SHIRT}
+            stroke={SHIRT_DARK}
+            strokeWidth="0.8"
+          />
+          {/* Logo nhỏ ngực — gợi áo shipper */}
+          <rect x="38" y="44" width="6" height="3" rx="0.5" fill="#FFFFFF" opacity="0.85" />
+          <rect x="38.5" y="44.5" width="5" height="2" rx="0.3" fill={SHIRT_DARK} />
+          {/* Khuy áo */}
+          <circle cx="28" cy="46" r="1.1" fill="#FFFFFF" />
+          {/* Cổ */}
+          <rect x="28" y="35" width="8" height="5" fill={SKIN} />
+        </>
+      )}
+
+      {/* Mặt */}
+      <circle cx="32" cy="25" r="13" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" />
+
+      {/* Mũ lưỡi trai — chao trên đầu + lưỡi trai chìa ra phía trước-trái */}
+      {/* Crown (chao mũ): bán nguyệt ôm đỉnh đầu */}
+      <path
+        d="M 20 16 Q 20 6 32 5 Q 44 6 44 16 Q 44 17 43 17 L 21 17 Q 20 17 20 16 Z"
+        fill={CAP_TOP}
+        stroke={CAP_BRIM}
+        strokeWidth="0.8"
+      />
+      {/* Highlight bóng trên đỉnh */}
+      <ellipse cx="28" cy="9" rx="4" ry="1.5" fill="#FFFFFF" opacity="0.35" />
+      {/* Lưỡi trai (visor) — chìa sang trái */}
+      <path
+        d="M 8 17 Q 8 14 13 14 L 25 14 Q 26 17 25 18 L 13 18 Q 8 19 8 17 Z"
+        fill={CAP_BRIM}
+        stroke={CAP_BRIM}
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Logo cam nhỏ trên mũ */}
+      <circle cx="32" cy="11" r="1.6" fill="#FFFFFF" />
+      <circle cx="32" cy="11" r="0.8" fill={SHIRT_DARK} />
+
+      {/* ── MẮT — tròng trắng cố định, con ngươi liếc theo chuột ── */}
+      <ellipse cx="27" cy="26" rx="2.4" ry="2.9" fill="#FFFFFF" stroke={EYES} strokeWidth="0.5" />
+      <ellipse cx="37" cy="26" rx="2.4" ry="2.9" fill="#FFFFFF" stroke={EYES} strokeWidth="0.5" />
+      <ellipse cx={27 + pupil.x} cy={26 + pupil.y} rx="1.5" ry="1.9" fill={EYES} />
+      <ellipse cx={37 + pupil.x} cy={26 + pupil.y} rx="1.5" ry="1.9" fill={EYES} />
+      {/* Highlight con ngươi */}
+      <circle cx={26.5 + pupil.x} cy={25.4 + pupil.y} r="0.55" fill="#FFFFFF" />
+      <circle cx={36.5 + pupil.x} cy={25.4 + pupil.y} r="0.55" fill="#FFFFFF" />
+
+      {/* Má hồng */}
+      <circle cx="23" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
+      <circle cx="41" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
+      {/* Cười nhẹ */}
+      <path d="M 28 32 Q 32 35 36 32" stroke="#7A4A2F" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+
+      {/* Tay — chỉ khi không peeking */}
+      {!peeking && (
+        waving ? (
+          <>
+            <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+            <g className="chibi-wave-hand">
+              <path d="M 47 42 Q 53 32 55 22" stroke={SKIN} strokeWidth="5" strokeLinecap="round" fill="none" />
+              <circle cx="55" cy="20" r="3.6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+              <path d="M 53 18 L 54 16 M 55 17 L 56 15 M 57 18 L 58 16" stroke={SKIN_STROKE} strokeWidth="0.5" strokeLinecap="round" />
+            </g>
+          </>
+        ) : (
+          <>
+            <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+            <ellipse cx="47" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+          </>
+        )
+      )}
+    </svg>
+  )
+}
 
 const IconClose = ({ className }: { className: string }) => (
   <svg className={className} {...svgProps}>
@@ -242,50 +322,18 @@ export default function AiAssistantWidget() {
 
       {open && (
         <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
-          {/* Chibi ôm khung — đầu nhô lên trên header, hai tay dang ngang reaches the corners */}
-          <div className="absolute -top-9 left-0 right-0 pointer-events-none z-20 h-14">
-            {/* Hai cánh tay dài chạy từ chibi ra mép trái-phải, scale-x animate khi mở */}
-            <svg
-              className="chibi-hug-arms absolute left-2 right-2 top-7 h-6 w-[calc(100%-1rem)]"
-              viewBox="0 0 200 24"
-              preserveAspectRatio="none"
-              aria-hidden
-            >
-              {/* Vai trái → tay trái */}
-              <path
-                d="M 100 6 Q 60 18, 8 18"
-                stroke={SKIN}
-                strokeWidth="6"
-                fill="none"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-              {/* Vai phải → tay phải */}
-              <path
-                d="M 100 6 Q 140 18, 192 18"
-                stroke={SKIN}
-                strokeWidth="6"
-                fill="none"
-                strokeLinecap="round"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            {/* Bàn tay 2 đầu — vẽ tách để giữ hình tròn */}
-            <div className="chibi-hug-arms absolute left-1 top-[2.4rem]">
-              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" /></svg>
-            </div>
-            <div className="chibi-hug-arms absolute right-1 top-[2.4rem]">
-              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" /></svg>
-            </div>
-            {/* Body chibi nằm giữa */}
-            <div className="chibi-hug-body absolute left-1/2 -translate-x-1/2 top-0" style={{ width: 56, height: 56 }}>
-              <ChibiBoy className="w-14 h-14 drop-shadow-md" />
-            </div>
+          {/* Chibi lấp ló — đầu+mũ nhô lên trên, phần thân khuất sau header chat */}
+          {/* Đặt TRƯỚC header trong DOM nên header (gradient cam) sẽ vẽ đè lên phần dưới của chibi. */}
+          <div
+            className="absolute right-6 sm:right-10 pointer-events-none chibi-peek-in chibi-bob"
+            style={{ top: -22, width: 56, height: 56 }}
+            aria-hidden
+          >
+            <ChibiBoy className="w-14 h-14 drop-shadow-md" peeking />
           </div>
 
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center gap-3 text-white rounded-t-2xl">
-            <div className="w-9 h-9 flex-shrink-0" />
-            <div className="flex-1 min-w-0 text-center">
+          <div className="relative bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center gap-3 text-white rounded-t-2xl">
+            <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm leading-tight">Trợ lý AI</h2>
               <p className="text-[11px] text-white/85 leading-tight">Truy vấn dữ liệu bằng tiếng Việt</p>
             </div>
