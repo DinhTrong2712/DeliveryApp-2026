@@ -75,6 +75,53 @@ p {
   background-clip: padding-box;
 }
 
+/* Chibi AI — vẫy tay nhẹ khi nghỉ trong nút FAB */
+@keyframes chibiWave {
+  0%, 100% { transform: rotate(0deg); }
+  20%      { transform: rotate(-14deg); }
+  40%      { transform: rotate(8deg); }
+  60%      { transform: rotate(-6deg); }
+  80%      { transform: rotate(2deg); }
+}
+.chibi-wave-hand {
+  transform-origin: 47px 42px;
+  animation: chibiWave 1.6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* Chibi AI — dang tay ôm khung chat khi vừa mở */
+@keyframes chibiHugSpread {
+  from {
+    transform: scaleX(0.25);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.chibi-hug-arms {
+  transform-origin: center;
+  animation: chibiHugSpread 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes chibiHugDrop {
+  from {
+    transform: translateY(-18px) scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+.chibi-hug-body {
+  animation: chibiHugDrop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* Lamp pull-cord toggle — sway when bóng đèn vừa được kéo */
 @keyframes lampSway {
   0%   { transform: rotate(0deg); }

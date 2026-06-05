@@ -36,9 +36,69 @@ const SUGGESTIONS_BY_ROLE: Record<string, string[]> = {
 
 const svgProps = { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' } as const
 
-const IconBrain = ({ className }: { className: string }) => (
-  <svg className={className} {...svgProps}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+const SKIN = '#FDE2C9'
+const SKIN_STROKE = '#A87650'
+const HAIR = '#5C3317'
+const SHIRT = '#F26B2C'
+const SHIRT_DARK = '#D9521A'
+const EYES = '#1F2937'
+const BLUSH = '#FCA5A5'
+
+/**
+ * Chibi bé trai — trợ lý AI.
+ * - `waving`: tay phải vẫy nhẹ liên tục (nút FAB).
+ * - Mặc định: hai tay buông xuôi (header chat — tay dài ôm khung được vẽ riêng).
+ */
+const ChibiBoy = ({ className, waving = false }: {
+  className?: string
+  waving?: boolean
+}) => (
+  <svg className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+    {/* Áo polo cam */}
+    <path
+      d="M 18 40 Q 18 38 22 38 L 42 38 Q 46 38 46 40 L 50 64 L 14 64 Z"
+      fill={SHIRT}
+      stroke={SHIRT_DARK}
+      strokeWidth="0.8"
+    />
+    {/* Cổ */}
+    <rect x="28" y="35" width="8" height="5" fill={SKIN} />
+    {/* Mặt */}
+    <circle cx="32" cy="25" r="13" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" />
+    {/* Tóc */}
+    <path
+      d="M 19 22 Q 19 11 32 10 Q 45 11 45 22 Q 46 24 43 24 Q 41 19 32 18 Q 23 19 21 24 Q 18 24 19 22 Z"
+      fill={HAIR}
+    />
+    {/* Mắt + highlight */}
+    <ellipse cx="27" cy="26" rx="2" ry="2.6" fill={EYES} />
+    <ellipse cx="37" cy="26" rx="2" ry="2.6" fill={EYES} />
+    <circle cx="27.5" cy="25" r="0.7" fill="#FFFFFF" />
+    <circle cx="37.5" cy="25" r="0.7" fill="#FFFFFF" />
+    {/* Má hồng */}
+    <circle cx="23" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
+    <circle cx="41" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
+    {/* Cười */}
+    <path d="M 28 32 Q 32 35.5 36 32" stroke="#7A4A2F" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+    {/* Khuy áo */}
+    <circle cx="32" cy="46" r="1.4" fill="#FFFFFF" />
+    <circle cx="32" cy="52" r="1.2" fill="#FFFFFF" />
+    {/* Tay */}
+    {waving ? (
+      <>
+        <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+        <g className="chibi-wave-hand">
+          <path d="M 47 42 Q 53 32 55 22" stroke={SKIN} strokeWidth="5" strokeLinecap="round" fill="none" />
+          <circle cx="55" cy="20" r="3.6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+          <path d="M 53 18 L 54 16 M 55 17 L 56 15 M 57 18 L 58 16" stroke={SKIN_STROKE} strokeWidth="0.5" strokeLinecap="round" />
+        </g>
+      </>
+    ) : (
+      <>
+        <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+        <ellipse cx="47" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+      </>
+    )}
   </svg>
 )
 
@@ -173,25 +233,64 @@ export default function AiAssistantWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Mở trợ lý AI"
-          className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg hover:scale-105 active:scale-95 transition-transform flex items-center justify-center"
+          className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 shadow-lg shadow-orange-500/30 hover:scale-105 active:scale-95 transition-transform flex items-center justify-center overflow-hidden ring-2 ring-white dark:ring-gray-800"
         >
-          <IconBrain className="w-7 h-7" />
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full ring-2 ring-white" />
+          <ChibiBoy className="w-12 h-12" waving />
+          <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white" />
         </button>
       )}
 
       {open && (
-        <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 flex items-center gap-3 text-white">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-              <IconBrain className="w-5 h-5" />
+        <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
+          {/* Chibi ôm khung — đầu nhô lên trên header, hai tay dang ngang reaches the corners */}
+          <div className="absolute -top-9 left-0 right-0 pointer-events-none z-20 h-14">
+            {/* Hai cánh tay dài chạy từ chibi ra mép trái-phải, scale-x animate khi mở */}
+            <svg
+              className="chibi-hug-arms absolute left-2 right-2 top-7 h-6 w-[calc(100%-1rem)]"
+              viewBox="0 0 200 24"
+              preserveAspectRatio="none"
+              aria-hidden
+            >
+              {/* Vai trái → tay trái */}
+              <path
+                d="M 100 6 Q 60 18, 8 18"
+                stroke={SKIN}
+                strokeWidth="6"
+                fill="none"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+              {/* Vai phải → tay phải */}
+              <path
+                d="M 100 6 Q 140 18, 192 18"
+                stroke={SKIN}
+                strokeWidth="6"
+                fill="none"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {/* Bàn tay 2 đầu — vẽ tách để giữ hình tròn */}
+            <div className="chibi-hug-arms absolute left-1 top-[2.4rem]">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" /></svg>
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="chibi-hug-arms absolute right-1 top-[2.4rem]">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="5.5" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" /></svg>
+            </div>
+            {/* Body chibi nằm giữa */}
+            <div className="chibi-hug-body absolute left-1/2 -translate-x-1/2 top-0" style={{ width: 56, height: 56 }}>
+              <ChibiBoy className="w-14 h-14 drop-shadow-md" />
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center gap-3 text-white rounded-t-2xl">
+            <div className="w-9 h-9 flex-shrink-0" />
+            <div className="flex-1 min-w-0 text-center">
               <h2 className="font-bold text-sm leading-tight">Trợ lý AI</h2>
-              <p className="text-[11px] text-white/80 leading-tight">Truy vấn dữ liệu bằng tiếng Việt</p>
+              <p className="text-[11px] text-white/85 leading-tight">Truy vấn dữ liệu bằng tiếng Việt</p>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Đóng"
-              className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center">
+              className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center flex-shrink-0">
               <IconClose className="w-5 h-5" />
             </button>
           </div>
