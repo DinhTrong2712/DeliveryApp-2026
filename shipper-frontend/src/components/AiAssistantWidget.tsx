@@ -100,81 +100,89 @@ const ChibiBoy = ({ className, waving = false, peeking = false }: {
 
   return (
     <svg ref={svgRef} className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-      {/* Thân + tay — bỏ qua khi peeking để chibi chỉ hiện đầu */}
+      {/* ─── Thân + tay (ẩn khi peeking) ─── */}
       {!peeking && (
         <>
-          {/* Áo polo cam */}
+          {/* Áo polo cam — body cực nhỏ kiểu chibi (chỉ 14px cao) */}
           <path
-            d="M 18 40 Q 18 38 22 38 L 42 38 Q 46 38 46 40 L 50 64 L 14 64 Z"
+            d="M 22 50 Q 22 49 25 49 L 39 49 Q 42 49 42 50 L 45 64 L 19 64 Z"
             fill={SHIRT}
             stroke={SHIRT_DARK}
             strokeWidth="0.8"
+            strokeLinejoin="round"
           />
-          {/* Logo nhỏ ngực — gợi áo shipper */}
-          <rect x="38" y="44" width="6" height="3" rx="0.5" fill="#FFFFFF" opacity="0.85" />
-          <rect x="38.5" y="44.5" width="5" height="2" rx="0.3" fill={SHIRT_DARK} />
+          {/* Badge ngực */}
+          <rect x="36" y="53" width="5" height="2.5" rx="0.5" fill="#FFFFFF" opacity="0.9" />
           {/* Khuy áo */}
-          <circle cx="28" cy="46" r="1.1" fill="#FFFFFF" />
-          {/* Cổ */}
-          <rect x="28" y="35" width="8" height="5" fill={SKIN} />
+          <circle cx="27" cy="54" r="0.9" fill="#FFFFFF" />
+          {/* Cổ siêu ngắn */}
+          <rect x="29" y="47" width="6" height="3" fill={SKIN} />
         </>
       )}
 
-      {/* Mặt */}
-      <circle cx="32" cy="25" r="13" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.8" />
+      {/* ─── ĐẦU TO (head = 60% chiều cao thân) ─── */}
+      <circle cx="32" cy="26" r="18" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.9" />
 
-      {/* Mũ lưỡi trai — chao trên đầu + lưỡi trai chìa ra phía trước-trái */}
-      {/* Crown (chao mũ): bán nguyệt ôm đỉnh đầu */}
+      {/* ─── MŨ LƯỠI TRAI ─── */}
+      {/* Chao mũ — ôm đỉnh đầu, to hơn để cân với đầu */}
       <path
-        d="M 20 16 Q 20 6 32 5 Q 44 6 44 16 Q 44 17 43 17 L 21 17 Q 20 17 20 16 Z"
+        d="M 16 16 Q 16 4 32 3 Q 48 4 48 16 Q 48 17 46 17 L 18 17 Q 16 17 16 16 Z"
         fill={CAP_TOP}
         stroke={CAP_BRIM}
-        strokeWidth="0.8"
+        strokeWidth="0.9"
+        strokeLinejoin="round"
       />
-      {/* Highlight bóng trên đỉnh */}
-      <ellipse cx="28" cy="9" rx="4" ry="1.5" fill="#FFFFFF" opacity="0.35" />
-      {/* Lưỡi trai (visor) — chìa sang trái */}
+      {/* Highlight bóng cong trên chao */}
+      <path d="M 22 8 Q 28 5 38 6" stroke="#FFFFFF" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4" />
+      {/* Lưỡi trai chìa sang trái */}
       <path
-        d="M 8 17 Q 8 14 13 14 L 25 14 Q 26 17 25 18 L 13 18 Q 8 19 8 17 Z"
+        d="M 4 17 Q 4 13 10 13 L 27 13 Q 28 17 27 18 L 10 18 Q 4 19 4 17 Z"
         fill={CAP_BRIM}
         stroke={CAP_BRIM}
         strokeWidth="0.5"
         strokeLinejoin="round"
       />
-      {/* Logo cam nhỏ trên mũ */}
-      <circle cx="32" cy="11" r="1.6" fill="#FFFFFF" />
-      <circle cx="32" cy="11" r="0.8" fill={SHIRT_DARK} />
+      {/* Logo tròn trắng-cam giữa chao */}
+      <circle cx="32" cy="10" r="2.2" fill="#FFFFFF" />
+      <circle cx="32" cy="10" r="1.2" fill={SHIRT_DARK} />
 
-      {/* ── MẮT — tròng trắng cố định, con ngươi liếc theo chuột ── */}
-      <ellipse cx="27" cy="26" rx="2.4" ry="2.9" fill="#FFFFFF" stroke={EYES} strokeWidth="0.5" />
-      <ellipse cx="37" cy="26" rx="2.4" ry="2.9" fill="#FFFFFF" stroke={EYES} strokeWidth="0.5" />
-      <ellipse cx={27 + pupil.x} cy={26 + pupil.y} rx="1.5" ry="1.9" fill={EYES} />
-      <ellipse cx={37 + pupil.x} cy={26 + pupil.y} rx="1.5" ry="1.9" fill={EYES} />
-      {/* Highlight con ngươi */}
-      <circle cx={26.5 + pupil.x} cy={25.4 + pupil.y} r="0.55" fill="#FFFFFF" />
-      <circle cx={36.5 + pupil.x} cy={25.4 + pupil.y} r="0.55" fill="#FFFFFF" />
+      {/* ─── MẮT TO TRÒN (chibi sparkle) ─── */}
+      {/* Tròng trắng — to gấp đôi so với bản cũ */}
+      <ellipse cx="25" cy="27" rx="3.6" ry="4.4" fill="#FFFFFF" stroke={EYES} strokeWidth="0.7" />
+      <ellipse cx="39" cy="27" rx="3.6" ry="4.4" fill="#FFFFFF" stroke={EYES} strokeWidth="0.7" />
+      {/* Con ngươi đen liếc theo chuột */}
+      <ellipse cx={25 + pupil.x} cy={27 + pupil.y} rx="2.3" ry="2.9" fill={EYES} />
+      <ellipse cx={39 + pupil.x} cy={27 + pupil.y} rx="2.3" ry="2.9" fill={EYES} />
+      {/* Sparkle to + nhỏ trong con ngươi */}
+      <circle cx={24 + pupil.x} cy={25.8 + pupil.y} r="1.1" fill="#FFFFFF" />
+      <circle cx={38 + pupil.x} cy={25.8 + pupil.y} r="1.1" fill="#FFFFFF" />
+      <circle cx={26 + pupil.x} cy={28 + pupil.y} r="0.5" fill="#FFFFFF" />
+      <circle cx={40 + pupil.x} cy={28 + pupil.y} r="0.5" fill="#FFFFFF" />
 
-      {/* Má hồng */}
-      <circle cx="23" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
-      <circle cx="41" cy="30" r="2.2" fill={BLUSH} opacity="0.7" />
-      {/* Cười nhẹ */}
-      <path d="M 28 32 Q 32 35 36 32" stroke="#7A4A2F" strokeWidth="1.4" fill="none" strokeLinecap="round" />
+      {/* ─── MÁ HỒNG + MIỆNG ─── */}
+      <ellipse cx="20" cy="33" rx="2.8" ry="1.8" fill={BLUSH} opacity="0.7" />
+      <ellipse cx="44" cy="33" rx="2.8" ry="1.8" fill={BLUSH} opacity="0.7" />
+      {/* Miệng nhỏ kiểu uwu */}
+      <path d="M 30 36.5 Q 32 38.5 34 36.5" stroke="#7A4A2F" strokeWidth="1.3" fill="none" strokeLinecap="round" />
 
-      {/* Tay — chỉ khi không peeking */}
+      {/* ─── TAY CHIBI nhỏ tròn (mitten) ─── */}
       {!peeking && (
         waving ? (
           <>
-            <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+            {/* Tay trái buông xuôi — mitten tròn */}
+            <ellipse cx="20" cy="54" rx="3" ry="3.4" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
+            {/* Tay phải vẫy — cánh tay ngắn + bàn tay tròn */}
             <g className="chibi-wave-hand">
-              <path d="M 47 42 Q 53 32 55 22" stroke={SKIN} strokeWidth="5" strokeLinecap="round" fill="none" />
-              <circle cx="55" cy="20" r="3.6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
-              <path d="M 53 18 L 54 16 M 55 17 L 56 15 M 57 18 L 58 16" stroke={SKIN_STROKE} strokeWidth="0.5" strokeLinecap="round" />
+              <path d="M 44 52 Q 50 42 52 32" stroke={SKIN} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+              <circle cx="52" cy="30" r="3.8" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
+              {/* Mấy ngón gợi ý */}
+              <path d="M 50 28 L 51 26 M 52 27 L 53 25 M 54 28 L 55 26" stroke={SKIN_STROKE} strokeWidth="0.55" strokeLinecap="round" />
             </g>
           </>
         ) : (
           <>
-            <ellipse cx="17" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
-            <ellipse cx="47" cy="46" rx="3" ry="6" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.6" />
+            <ellipse cx="20" cy="54" rx="3" ry="3.4" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
+            <ellipse cx="44" cy="54" rx="3" ry="3.4" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
           </>
         )
       )}
@@ -349,42 +357,49 @@ export default function AiAssistantWidget() {
             </button>
           </div>
 
-          {/* HAI BÀN TAY chibi bám lên mép trên-trái khung chat.
-              Render SAU header để vẽ đè lên gradient — nhìn như bé nắm tay vào cạnh chat. */}
+          {/* HAI BÀN TAY chibi đặt LÊN MÉP TRÊN khung chat (resting on edge).
+              Mu bàn tay nằm trên thành, các ngón cong gập xuống mép — không xuyên qua khung.
+              Render SAU phần Chibi peek nhưng style với top âm để palm sit trên mép. */}
           <div
-            className="absolute left-3 sm:left-5 pointer-events-none chibi-peek-in"
-            style={{ top: 18, width: 48, height: 14 }}
+            className="absolute left-4 sm:left-7 pointer-events-none chibi-peek-in"
+            style={{ top: -6, width: 44, height: 12 }}
             aria-hidden
           >
-            <svg viewBox="0 0 48 14" width="48" height="14" overflow="visible">
-              {/* Bàn tay trái */}
+            <svg viewBox="0 0 44 12" width="44" height="12" overflow="visible">
+              {/* ── Bàn tay trái ── */}
               <g>
-                {/* Bóng nhẹ phía dưới */}
-                <ellipse cx="10" cy="11" rx="6" ry="1.4" fill="#000000" opacity="0.18" />
-                {/* Mu bàn tay */}
-                <path
-                  d="M 4 10 Q 3 4 7 2 Q 10 1 13 2 Q 17 3 17 10 Z"
+                {/* Mu bàn tay tròn nằm trên mép — ellipse dẹt */}
+                <ellipse
+                  cx="9" cy="5" rx="6" ry="3.5"
                   fill={SKIN}
                   stroke={SKIN_STROKE}
-                  strokeWidth="0.6"
-                  strokeLinejoin="round"
+                  strokeWidth="0.7"
                 />
-                {/* Vết ngón tay (kẽ ngón) */}
-                <path d="M 8 4 L 8 7 M 11 3 L 11 6 M 14 4 L 14 7"
-                      stroke={SKIN_STROKE} strokeWidth="0.45" strokeLinecap="round" opacity="0.55" />
+                {/* Bóng dưới mu để gợi 3D */}
+                <ellipse cx="9" cy="6.5" rx="5" ry="1" fill="#000000" opacity="0.12" />
+                {/* 4 ngón nhỏ gập xuống mép (đầu ngón thấp hơn mu) */}
+                <path d="M 4 6 Q 4 8.5 4.5 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <path d="M 7 6.5 Q 7 9.2 7 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <path d="M 10 6.5 Q 10 9.2 10 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <path d="M 13 6 Q 13.2 8.5 13 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                {/* Highlight bóng đỉnh mu */}
+                <ellipse cx="9" cy="3" rx="3" ry="0.8" fill="#FFFFFF" opacity="0.35" />
               </g>
-              {/* Bàn tay phải */}
+
+              {/* ── Bàn tay phải ── */}
               <g>
-                <ellipse cx="32" cy="11" rx="6" ry="1.4" fill="#000000" opacity="0.18" />
-                <path
-                  d="M 26 10 Q 25 4 29 2 Q 32 1 35 2 Q 39 3 39 10 Z"
+                <ellipse
+                  cx="33" cy="5" rx="6" ry="3.5"
                   fill={SKIN}
                   stroke={SKIN_STROKE}
-                  strokeWidth="0.6"
-                  strokeLinejoin="round"
+                  strokeWidth="0.7"
                 />
-                <path d="M 30 4 L 30 7 M 33 3 L 33 6 M 36 4 L 36 7"
-                      stroke={SKIN_STROKE} strokeWidth="0.45" strokeLinecap="round" opacity="0.55" />
+                <ellipse cx="33" cy="6.5" rx="5" ry="1" fill="#000000" opacity="0.12" />
+                <path d="M 28 6 Q 28 8.5 28.5 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <path d="M 31 6.5 Q 31 9.2 31 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <path d="M 34 6.5 Q 34 9.2 34 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <path d="M 37 6 Q 37.2 8.5 37 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+                <ellipse cx="33" cy="3" rx="3" ry="0.8" fill="#FFFFFF" opacity="0.35" />
               </g>
             </svg>
           </div>
