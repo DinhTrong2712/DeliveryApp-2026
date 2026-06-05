@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import { useState, type ReactNode } from 'react'
 import MobileDrawer from './MobileDrawer'
+import LampToggle from './LampToggle'
 
 const NAV_TABS = [
   { label: 'Người dùng', to: '/admin/users' },
@@ -63,6 +64,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden md:flex items-center gap-3 flex-shrink-0 ml-auto">
+            <LampToggle />
             <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[160px]">{user?.fullName}</span>
             <button
               onClick={handleLogout}

@@ -255,7 +255,7 @@ export default function ShipperRoutes() {
                 <button
                   key={opt.value}
                   onClick={() => { setSort(opt.value); setShowSort(false) }}
-                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${sort === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${sort === opt.value ? 'bg-orange-50 dark:bg-orange-500/10 font-semibold text-orange-700 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}
                 >
                   {opt.label}
                 </button>
@@ -391,7 +391,7 @@ export default function ShipperRoutes() {
                 <button
                   onClick={() => setShowDetailSort(v => !v)}
                   className={`flex items-center gap-1.5 px-3 h-9 border rounded-lg text-xs font-medium transition-colors ${
-                    detailSort ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    detailSort ? 'border-orange-500 bg-orange-500 text-white shadow-sm shadow-orange-500/20' : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -415,7 +415,7 @@ export default function ShipperRoutes() {
                         key={opt.value || 'default'}
                         onClick={() => { setDetailSort(opt.value); setShowDetailSort(false) }}
                         className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                          detailSort === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                          detailSort === opt.value ? 'bg-orange-50 dark:bg-orange-500/10 font-semibold text-orange-700 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
                         }`}
                       >
                         {opt.label}

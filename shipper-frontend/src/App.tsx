@@ -52,6 +52,14 @@ function ScrollToTop() {
   return null
 }
 
+// Hiện đèn floating CHỈ trên các route không có layout (header chứa đèn riêng).
+function GlobalLamp() {
+  const { pathname } = useLocation()
+  const noLayoutRoutes = ['/', '/about', '/contact', '/login']
+  if (!noLayoutRoutes.includes(pathname)) return null
+  return <LampToggle variant="floating" />
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -89,7 +97,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AiAssistantWidget />
-      <LampToggle />
+      <GlobalLamp />
     </BrowserRouter>
   )
 }

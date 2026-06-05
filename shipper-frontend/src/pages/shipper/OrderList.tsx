@@ -171,7 +171,7 @@ export default function ShipperOrderList() {
                   <button
                     key={opt.value}
                     onClick={() => { setSort(opt.value); setShowSort(false) }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${sort === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${sort === opt.value ? 'bg-orange-50 dark:bg-orange-500/10 font-semibold text-orange-700 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'}`}
                   >
                     {opt.label}
                   </button>

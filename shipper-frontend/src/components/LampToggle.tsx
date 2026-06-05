@@ -1,24 +1,55 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useThemeStore } from '../stores/themeStore'
 
+interface LampToggleProps {
+  /**
+   * 'header'   — render inline inside layout headers (default). Lamp body sits
+   *              within header height; cord+knob hang below into content.
+   * 'floating' — fixed top-right corner. Used on public pages without a layout.
+   */
+  variant?: 'header' | 'floating'
+}
+
+const PULL_THRESHOLD = 18 // px — kéo dây vượt mức này khi thả → toggle
+
 /**
- * Bóng đèn ngủ pendant treo bên dưới header — bấm vào dây/núm để bật/tắt dark mode.
- * Vị trí: top-14 (dưới header 56px) right-2/4 để không che username/logout.
- * Tương tác: chỉ click trên dây + núm (không drag), bóng đèn không nhận click.
+ * Bóng đèn pendant — KÉO dây xuống để bật/tắt dark mode (không click).
+ * Bóng đèn + chao + halo glow đều không nhận sự kiện chuột. Chỉ vùng dây + núm
+ * mới nhận pointer events.
  */
-export default function LampToggle() {
+export default function LampToggle({ variant = 'header' }: LampToggleProps) {
   const { theme, toggle } = useThemeStore()
+  const [pull, setPull] = useState(0)
   const [swaying, setSwaying] = useState(false)
+  const dragRef = useRef<{ startY: number; pointerId: number } | null>(null)
 
   const isLight = theme === 'light'
 
-  const fireToggle = () => {
-    setSwaying(true)
-    toggle()
-    setTimeout(() => setSwaying(false), 900)
+  const onPointerDown = (e: React.PointerEvent<SVGElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    dragRef.current = { startY: e.clientY, pointerId: e.pointerId }
   }
 
-  // Colors swap depending on state
+  const onPointerMove = (e: React.PointerEvent<SVGElement>) => {
+    if (!dragRef.current) return
+    const dy = Math.max(0, Math.min(38, e.clientY - dragRef.current.startY))
+    setPull(dy)
+  }
+
+  const onPointerUp = (e: React.PointerEvent<SVGElement>) => {
+    if (!dragRef.current) return
+    try { e.currentTarget.releasePointerCapture(dragRef.current.pointerId) } catch {}
+    const committed = pull >= PULL_THRESHOLD
+    dragRef.current = null
+    setPull(0)
+    if (committed) {
+      setSwaying(true)
+      toggle()
+      setTimeout(() => setSwaying(false), 900)
+    }
+  }
+
+  // Colors
   const shadeTop = isLight ? '#F26B2C' : '#5A2F1F'
   const shadeBottom = isLight ? '#D9521A' : '#3F1F12'
   const shadeStroke = isLight ? '#9C3812' : '#2A140B'
@@ -28,14 +59,29 @@ export default function LampToggle() {
   const knobStroke = isLight ? '#D97706' : '#4B5563'
   const cordStroke = isLight ? '#9CA3AF' : '#6B7280'
 
+  // Wrapper class: header mode = inline-block, no fixed positioning.
+  // floating mode = fixed top-right corner.
+  const wrapperCls = variant === 'floating'
+    ? 'fixed top-2 right-4 z-50 select-none pointer-events-none'
+    : 'relative inline-block select-none pointer-events-none'
+
+  // Container size: keep the SVG drawing area at 48×120 but the *flow* size is
+  // 48×40 so we don't push the header taller — cord+knob protrude via SVG
+  // overflow into the content area below.
+  const flowStyle = variant === 'header'
+    ? { width: 48, height: 40 }
+    : { width: 48, height: 120 }
+
   return (
-    <div
-      className="fixed top-14 right-2 sm:right-4 z-50 select-none pointer-events-none"
-      style={{ width: 64, height: 140 }}
-      aria-hidden={false}
-    >
-      <div className={swaying ? 'lamp-sway' : ''} style={{ width: 64, height: 140 }}>
-        <svg viewBox="0 0 64 140" width="64" height="140" className="overflow-visible">
+    <div className={wrapperCls} style={flowStyle} aria-hidden={false}>
+      <div className={swaying ? 'lamp-sway' : ''} style={{ width: 48, height: '100%' }}>
+        <svg
+          viewBox="0 0 48 120"
+          width="48"
+          height="120"
+          className="overflow-visible block"
+          style={{ position: 'absolute', top: 0, left: 0 }}
+        >
           <defs>
             <linearGradient id="shadeGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={shadeTop} />
@@ -48,81 +94,79 @@ export default function LampToggle() {
             </radialGradient>
           </defs>
 
-          {/* Wire from above (extends visually beyond header) */}
-          <line x1="32" y1="0" x2="32" y2="14" stroke="#1f2937" strokeWidth="1.8" />
-          {/* Ceiling cap */}
-          <ellipse cx="32" cy="14" rx="5" ry="1.8" fill="#374151" />
+          {/* Wire from ceiling */}
+          <line x1="24" y1="0" x2="24" y2="8" stroke="#1f2937" strokeWidth="1.6" />
+          <ellipse cx="24" cy="8" rx="4" ry="1.5" fill="#374151" />
 
-          {/* Lamp shade (bell-shaped) */}
+          {/* Lamp shade */}
           <path
-            d="M 22 16 L 42 16 L 50 42 Q 50 46 46 46 L 18 46 Q 14 46 14 42 Z"
+            d="M 16 10 L 32 10 L 38 30 Q 38 33 35 33 L 13 33 Q 10 33 10 30 Z"
             fill="url(#shadeGrad)"
             stroke={shadeStroke}
-            strokeWidth="1.3"
+            strokeWidth="1.2"
             strokeLinejoin="round"
           />
-          {/* Highlight stripe */}
+          {/* Highlight */}
           <path
-            d="M 24 20 L 27 42"
+            d="M 17 13 L 19 30"
             stroke="#FFFFFF"
-            strokeWidth="1"
+            strokeWidth="0.9"
             strokeLinecap="round"
             opacity={isLight ? 0.55 : 0.18}
           />
           {/* Bottom rim */}
-          <ellipse cx="32" cy="46" rx="17" ry="2" fill={shadeStroke} opacity="0.5" />
+          <ellipse cx="24" cy="33" rx="14" ry="1.6" fill={shadeStroke} opacity="0.5" />
 
           {/* Glow halo */}
-          <ellipse cx="32" cy="60" rx="45" ry="32" fill="url(#glowGrad)" />
+          <ellipse cx="24" cy="45" rx="36" ry="26" fill="url(#glowGrad)" />
 
-          {/* Bulb under shade */}
-          <circle
-            cx="32"
-            cy="53"
-            r="5.5"
-            fill={bulbFill}
-            stroke={bulbStroke}
-            strokeWidth="1.1"
-          />
-          {/* Bulb highlight */}
-          <circle cx="30" cy="51" r="1.4" fill="#FFFFFF" opacity={isLight ? 0.8 : 0.15} />
+          {/* Bulb */}
+          <circle cx="24" cy="40" r="4.5" fill={bulbFill} stroke={bulbStroke} strokeWidth="1" />
+          <circle cx="22.5" cy="38.5" r="1.1" fill="#FFFFFF" opacity={isLight ? 0.8 : 0.15} />
 
-          {/* ─── Interactive cord group — click anywhere on cord/knob ─── */}
+          {/* ─── Interactive cord — KÉO xuống để toggle ─── */}
           <g
-            onClick={(e) => { e.stopPropagation(); fireToggle() }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fireToggle() }
-            }}
+            className="pointer-events-auto cursor-grab active:cursor-grabbing group focus:outline-none"
             role="switch"
             aria-checked={!isLight}
-            aria-label={isLight ? 'Tắt đèn (chế độ tối)' : 'Bật đèn (chế độ sáng)'}
+            aria-label={isLight ? 'Kéo để tắt đèn (chế độ tối)' : 'Kéo để bật đèn (chế độ sáng)'}
             tabIndex={0}
-            className="pointer-events-auto cursor-pointer focus:outline-none group"
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                setSwaying(true)
+                toggle()
+                setTimeout(() => setSwaying(false), 900)
+              }
+            }}
           >
-            {/* Invisible wider hit area along cord */}
-            <rect x="38" y="42" width="16" height="80" fill="transparent" />
-            {/* Visible cord */}
+            {/* Invisible wide hit area along the cord — easy to grab */}
+            <rect x="28" y="30" width="16" height={70 + pull} fill="transparent" />
+            {/* Visible cord — stretches as user pulls */}
             <line
-              x1="46"
-              y1="44"
-              x2="46"
-              y2="110"
+              x1="36"
+              y1="32"
+              x2="36"
+              y2={86 + pull}
               stroke={cordStroke}
               strokeWidth="1.4"
-              className="transition-[stroke] duration-300 group-hover:stroke-orange-500"
+              className="transition-[stroke] duration-200 group-hover:stroke-orange-500"
             />
             {/* Knob */}
             <circle
-              cx="46"
-              cy="115"
-              r="5.5"
+              cx="36"
+              cy={92 + pull}
+              r="5"
               fill={knobFill}
               stroke={knobStroke}
               strokeWidth="1.2"
               className="transition-[fill,stroke] duration-300 group-hover:brightness-110"
             />
-            {/* Knob highlight */}
-            <circle cx="44.5" cy="113" r="1.3" fill="#FFFFFF" opacity="0.6" pointerEvents="none" />
+            <circle cx="34.5" cy={90 + pull} r="1.1" fill="#FFFFFF" opacity="0.6" pointerEvents="none" />
           </g>
         </svg>
       </div>

@@ -176,8 +176,9 @@ export default function AuditLogs() {
         </div>
         <button
           onClick={handleRefresh}
-          className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          className="group inline-flex items-center gap-1.5 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:border-orange-400 dark:hover:border-orange-500/60 hover:text-orange-600 dark:hover:text-orange-400 hover:shadow-sm active:scale-[0.98] transition-all duration-200"
         >
+          <svg className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
           Làm mới
         </button>
       </div>
@@ -205,7 +206,7 @@ export default function AuditLogs() {
             onClick={() => setShowFilter(v => !v)}
             className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
               actionFilter
-                ? 'border-gray-900 bg-gray-900 text-white'
+                ? 'border-orange-500 bg-orange-500 text-white shadow-sm shadow-orange-500/20'
                 : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
@@ -225,7 +226,7 @@ export default function AuditLogs() {
                   key={opt.value}
                   onClick={() => handleActionFilter(opt.value)}
                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                    actionFilter === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
+                    actionFilter === opt.value ? 'bg-orange-50 dark:bg-orange-500/10 font-semibold text-orange-700 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {opt.label}

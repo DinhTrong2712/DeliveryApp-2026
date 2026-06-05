@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/authStore'
 import NotificationBell from './NotificationBell'
+import LampToggle from './LampToggle'
 import type { ReactNode } from 'react'
 
 export default function ShipperLayout({ children }: { children: ReactNode }) {
@@ -41,6 +42,7 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
           </div>
 
           <div className="flex items-center gap-1">
+          <LampToggle />
           <NotificationBell />
 
           {/* User dropdown */}
