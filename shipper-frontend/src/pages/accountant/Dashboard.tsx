@@ -123,29 +123,29 @@ export default function AccountantDashboard() {
       {/* Page title */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Tổng quan</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Tổng quan</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">
             {new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
           </p>
         </div>
         <button
           onClick={fetchData}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Làm mới
         </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-16 text-gray-400">Đang tải...</div>
+        <div className="text-center py-16 text-gray-400 dark:text-gray-500">Đang tải...</div>
       ) : (
         <>
           {/* Stat cards */}
           <div className="grid grid-cols-4 gap-4 mb-6">
             {statCards.map((c, i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 p-4">
+              <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm text-gray-500">{c.label}</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-500">{c.label}</span>
                   <span className={`p-2 rounded-lg ${c.iconBg}`}>{c.icon}</span>
                 </div>
                 <p className={`text-xl font-bold ${c.valueCls}`}>{c.value}</p>
@@ -157,8 +157,8 @@ export default function AccountantDashboard() {
             {/* Left: shipper breakdown */}
             <div className="col-span-2 space-y-4">
               {/* Status pills */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4">
-                <h2 className="text-sm font-semibold text-gray-700 mb-3">Trạng thái đơn hàng hôm nay</h2>
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4">
+                <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Trạng thái đơn hàng hôm nay</h2>
                 <div className="flex flex-wrap gap-2">
                   <span className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium">
                     Tổng: {dashboard?.totalOrders ?? 0}
@@ -175,27 +175,27 @@ export default function AccountantDashboard() {
               </div>
 
               {/* Per-shipper table */}
-              <div className="bg-white rounded-xl border border-gray-200">
-                <div className="px-4 py-3 border-b border-gray-100">
-                  <h2 className="text-sm font-semibold text-gray-700">Chi tiết theo nhân viên (hôm nay)</h2>
+              <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+                <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
+                  <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Chi tiết theo nhân viên (hôm nay)</h2>
                 </div>
                 {report && report.byShipper.length > 0 ? (
                   <div className="overflow-x-auto">
                   <table className="w-full text-sm min-w-[600px]">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="text-left px-4 py-2.5 font-medium text-gray-600">Nhân viên</th>
-                        <th className="text-center px-4 py-2.5 font-medium text-gray-600">Đơn</th>
-                        <th className="text-right px-4 py-2.5 font-medium text-gray-600">Tiền mặt</th>
-                        <th className="text-right px-4 py-2.5 font-medium text-gray-600">Chuyển khoản</th>
-                        <th className="text-center px-4 py-2.5 font-medium text-gray-600">Chưa thu</th>
+                      <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+                        <th className="text-left px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Nhân viên</th>
+                        <th className="text-center px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Đơn</th>
+                        <th className="text-right px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Tiền mặt</th>
+                        <th className="text-right px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Chuyển khoản</th>
+                        <th className="text-center px-4 py-2.5 font-medium text-gray-600 dark:text-gray-400">Chưa thu</th>
                       </tr>
                     </thead>
                     <tbody>
                       {report.byShipper.map((s, i) => (
-                        <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
-                          <td className="px-4 py-3 font-medium text-gray-900">{s.shipperName}</td>
-                          <td className="px-4 py-3 text-center text-gray-600">{s.totalOrders}</td>
+                        <tr key={i} className="border-b border-gray-100 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{s.shipperName}</td>
+                          <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-400">{s.totalOrders}</td>
                           <td className="px-4 py-3 text-right text-green-600 font-medium">{formatVND(s.cashAmount)}</td>
                           <td className="px-4 py-3 text-right text-blue-600 font-medium">{formatVND(s.transferAmount)}</td>
                           <td className="px-4 py-3 text-center">
@@ -204,7 +204,7 @@ export default function AccountantDashboard() {
                                 {s.unpaidCount}
                               </span>
                             ) : (
-                              <span className="text-gray-400">—</span>
+                              <span className="text-gray-400 dark:text-gray-500">—</span>
                             )}
                           </td>
                         </tr>
@@ -213,14 +213,14 @@ export default function AccountantDashboard() {
                   </table>
                   </div>
                 ) : (
-                  <div className="py-8 text-center text-gray-400 text-sm">Chưa có dữ liệu hôm nay</div>
+                  <div className="py-8 text-center text-gray-400 dark:text-gray-500 text-sm">Chưa có dữ liệu hôm nay</div>
                 )}
               </div>
             </div>
 
             {/* Right: alert cards */}
             <div className="space-y-3">
-              <h2 className="text-sm font-semibold text-gray-700">Cần xử lý</h2>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Cần xử lý</h2>
 
               {(dashboard?.unmatchedSePay ?? 0) > 0 && (
                 <div className="bg-pink-50 border border-pink-200 rounded-xl p-4">
@@ -287,23 +287,23 @@ export default function AccountantDashboard() {
               )}
 
               {/* Summary card */}
-              <div className="bg-white border border-gray-200 rounded-xl p-4 mt-4">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Tổng đơn</h3>
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mt-4">
+                <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-500 uppercase tracking-wide mb-3">Tổng đơn</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tổng đơn</span>
-                    <span className="font-semibold text-gray-900">{dashboard?.totalOrders ?? 0}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Tổng đơn</span>
+                    <span className="font-semibold text-gray-900 dark:text-gray-100">{dashboard?.totalOrders ?? 0}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Đã thanh toán</span>
+                    <span className="text-gray-600 dark:text-gray-400">Đã thanh toán</span>
                     <span className="font-semibold text-green-600">{dashboard?.paidFull ?? 0}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Thu một phần</span>
+                    <span className="text-gray-600 dark:text-gray-400">Thu một phần</span>
                     <span className="font-semibold text-orange-600">{dashboard?.partial ?? 0}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Hẹn lại</span>
+                    <span className="text-gray-600 dark:text-gray-400">Hẹn lại</span>
                     <span className="font-semibold text-purple-600">{dashboard?.scheduled ?? 0}</span>
                   </div>
                 </div>

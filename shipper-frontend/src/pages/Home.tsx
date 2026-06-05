@@ -22,7 +22,7 @@ function Logo({ size = 36 }: { size?: number }) {
         className="rounded-xl object-cover"
       />
       <div className="leading-none">
-        <div className="font-extrabold text-[15px] tracking-wide text-gray-900">HƯƠNG</div>
+        <div className="font-extrabold text-[15px] tracking-wide text-gray-900 dark:text-gray-100">HƯƠNG</div>
         <div className="font-extrabold text-[15px] tracking-wide" style={{ color: BRAND }}>CƯỜNG</div>
       </div>
     </div>
@@ -42,7 +42,7 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function PartnerLogo({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="h-24 md:h-28 rounded-xl border border-gray-200 bg-white flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-4">
+    <div className="h-24 md:h-28 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-4">
       <img
         src={src}
         alt={alt}
@@ -63,15 +63,15 @@ function FeatureCard({
   desc: string
 }) {
   return (
-    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg transition-shadow">
       <div
         className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
         style={{ backgroundColor: `${BRAND}1A`, color: BRAND }}
       >
         {icon}
       </div>
-      <h3 className="font-bold text-lg text-gray-900 mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm leading-relaxed">{desc}</p>
+      <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 mb-2">{title}</h3>
+      <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{desc}</p>
     </div>
   )
 }
@@ -86,7 +86,7 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 scroll-smooth">
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 scroll-smooth">
       {/* ===================== HEADER ===================== */}
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all ${
@@ -103,19 +103,19 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-1">
             <a
               href="#home"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Trang chủ
             </a>
             <Link
               to="/about"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Về chúng tôi
             </Link>
             <Link
               to="/contact"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Liên hệ
             </Link>
@@ -247,16 +247,16 @@ export default function Home() {
       </section>
 
       {/* ===================== PARTNERS ===================== */}
-      <section id="partners" className="py-20 md:py-24 bg-white">
+      <section id="partners" className="py-20 md:py-24 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="text-center mb-12">
             <p className="text-xs md:text-sm font-bold tracking-[0.2em] mb-3" style={{ color: BRAND }}>
               GẦN 20 NĂM HỢP TÁC
             </p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-4">
               Đối Tác Chiến Lược
             </h2>
-            <p className="text-gray-600 max-w-xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
               Chúng tôi tự hào là nhà phân phối tin tưởng bởi các thương hiệu FMCG hàng đầu Việt Nam và quốc tế.
             </p>
           </div>
@@ -272,36 +272,36 @@ export default function Home() {
       </section>
 
       {/* ===================== ABOUT ===================== */}
-      <section id="about" className="py-20 md:py-24 bg-gray-50">
+      <section id="about" className="py-20 md:py-24 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center mb-16">
             <div>
               <p className="text-xs md:text-sm font-bold tracking-[0.2em] mb-3" style={{ color: BRAND }}>
                 VỀ CHÚNG TÔI
               </p>
-              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 leading-tight">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-6 leading-tight">
                 Hai thập kỷ đồng hành cùng ngành phân phối FMCG Thái Nguyên
               </h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 <strong>Công ty TNHH Khương Phúc – NPP Hương Cường</strong> được thành lập với sứ mệnh đưa hàng
                 tiêu dùng nhanh chất lượng cao đến từng đại lý, cửa hàng tạp hóa và người tiêu dùng cuối tại
                 khu vực Thái Nguyên.
               </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 Với mạng lưới <strong>hơn 3.000 đối tác đại lý</strong>, đội ngũ <strong>15–20 nhân viên giao
                 hàng chuyên nghiệp</strong> và quy trình vận hành công nghệ hóa, chúng tôi cam kết giao đúng,
                 giao đủ, giao đúng giờ — từ các tuyến nội thành đến khu công nghiệp Samsung.
               </p>
               <div className="flex flex-wrap gap-3 mt-6">
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium text-gray-700 border border-gray-200">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND }} />
                   Bánh kẹo
                 </span>
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium text-gray-700 border border-gray-200">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND }} />
                   Sữa & dinh dưỡng
                 </span>
-                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full text-sm font-medium text-gray-700 border border-gray-200">
+                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-900 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800">
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND }} />
                   Hàng tiêu dùng nhanh
                 </span>
@@ -317,10 +317,10 @@ export default function Home() {
                 />
               </div>
               <div
-                className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-5 border border-gray-100 hidden md:block"
+                className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-5 border border-gray-100 dark:border-gray-800 hidden md:block"
               >
                 <div className="text-3xl font-extrabold" style={{ color: BRAND }}>~20</div>
-                <div className="text-sm text-gray-600">Năm phân phối FMCG</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Năm phân phối FMCG</div>
               </div>
             </div>
           </div>
@@ -387,16 +387,16 @@ export default function Home() {
       </section>
 
       {/* ===================== CONTACT ===================== */}
-      <section id="contact" className="py-20 md:py-24 bg-white">
+      <section id="contact" className="py-20 md:py-24 bg-white dark:bg-gray-900">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center mb-12">
             <p className="text-xs md:text-sm font-bold tracking-[0.2em] mb-3" style={{ color: BRAND }}>
               LIÊN HỆ
             </p>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-4">
               Sẵn sàng hợp tác cùng bạn
             </h2>
-            <p className="text-gray-600 max-w-xl mx-auto">
+            <p className="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
               Liên hệ ngay để nhận báo giá, làm đại lý hoặc tư vấn về danh mục sản phẩm.
             </p>
           </div>
@@ -408,8 +408,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Hotline</h3>
-              <p className="text-gray-600 text-sm mb-2">Đặt hàng & hỗ trợ đại lý</p>
+              <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Hotline</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Đặt hàng & hỗ trợ đại lý</p>
               <a href="tel:0988599747" className="text-lg font-bold block" style={{ color: BRAND }}>
                 0988 599 747
               </a>
@@ -424,8 +424,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Email</h3>
-              <p className="text-gray-600 text-sm mb-2">Phản hồi trong 24 giờ</p>
+              <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Email</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Phản hồi trong 24 giờ</p>
               <a href="mailto:khuongmv304@gmail.com" className="text-base font-bold break-all" style={{ color: BRAND }}>
                 khuongmv304@gmail.com
               </a>
@@ -438,9 +438,9 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-1">Văn phòng</h3>
-              <p className="text-gray-600 text-sm mb-2">Trụ sở chính & kho hàng</p>
-              <p className="text-base font-semibold text-gray-900">
+              <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-1">Văn phòng</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Trụ sở chính & kho hàng</p>
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100">
                 TDP Kim Thái, Phường Phổ Yên, Thái Nguyên
               </p>
             </div>
@@ -462,7 +462,7 @@ export default function Home() {
       </section>
 
       {/* ===================== FOOTER ===================== */}
-      <footer className="bg-gray-900 text-gray-300 pt-14 pb-8">
+      <footer className="bg-gray-900 text-gray-300 dark:text-gray-600 pt-14 pb-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-10">
             <div className="md:col-span-2">
@@ -479,7 +479,7 @@ export default function Home() {
                   <div className="font-extrabold text-base" style={{ color: BRAND }}>CƯỜNG</div>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-gray-400 max-w-md">
+              <p className="text-sm leading-relaxed text-gray-400 dark:text-gray-500 max-w-md">
                 Công ty TNHH Khương Phúc – NPP Hương Cường. Nhà phân phối FMCG hàng đầu khu vực Thái Nguyên,
                 gần 20 năm kinh nghiệm phục vụ hơn 3.000 đại lý.
               </p>
@@ -497,7 +497,7 @@ export default function Home() {
 
             <div>
               <h4 className="text-white font-bold mb-4">Thông tin liên hệ</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-400 dark:text-gray-500">
                 <li>📞 0988 599 747</li>
                 <li>✉️ khuongmv304@gmail.com</li>
                 <li>📍 TDP Kim Thái, Phường Phổ Yên, Thái Nguyên</li>
@@ -506,7 +506,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-500">
+          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-500 dark:text-gray-500">
             <p>© {new Date().getFullYear()} Công ty TNHH Khương Phúc. Tất cả quyền được bảo lưu.</p>
             <p>Thiết kế hệ thống quản lý nội bộ DeliveryApp</p>
           </div>

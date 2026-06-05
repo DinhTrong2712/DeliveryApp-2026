@@ -183,15 +183,15 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
     return (
       <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
         <div className="absolute inset-0 bg-black/40" />
-        <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center">
+        <div className="relative w-full sm:max-w-md bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-4">
             <svg className="w-12 h-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <p className="text-xl font-bold text-gray-900 mb-1">Cập nhật thành công</p>
-          <p className="text-sm text-gray-600 mb-1">{success}</p>
-          <p className="text-xs text-gray-400 mt-2">Đơn {order.orderCode} · {order.customerName}</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Cập nhật thành công</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{success}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Đơn {order.orderCode} · {order.customerName}</p>
         </div>
       </div>
     )
@@ -204,16 +204,16 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
         onClick={loading ? undefined : onClose}
       />
 
-      <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 pt-4 pb-3 flex items-center justify-between rounded-t-3xl">
+      <div className="relative w-full sm:max-w-md bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-5 pt-4 pb-3 flex items-center justify-between rounded-t-3xl">
           <div className="min-w-0">
-            <p className="text-xs text-gray-400">Đơn {order.orderCode}</p>
-            <p className="font-bold text-gray-900 truncate">{order.customerName}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500">Đơn {order.orderCode}</p>
+            <p className="font-bold text-gray-900 dark:text-gray-100 truncate">{order.customerName}</p>
           </div>
           <button
             onClick={onClose}
             disabled={loading}
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center text-gray-400 hover:text-gray-700 rounded-full hover:bg-gray-100"
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -222,19 +222,19 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
         </div>
 
         <div className="px-5 py-4 space-y-4">
-          <div className="bg-gray-50 rounded-2xl p-4 flex justify-between items-center">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded-2xl p-4 flex justify-between items-center">
             <div>
-              <p className="text-xs text-gray-500">Cần thu</p>
-              <p className="text-xl font-bold text-gray-900">{formatVND(order.amountRemaining)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">Cần thu</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{formatVND(order.amountRemaining)}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-500">Tổng đơn</p>
-              <p className="text-sm font-semibold text-gray-700">{formatVND(order.amount)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">Tổng đơn</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatVND(order.amount)}</p>
             </div>
           </div>
 
           <div>
-            <p className="font-semibold text-gray-900 text-sm mb-2">Phương thức thanh toán</p>
+            <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">Phương thức thanh toán</p>
             <div className="space-y-2">
               {METHODS.map(m => {
                 const selected = method === m.value
@@ -246,16 +246,16 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                     className={`w-full text-left flex items-center gap-3 p-3 rounded-2xl border-2 transition-all min-h-[60px] ${
                       selected
                         ? COLOR_RING[m.color]
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     <span className="text-2xl">{m.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className={`font-semibold text-sm ${selected ? 'text-gray-900' : 'text-gray-800'}`}>{m.label}</p>
-                      <p className="text-xs text-gray-500 truncate">{m.desc}</p>
+                      <p className={`font-semibold text-sm ${selected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-800 dark:text-gray-200'}`}>{m.label}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 truncate">{m.desc}</p>
                     </div>
                     {selected && (
-                      <svg className="w-5 h-5 text-gray-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-5 h-5 text-gray-700 dark:text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
@@ -267,14 +267,14 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
 
           {(needAmount || isTransfer) && (
             <div>
-              <label className="block font-semibold text-gray-900 text-sm mb-2">
+              <label className="block font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">
                 {method === 'transfer' ? 'Số tiền chuyển khoản (VNĐ)' : 'Số tiền đã thu (VNĐ)'}
               </label>
               <input
                 type="number"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="0"
                 min={0}
               />
@@ -284,7 +284,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
           {isTransfer && (
             <div className="space-y-3">
               <div>
-                <label className="block font-semibold text-gray-900 text-sm mb-2">
+                <label className="block font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">
                   Nội dung chuyển khoản
                 </label>
                 <input
@@ -292,22 +292,22 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                   value={qrAddInfo}
                   onChange={e => setQrAddInfo(e.target.value)}
                   maxLength={50}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                   placeholder={order.orderCode}
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  SePay tự khớp khi nội dung chứa <span className="font-mono font-semibold text-gray-600">{order.orderCode}</span>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  SePay tự khớp khi nội dung chứa <span className="font-mono font-semibold text-gray-600 dark:text-gray-400">{order.orderCode}</span>
                 </p>
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-900 text-sm mb-2">Tài khoản nhận</label>
+                <label className="block font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">Tài khoản nhận</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setQrAccount(1)}
                     className={`py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${
-                      qrAccount === 1 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-700'
+                      qrAccount === 1 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     Tài khoản 1
@@ -316,7 +316,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                     type="button"
                     onClick={() => setQrAccount(2)}
                     className={`py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${
-                      qrAccount === 2 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-700'
+                      qrAccount === 2 ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300'
                     }`}
                   >
                     Tài khoản 2
@@ -324,12 +324,12 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                 </div>
               </div>
 
-              <div className="bg-white border-2 border-blue-100 rounded-2xl p-4">
-                <p className="font-semibold text-gray-900 text-sm mb-3 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-900 border-2 border-blue-100 rounded-2xl p-4">
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm mb-3 flex items-center gap-2">
                   <span>📲</span> Mã QR cho khách quét
                 </p>
                 {qrLoading && (
-                  <div className="h-56 flex items-center justify-center text-gray-400 text-sm">
+                  <div className="h-56 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
                     Đang tạo QR...
                   </div>
                 )}
@@ -343,20 +343,20 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                     <img
                       src={qr.qrUrl}
                       alt="VietQR"
-                      className="w-56 h-56 rounded-xl border border-gray-100"
+                      className="w-56 h-56 rounded-xl border border-gray-100 dark:border-gray-800"
                     />
                     <div className="text-center space-y-0.5">
-                      <p className="font-semibold text-gray-800">{qr.accountName}</p>
-                      <p className="text-sm text-gray-500">{qr.accountNo} · {qr.bank}</p>
+                      <p className="font-semibold text-gray-800 dark:text-gray-200">{qr.accountName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">{qr.accountNo} · {qr.bank}</p>
                       <p className="text-lg font-bold text-blue-600">{formatVND(qr.amount)}</p>
-                      <p className="text-xs text-gray-400">
-                        Nội dung: <span className="font-mono font-medium text-gray-700">{qr.addInfo}</span>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
+                        Nội dung: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{qr.addInfo}</span>
                       </p>
                     </div>
                   </div>
                 )}
                 {!qrLoading && !qrError && !qr && (
-                  <div className="h-32 flex items-center justify-center text-gray-400 text-xs text-center px-4">
+                  <div className="h-32 flex items-center justify-center text-gray-400 dark:text-gray-500 text-xs text-center px-4">
                     Nhập số tiền để tạo QR
                   </div>
                 )}
@@ -367,7 +367,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
           {needReason && (
             <div className="space-y-3">
               <div>
-                <label className="block font-semibold text-gray-900 text-sm mb-2">
+                <label className="block font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">
                   {method === 'debt' ? 'Hạn trả nợ' : 'Ngày không giao được'} <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -376,9 +376,9 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                   onChange={e => setEventDate(e.target.value)}
                   min={method === 'debt' ? new Date().toISOString().split('T')[0] : undefined}
                   max={method === 'undelivered' ? new Date().toISOString().split('T')[0] : undefined}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                   {method === 'debt'
                     ? 'Ngày khách hẹn sẽ trả nốt khoản còn lại'
                     : 'Ngày shipper không giao được đơn'}
@@ -386,7 +386,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-900 text-sm mb-2">
+                <label className="block font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">
                   Lý do <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -394,7 +394,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
                   onChange={e => setReason(e.target.value)}
                   rows={3}
                   maxLength={400}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder={method === 'undelivered' ? 'Vd: Khách không có nhà, không liên lạc được...' : 'Vd: Khách hẹn trả vào cuối tháng, đã đồng ý...'}
                 />
               </div>
@@ -402,7 +402,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
           )}
 
           <div>
-            <label className="block font-semibold text-gray-900 text-sm mb-2">
+            <label className="block font-semibold text-gray-900 dark:text-gray-100 text-sm mb-2">
               Ghi chú thêm (tùy chọn)
             </label>
             <textarea
@@ -410,7 +410,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
               onChange={e => setNote(e.target.value)}
               rows={2}
               maxLength={500}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Thêm ghi chú..."
             />
           </div>
@@ -420,7 +420,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
           )}
         </div>
 
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 px-5 py-3 space-y-2">
+        <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 px-5 py-3 space-y-2">
           <button
             onClick={handleSubmit}
             disabled={loading || !method}
@@ -431,7 +431,7 @@ export default function PaymentMethodSheet({ order, onClose, onSaved }: Props) {
           <button
             onClick={() => { onClose(); navigate(`/shipper/orders/${order.id}`) }}
             disabled={loading}
-            className="w-full text-gray-600 font-medium py-2.5 rounded-2xl text-sm hover:bg-gray-50"
+            className="w-full text-gray-600 dark:text-gray-400 font-medium py-2.5 rounded-2xl text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Xem chi tiết đơn →
           </button>

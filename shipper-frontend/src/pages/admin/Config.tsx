@@ -175,11 +175,11 @@ function useToast() {
 function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle: string }) {
   return (
     <div className="flex items-start gap-3 mb-5">
-      <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+      <div className="w-9 h-9 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
         {icon}
       </div>
       <div>
-        <h2 className="font-bold text-gray-900 text-base">{title}</h2>
+        <h2 className="font-bold text-gray-900 dark:text-gray-100 text-base">{title}</h2>
         <p className="text-sm text-orange-500 mt-0.5">{subtitle}</p>
       </div>
     </div>
@@ -189,8 +189,8 @@ function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title
 function Field({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-800 mb-1">{label}</label>
-      {description && <p className="text-xs text-gray-400 mb-1.5">{description}</p>}
+      <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1">{label}</label>
+      {description && <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">{description}</p>}
       {children}
     </div>
   )
@@ -206,7 +206,7 @@ function TextInput({ value, onChange, placeholder, readOnly, className = '' }: {
       onChange={e => onChange?.(e.target.value)}
       placeholder={placeholder}
       readOnly={readOnly}
-      className={`w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white ${readOnly ? 'text-gray-500 bg-gray-50' : ''} ${className}`}
+      className={`w-full border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white dark:bg-gray-900 ${readOnly ? 'text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-gray-950' : ''} ${className}`}
     />
   )
 }
@@ -216,7 +216,7 @@ function BankSelect({ value, onChange }: { value: string; onChange: (v: string) 
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+      className="w-full border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white dark:bg-gray-900"
     >
       <option value="">-- Chọn ngân hàng --</option>
       {BANKS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
@@ -248,9 +248,9 @@ function PasswordInput({ value, onChange, show, toggleShow, placeholder }: {
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         autoComplete="new-password"
-        className="w-full border border-gray-200 rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+        className="w-full border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
       />
-      <button type="button" onClick={toggleShow} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+      <button type="button" onClick={toggleShow} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
         {show ? <IconEyeOff /> : <IconEye />}
       </button>
     </div>
@@ -262,7 +262,7 @@ function SecondaryBtn({ children, type = 'button', onClick, disabled }: {
 }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled}
-      className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap">
+      className="flex items-center gap-1.5 px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 whitespace-nowrap">
       {children}
     </button>
   )
@@ -528,28 +528,28 @@ export default function AdminConfig() {
         </div>
       )}
 
-      {loading ? <div className="text-center py-16 text-gray-400">Đang tải...</div> : (
+      {loading ? <div className="text-center py-16 text-gray-400 dark:text-gray-500">Đang tải...</div> : (
         <div className="flex gap-6">
           <aside className="w-44 flex-shrink-0 space-y-0.5">
             {NAV_ITEMS.map(item => (
               <button key={item.id} onClick={() => setSection(item.id)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${section === item.id ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${section === item.id ? 'bg-gray-900 text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}`}>
                 {item.icon}{item.label}
               </button>
             ))}
           </aside>
 
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 p-6 space-y-5">
+          <div className="flex-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-5">
 
             {section === 'system' && (
               <form onSubmit={handleSaveSystem}>
                 <SectionHeader icon={<IconGear />} title="Hệ thống" subtitle="Cấu hình chung của ứng dụng." />
-                <hr className="border-gray-100 mb-5" />
+                <hr className="border-gray-100 dark:border-gray-800 mb-5" />
                 <div className="max-w-xs space-y-4">
                   <Field label="Thời gian khoá đơn" description="Sau giờ này, shipper không thể chỉnh sửa đơn hàng.">
-                    <div className="flex items-center border border-gray-200 rounded-lg px-3 py-2.5 gap-2 w-fit">
-                      <IconClock className="w-4 h-4 text-gray-400" />
-                      <input type="time" value={lockTime} onChange={e => setLockTime(e.target.value)} className="text-sm text-gray-800 focus:outline-none bg-transparent" required />
+                    <div className="flex items-center border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5 gap-2 w-fit">
+                      <IconClock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                      <input type="time" value={lockTime} onChange={e => setLockTime(e.target.value)} className="text-sm text-gray-800 dark:text-gray-200 focus:outline-none bg-transparent" required />
                     </div>
                   </Field>
                   <SaveBtn loading={savingSystem} />
@@ -560,13 +560,13 @@ export default function AdminConfig() {
             {section === 'vietqr' && (
               <div className="space-y-5">
                 <SectionHeader icon={<IconQr />} title="Cấu hình VietQR" subtitle="Tài khoản ngân hàng và API key để tạo mã QR thanh toán." />
-                <hr className="border-gray-100" />
+                <hr className="border-gray-100 dark:border-gray-800" />
 
-                <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+                <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">Thông tin API</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Dùng chung cho tất cả tài khoản ngân hàng. Lấy từ <span className="text-blue-500">my.vietqr.io</span>.</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Thông tin API</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Dùng chung cho tất cả tài khoản ngân hàng. Lấy từ <span className="text-blue-500">my.vietqr.io</span>.</p>
                     </div>
                     {vqConfig.apiKeySet && <ConfiguredBadge text="API Key đã cấu hình" />}
                   </div>
@@ -590,8 +590,8 @@ export default function AdminConfig() {
 
                 <form onSubmit={handleSaveVqAccounts} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-                      <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
+                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                         <span className="w-5 h-5 bg-gray-900 text-white rounded-full text-xs flex items-center justify-center font-bold">1</span>
                         Tài khoản chính
                       </p>
@@ -609,10 +609,10 @@ export default function AdminConfig() {
                       </Field>
                     </div>
 
-                    <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-                      <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                        <span className="w-5 h-5 bg-gray-300 text-gray-600 rounded-full text-xs flex items-center justify-center font-bold">2</span>
-                        Tài khoản phụ <span className="text-xs font-normal text-gray-400">tuỳ chọn</span>
+                    <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3">
+                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                        <span className="w-5 h-5 bg-gray-300 text-gray-600 dark:text-gray-400 rounded-full text-xs flex items-center justify-center font-bold">2</span>
+                        Tài khoản phụ <span className="text-xs font-normal text-gray-400 dark:text-gray-500">tuỳ chọn</span>
                       </p>
                       <p className="text-xs text-orange-500">Dùng chung ClientID và API Key. Để trống nếu chỉ có một tài khoản.</p>
                       <Field label="Ngân hàng">
@@ -633,17 +633,17 @@ export default function AdminConfig() {
                   <SaveBtn loading={savingVq} label="Lưu tài khoản" />
                 </form>
 
-                <div className="border border-gray-200 rounded-xl p-4">
-                  <p className="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-3">
+                <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2 mb-3">
                     <IconQr />
                     Thử tạo QR
-                    <span className="text-xs font-normal text-gray-400">— không cần đơn thật, tài khoản 2 dùng thông tin trong form</span>
+                    <span className="text-xs font-normal text-gray-400 dark:text-gray-500">— không cần đơn thật, tài khoản 2 dùng thông tin trong form</span>
                   </p>
 
-                  <div className="flex gap-1 border-b border-gray-100 mb-4">
+                  <div className="flex gap-1 border-b border-gray-100 dark:border-gray-800 mb-4">
                     {([1, 2] as const).map(t => (
                       <button key={t} type="button" onClick={() => setQrTab(t)}
-                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${qrTab === t ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}>
+                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${qrTab === t ? 'border-gray-900 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}>
                         Tài khoản {t}
                       </button>
                     ))}
@@ -660,19 +660,19 @@ export default function AdminConfig() {
                         </Field>
                       </div>
                       <button type="button" onClick={handleGenerateQr} disabled={generatingQr}
-                        className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 w-full justify-center">
+                        className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 w-full justify-center">
                         <IconQr />
                         {generatingQr ? 'Đang tạo...' : `Tạo QR — tài khoản ${qrTab}`}
                       </button>
                     </div>
 
-                    <div className="flex flex-col items-center justify-center border border-dashed border-gray-200 rounded-xl min-h-36 p-4">
+                    <div className="flex flex-col items-center justify-center border border-dashed border-gray-200 dark:border-gray-800 rounded-xl min-h-36 p-4">
                       {qrImage ? (
                         <img src={qrImage} alt="QR Code" className="w-32 h-32 object-contain" />
                       ) : (
                         <>
-                          <IconQr className="w-8 h-8 text-gray-300 mb-2" />
-                          <p className="text-xs text-gray-400 text-center">Xem trước QR</p>
+                          <IconQr className="w-8 h-8 text-gray-300 dark:text-gray-600 mb-2" />
+                          <p className="text-xs text-gray-400 dark:text-gray-500 text-center">Xem trước QR</p>
                           <p className="text-xs text-orange-400 text-center mt-0.5">Nhập thông tin và nhấn Thử tạo QR</p>
                         </>
                       )}
@@ -685,17 +685,17 @@ export default function AdminConfig() {
             {section === 'sepay' && (
               <div className="space-y-5">
                 <SectionHeader icon={<IconBolt />} title="Tích hợp SePay Webhook" subtitle="Xác thực API key cho mỗi webhook từ SePay." />
-                <hr className="border-gray-100" />
+                <hr className="border-gray-100 dark:border-gray-800" />
 
-                <div className="border border-gray-200 rounded-xl p-4 space-y-2">
-                  <p className="text-sm font-semibold text-gray-800">Webhook URL</p>
-                  <p className="text-xs text-gray-400">Cấu hình URL này trong SePay dashboard.</p>
+                <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-2">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Webhook URL</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Cấu hình URL này trong SePay dashboard.</p>
                   <div className="flex items-center gap-2 mt-2">
-                    <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono text-gray-600">
+                    <div className="flex-1 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5 text-sm font-mono text-gray-600 dark:text-gray-400">
                       /api/webhooks/sepay
                     </div>
                     <button type="button" onClick={handleCopyWebhook}
-                      className="flex items-center gap-1.5 px-3 py-2.5 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 text-gray-600 whitespace-nowrap">
+                      className="flex items-center gap-1.5 px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 whitespace-nowrap">
                       {copied
                         ? <><IconCheck className="w-4 h-4 text-green-500" /> Đã sao chép</>
                         : <><IconCopy /> Sao chép</>}
@@ -703,9 +703,9 @@ export default function AdminConfig() {
                   </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-xl p-4">
+                <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                       <span className="w-5 h-5 bg-gray-900 text-white rounded-full text-xs flex items-center justify-center">1</span>
                       API Key xác thực
                     </p>
@@ -730,7 +730,7 @@ export default function AdminConfig() {
             {section === 'ai' && (
               <div className="space-y-5">
                 <SectionHeader icon={<IconAi />} title="Trợ lý AI" subtitle="Cấu hình API key để bật tính năng hỏi đáp dữ liệu bằng tiếng Việt." />
-                <hr className="border-gray-100" />
+                <hr className="border-gray-100 dark:border-gray-800" />
 
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
                   <IconInfo className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
@@ -740,9 +740,9 @@ export default function AdminConfig() {
                   </div>
                 </div>
 
-                <div className="border border-gray-200 rounded-xl p-4">
+                <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-bold text-gray-900">Cấu hình AI</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100">Cấu hình AI</p>
                     {aiKeySet && <ConfiguredBadge />}
                   </div>
 
@@ -752,7 +752,7 @@ export default function AdminConfig() {
                         <select
                           value={aiProvider}
                           onChange={e => setAiProvider(e.target.value as AiProvider)}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                          className="w-full border border-gray-200 dark:border-gray-800 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white dark:bg-gray-900"
                         >
                           {AI_PROVIDERS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                         </select>
@@ -773,8 +773,8 @@ export default function AdminConfig() {
                     </Field>
 
                     {aiProvider === 'openrouter' && (
-                      <div className="text-xs text-gray-500 space-y-1 bg-gray-50 rounded-lg p-3">
-                        <p className="font-semibold text-gray-700">Gợi ý model phổ biến (OpenRouter):</p>
+                      <div className="text-xs text-gray-500 dark:text-gray-500 space-y-1 bg-gray-50 dark:bg-gray-950 rounded-lg p-3">
+                        <p className="font-semibold text-gray-700 dark:text-gray-300">Gợi ý model phổ biến (OpenRouter):</p>
                         <ul className="space-y-0.5 ml-2">
                           {OPENROUTER_MODEL_HINTS.map(m => (
                             <li key={m.name}>• <span className="font-mono">{m.name}</span> — {m.note}</li>
@@ -785,10 +785,10 @@ export default function AdminConfig() {
                   </form>
                 </div>
 
-                <div className="border border-gray-100 rounded-xl p-4 space-y-2">
-                  <p className="text-sm font-semibold text-gray-700 mb-2">Tính năng sau khi kích hoạt</p>
+                <div className="border border-gray-100 dark:border-gray-800 rounded-xl p-4 space-y-2">
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tính năng sau khi kích hoạt</p>
                   {AI_FEATURES.map(f => (
-                    <div key={f} className="flex items-center gap-2 text-sm text-gray-600">
+                    <div key={f} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <IconCheck className="w-4 h-4 text-green-500 flex-shrink-0" />
                       {f}
                     </div>
@@ -800,63 +800,63 @@ export default function AdminConfig() {
             {section === 'backup' && (
               <div className="space-y-5">
                 <SectionHeader icon={<IconBackup />} title="Sao lưu & Khôi phục" subtitle="Quản lý các bản sao lưu và khôi phục cơ sở dữ liệu." />
-                <hr className="border-gray-100" />
+                <hr className="border-gray-100 dark:border-gray-800" />
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <button onClick={handleCreateBackup} disabled={creatingBackup}
-                    className="flex items-center gap-3 border border-gray-200 rounded-xl p-3 hover:bg-gray-50 disabled:opacity-50 text-left">
+                    className="flex items-center gap-3 border border-gray-200 dark:border-gray-800 rounded-xl p-3 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 text-left">
                     <div className="w-9 h-9 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
                       <IconBackup className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">{creatingBackup ? 'Đang tạo...' : 'Tạo backup mới'}</p>
-                      <p className="text-xs text-gray-400">Sao lưu DB hiện tại (.sql.gz)</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{creatingBackup ? 'Đang tạo...' : 'Tạo backup mới'}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Sao lưu DB hiện tại (.sql.gz)</p>
                     </div>
                   </button>
 
                   <button onClick={handleDownloadBackup} disabled={downloading}
-                    className="flex items-center gap-3 border border-gray-200 rounded-xl p-3 hover:bg-gray-50 disabled:opacity-50 text-left">
+                    className="flex items-center gap-3 border border-gray-200 dark:border-gray-800 rounded-xl p-3 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 text-left">
                     <div className="w-9 h-9 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
                       <IconDownload className="w-5 h-5 text-blue-500" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">{downloading ? 'Đang xuất...' : 'Tạo & tải xuống'}</p>
-                      <p className="text-xs text-gray-400">Tạo backup mới rồi tải về máy</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{downloading ? 'Đang xuất...' : 'Tạo & tải xuống'}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Tạo backup mới rồi tải về máy</p>
                     </div>
                   </button>
 
                   <button type="button" onClick={() => fileRef.current?.click()} disabled={restoring}
-                    className="flex items-center gap-3 border border-gray-200 rounded-xl p-3 hover:bg-gray-50 disabled:opacity-50 text-left">
+                    className="flex items-center gap-3 border border-gray-200 dark:border-gray-800 rounded-xl p-3 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 text-left">
                     <div className="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
                       <IconUpload className="w-5 h-5 text-orange-500" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">{restoring ? 'Đang khôi phục...' : 'Khôi phục từ máy'}</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{restoring ? 'Đang khôi phục...' : 'Khôi phục từ máy'}</p>
                       <p className="text-xs text-orange-500">Upload .sql hoặc .sql.gz</p>
                     </div>
                   </button>
                   <input ref={fileRef} type="file" accept=".sql,.gz" className="hidden" onChange={handleRestoreFile} />
                 </div>
 
-                <div className="border border-gray-200 rounded-xl overflow-hidden">
-                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <div className="border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50 dark:bg-gray-950">
                     <div>
-                      <p className="text-sm font-semibold text-gray-800">Backup trên server</p>
-                      <p className="text-xs text-gray-400">Lưu giữ {retention} bản gần nhất, tự động chạy mỗi 2:00 AM</p>
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Backup trên server</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Lưu giữ {retention} bản gần nhất, tự động chạy mỗi 2:00 AM</p>
                     </div>
                     <button onClick={loadBackups} disabled={loadingBackups}
-                      className="text-xs text-gray-600 hover:text-gray-900 disabled:opacity-50">
+                      className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-50">
                       {loadingBackups ? 'Đang tải...' : 'Làm mới'}
                     </button>
                   </div>
 
                   {backups.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-sm text-gray-400">
+                    <div className="px-4 py-8 text-center text-sm text-gray-400 dark:text-gray-500">
                       {loadingBackups ? 'Đang tải...' : 'Chưa có backup nào'}
                     </div>
                   ) : (
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 text-xs text-gray-500">
+                      <thead className="bg-gray-50 dark:bg-gray-950 text-xs text-gray-500 dark:text-gray-500">
                         <tr>
                           <th className="px-4 py-2.5 text-left font-medium">Tên file</th>
                           <th className="px-4 py-2.5 text-left font-medium">Thời gian</th>
@@ -864,16 +864,16 @@ export default function AdminConfig() {
                           <th className="px-4 py-2.5 text-right font-medium">Thao tác</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100">
+                      <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                         {backups.map(b => (
-                          <tr key={b.name} className="hover:bg-gray-50">
-                            <td className="px-4 py-2.5 font-mono text-xs text-gray-700">{b.name}</td>
-                            <td className="px-4 py-2.5 text-gray-600">{formatDate(b.createdAt)}</td>
-                            <td className="px-4 py-2.5 text-right text-gray-600">{formatSize(b.size)}</td>
+                          <tr key={b.name} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <td className="px-4 py-2.5 font-mono text-xs text-gray-700 dark:text-gray-300">{b.name}</td>
+                            <td className="px-4 py-2.5 text-gray-600 dark:text-gray-400">{formatDate(b.createdAt)}</td>
+                            <td className="px-4 py-2.5 text-right text-gray-600 dark:text-gray-400">{formatSize(b.size)}</td>
                             <td className="px-4 py-2.5 text-right">
                               <div className="flex items-center justify-end gap-1.5">
                                 <button onClick={() => handleDownloadFile(b.name)}
-                                  className="px-2.5 py-1 text-xs border border-gray-200 rounded-md hover:bg-gray-100 text-gray-700">
+                                  className="px-2.5 py-1 text-xs border border-gray-200 dark:border-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
                                   Tải
                                 </button>
                                 <button onClick={() => handleRestoreServer(b.name)} disabled={restoring}

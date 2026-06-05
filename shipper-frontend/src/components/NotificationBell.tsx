@@ -87,7 +87,7 @@ export default function NotificationBell() {
       <button
         onClick={() => setOpen(v => !v)}
         aria-label="Thông báo"
-        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+        className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 rounded-lg transition-colors"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -100,35 +100,35 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-80 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-xl shadow-lg z-30 overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
-            <p className="text-sm font-semibold text-gray-900">Thông báo</p>
+        <div className="absolute right-0 top-full mt-1 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg z-30 overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Thông báo</p>
             {unread > 0 && (
-              <button onClick={handleMarkAll} className="text-xs text-blue-600 hover:text-blue-700">
+              <button onClick={handleMarkAll} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                 Đánh dấu đã đọc
               </button>
             )}
           </div>
           <div className="max-h-[60vh] overflow-y-auto">
             {loading ? (
-              <div className="py-8 text-center text-gray-400 text-sm">Đang tải...</div>
+              <div className="py-8 text-center text-gray-400 dark:text-gray-500 text-sm">Đang tải...</div>
             ) : items.length === 0 ? (
-              <div className="py-8 text-center text-gray-400 text-sm">Chưa có thông báo</div>
+              <div className="py-8 text-center text-gray-400 dark:text-gray-500 text-sm">Chưa có thông báo</div>
             ) : (
               items.map(n => (
                 <button
                   key={n.id}
                   onClick={() => handleClickItem(n)}
-                  className={`w-full text-left px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors ${n.readAt ? '' : 'bg-blue-50/40'}`}
+                  className={`w-full text-left px-4 py-3 border-b border-gray-50 dark:border-gray-800 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${n.readAt ? '' : 'bg-blue-50/40 dark:bg-blue-950/30'}`}
                 >
                   <div className="flex items-start gap-2">
                     {!n.readAt && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0" />}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm leading-snug ${n.readAt ? 'text-gray-700' : 'text-gray-900 font-semibold'}`}>
+                      <p className={`text-sm leading-snug ${n.readAt ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-gray-100 font-semibold'}`}>
                         {n.title}
                       </p>
-                      <p className="text-xs text-gray-600 mt-0.5 leading-snug">{n.body}</p>
-                      <p className="text-[11px] text-gray-400 mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 leading-snug">{n.body}</p>
+                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">{timeAgo(n.createdAt)}</p>
                     </div>
                   </div>
                 </button>

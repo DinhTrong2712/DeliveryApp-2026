@@ -26,9 +26,9 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20">
         <div className="px-4 h-14 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
@@ -37,7 +37,7 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <span className="font-bold text-gray-900 text-sm">Sổ Ghi Chép Giao Hàng</span>
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">Sổ Ghi Chép Giao Hàng</span>
           </div>
 
           <div className="flex items-center gap-1">
@@ -47,23 +47,23 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowDropdown(v => !v)}
-              className="flex items-center gap-1.5 text-sm text-gray-700 font-medium hover:text-gray-900 transition-colors py-2 px-1"
+              className="flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300 font-medium hover:text-gray-900 dark:hover:text-white transition-colors py-2 px-1"
             >
               <span>{user?.fullName}</span>
-              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {showDropdown && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
-                <div className="px-4 py-2.5 border-b border-gray-100">
-                  <p className="text-sm font-semibold text-gray-900">{user?.fullName}</p>
-                  <p className="text-xs text-gray-500">Nhân viên giao hàng</p>
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg z-30 py-1">
+                <div className="px-4 py-2.5 border-b border-gray-100 dark:border-gray-800">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.fullName}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Nhân viên giao hàng</p>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -83,19 +83,19 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
       </main>
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-20">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-20">
         <div className="grid grid-cols-2 h-16">
           <NavLink
             to="/shipper/routes"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
-                isActive ? 'text-gray-900' : 'text-gray-400'
+                isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <div className={`p-1.5 rounded-lg ${isActive ? 'bg-gray-100' : ''}`}>
+                <div className={`p-1.5 rounded-lg ${isActive ? 'bg-gray-100 dark:bg-gray-800' : ''}`}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isActive ? 2.5 : 2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                   </svg>
@@ -109,13 +109,13 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
             to="/shipper/transfers"
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors ${
-                isActive ? 'text-gray-900' : 'text-gray-400'
+                isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <div className={`p-1.5 rounded-lg ${isActive ? 'bg-gray-100' : ''}`}>
+                <div className={`p-1.5 rounded-lg ${isActive ? 'bg-gray-100 dark:bg-gray-800' : ''}`}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={isActive ? 2.5 : 2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                   </svg>

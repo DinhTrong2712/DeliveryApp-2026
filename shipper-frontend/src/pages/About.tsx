@@ -178,14 +178,14 @@ function GalleryCarousel() {
   const enterClass = direction === 'next' ? 'carousel-enter-right' : 'carousel-enter-left'
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-gray-50 dark:bg-gray-950">
       <style>{CAROUSEL_STYLES}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Reveal className="text-center mb-12">
           <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: BRAND }}>
             Ảnh thực tế
           </p>
-          <h2 className="text-3xl sm:text-4xl font-black text-gray-900">Hoạt Động Công Ty</h2>
+          <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-gray-100">Hoạt Động Công Ty</h2>
         </Reveal>
 
         <div
@@ -213,14 +213,14 @@ function GalleryCarousel() {
 
           <button
             onClick={() => navigate('prev')}
-            className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md hover:bg-[#F26B2C] hover:text-white text-gray-700 flex items-center justify-center transition-colors"
+            className="absolute -left-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white dark:bg-gray-900 shadow-md hover:bg-[#F26B2C] hover:text-white text-gray-700 dark:text-gray-300 flex items-center justify-center transition-colors"
             aria-label="Ảnh trước"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           <button
             onClick={() => navigate('next')}
-            className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-md hover:bg-[#F26B2C] hover:text-white text-gray-700 flex items-center justify-center transition-colors"
+            className="absolute -right-5 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white dark:bg-gray-900 shadow-md hover:bg-[#F26B2C] hover:text-white text-gray-700 dark:text-gray-300 flex items-center justify-center transition-colors"
             aria-label="Ảnh tiếp"
           >
             <ChevronRight className="w-5 h-5" />
@@ -259,7 +259,7 @@ export default function About() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 scroll-smooth">
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 scroll-smooth">
       {/* HEADER — same shape as Home for visual continuity */}
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all ${
@@ -272,7 +272,7 @@ export default function About() {
           <Link to="/" className="flex items-center gap-2">
             <img src={iconSrc} alt="Hương Cường" width={36} height={36} className="rounded-xl object-cover" />
             <div className="leading-none">
-              <div className="font-extrabold text-[15px] tracking-wide text-gray-900">HƯƠNG</div>
+              <div className="font-extrabold text-[15px] tracking-wide text-gray-900 dark:text-gray-100">HƯƠNG</div>
               <div className="font-extrabold text-[15px] tracking-wide" style={{ color: BRAND }}>
                 CƯỜNG
               </div>
@@ -281,7 +281,7 @@ export default function About() {
           <nav className="hidden md:flex items-center gap-1">
             <Link
               to="/"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Trang chủ
             </Link>
@@ -294,7 +294,7 @@ export default function About() {
             </Link>
             <Link
               to="/contact"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Liên hệ
             </Link>
@@ -334,7 +334,7 @@ export default function About() {
               Câu chuyện của chúng tôi
             </p>
             <h1 className="text-4xl sm:text-5xl font-black text-white mb-5">Về Chúng Tôi</h1>
-            <p className="text-gray-400 max-w-xl mx-auto text-sm leading-relaxed">
+            <p className="text-gray-400 dark:text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">
               Khương Phúc — hành trình gần 20 năm xây dựng niềm tin với hơn 3.000 đại lý phân phối
               tại khu vực Thái Nguyên.
             </p>
@@ -343,47 +343,47 @@ export default function About() {
       </section>
 
       {/* BREADCRUMB */}
-      <div className="bg-gray-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-xs text-gray-500">
+      <div className="bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
           <Link to="/" className="hover:text-[#F26B2C] transition-colors">
             Trang chủ
           </Link>
           <span>/</span>
-          <span className="text-gray-700 font-medium">Về chúng tôi</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Về chúng tôi</span>
         </div>
       </div>
 
       {/* OVERVIEW */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <Reveal direction="left">
               <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: BRAND }}>
                 Thành lập năm 2008
               </p>
-              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-6">
+              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-gray-100 mb-6">
                 Gần Hai Thập Kỷ
                 <br />
                 Kiến Tạo Giá Trị
               </h2>
-              <p className="text-gray-500 text-sm leading-relaxed mb-4">
+              <p className="text-gray-500 dark:text-gray-500 text-sm leading-relaxed mb-4">
                 Được thành lập từ năm 2008 tại Phường Ba Hàng, TP. Phổ Yên, Thái Nguyên, Công ty
                 TNHH Khương Phúc (tiền thân là DNTN Khương Phúc) đã trải qua gần 20 năm xây dựng và
                 phát triển.
               </p>
-              <p className="text-gray-500 text-sm leading-relaxed mb-4">
+              <p className="text-gray-500 dark:text-gray-500 text-sm leading-relaxed mb-4">
                 Với tư duy nhạy bén cùng nỗ lực không ngừng của Ban lãnh đạo và tập thể cán bộ nhân
                 viên, chúng tôi tự hào khẳng định vị thế là một trong những doanh nghiệp uy tín
                 hàng đầu trong lĩnh vực phân phối FMCG và bán lẻ tại khu vực, với hơn 3.000 đại lý
                 từ Phổ Yên, Sông Công đến Phú Bình.
               </p>
               <p
-                className="text-sm leading-relaxed mb-8 font-medium text-gray-700 bg-orange-50 border rounded-xl px-4 py-3"
+                className="text-sm leading-relaxed mb-8 font-medium text-gray-700 dark:text-gray-300 bg-orange-50 border rounded-xl px-4 py-3"
                 style={{ borderColor: `${BRAND}33` }}
               >
                 🏷️ <span className="font-bold" style={{ color: BRAND }}>Công ty TNHH Khương Phúc</span>{' '}
                 là đơn vị sở hữu thương hiệu{' '}
-                <span className="font-bold text-gray-900">Nhà Phân Phối Hương Cường</span>.
+                <span className="font-bold text-gray-900 dark:text-gray-100">Nhà Phân Phối Hương Cường</span>.
               </p>
 
               <div className="grid grid-cols-2 gap-5 mb-8">
@@ -393,7 +393,7 @@ export default function About() {
                   { Icon: Phone, label: 'Điện thoại', value: '0974 058 400' },
                   { Icon: Award, label: 'Đối tác', value: '3.000+ đại lý' },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center gap-3 p-4 rounded-xl bg-gray-50">
+                  <div key={item.label} className="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-gray-950">
                     <div
                       className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: `${BRAND}1A` }}
@@ -401,8 +401,8 @@ export default function About() {
                       <item.Icon className="w-5 h-5" style={{ color: BRAND }} />
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-semibold">{item.label}</p>
-                      <p className="text-sm font-bold text-gray-900">{item.value}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase font-semibold">{item.label}</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100">{item.value}</p>
                     </div>
                   </div>
                 ))}
@@ -440,13 +440,13 @@ export default function About() {
       </section>
 
       {/* PEOPLE */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center mb-16">
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: BRAND }}>
               Tài sản quan trọng nhất
             </p>
-            <h2 className="text-3xl sm:text-4xl font-black text-gray-900">Con Người Là Nền Tảng</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-gray-100">Con Người Là Nền Tảng</h2>
           </Reveal>
 
           <div className="space-y-20">
@@ -469,10 +469,10 @@ export default function About() {
                     >
                       {item.subtitle}
                     </p>
-                    <h3 className="text-2xl sm:text-3xl font-black text-gray-900 mb-5">
+                    <h3 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-gray-100 mb-5">
                       {item.title}
                     </h3>
-                    <p className="text-gray-500 leading-relaxed text-sm">{item.description}</p>
+                    <p className="text-gray-500 dark:text-gray-500 leading-relaxed text-sm">{item.description}</p>
                   </div>
                 </div>
               </Reveal>
@@ -485,7 +485,7 @@ export default function About() {
       <GalleryCarousel />
 
       {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-300 pt-14 pb-8">
+      <footer className="bg-gray-900 text-gray-300 dark:text-gray-600 pt-14 pb-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-10">
             <div className="md:col-span-2">
@@ -504,7 +504,7 @@ export default function About() {
                   </div>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-gray-400 max-w-md">
+              <p className="text-sm leading-relaxed text-gray-400 dark:text-gray-500 max-w-md">
                 Công ty TNHH Khương Phúc – NPP Hương Cường. Nhà phân phối FMCG hàng đầu khu vực
                 Thái Nguyên, gần 20 năm kinh nghiệm phục vụ hơn 3.000 đại lý.
               </p>
@@ -536,7 +536,7 @@ export default function About() {
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">Thông tin liên hệ</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-400 dark:text-gray-500">
                 <li>📞 0988 599 747</li>
                 <li>✉️ khuongmv304@gmail.com</li>
                 <li>📍 TDP Kim Thái, Phường Phổ Yên, Thái Nguyên</li>
@@ -544,7 +544,7 @@ export default function About() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-500">
+          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-500 dark:text-gray-500">
             <p>
               © {new Date().getFullYear()} Công ty TNHH Khương Phúc. Tất cả quyền được bảo lưu.
             </p>

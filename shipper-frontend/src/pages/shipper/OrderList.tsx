@@ -76,9 +76,9 @@ export default function ShipperOrderList() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Sticky header */}
-      <div className="bg-white sticky top-0 z-10 border-b border-gray-100 shadow-sm">
+      <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800 shadow-sm">
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-3">
@@ -86,13 +86,13 @@ export default function ShipperOrderList() {
               {user?.fullName?.charAt(0) ?? '?'}
             </div>
             <div>
-              <p className="font-bold text-gray-900 text-sm leading-tight">{user?.fullName}</p>
-              <p className="text-xs text-gray-400">Nhân viên giao hàng</p>
+              <p className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight">{user?.fullName}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500">Nhân viên giao hàng</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 min-h-[44px] px-3 rounded-xl hover:bg-red-50 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-500 hover:text-red-600 min-h-[44px] px-3 rounded-xl hover:bg-red-50 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -104,9 +104,9 @@ export default function ShipperOrderList() {
         {/* Summary cards */}
         <div className="px-4 pb-2">
           <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="bg-gray-50 rounded-xl py-2.5 px-1">
-              <p className="font-bold text-gray-800 text-lg leading-tight">{summary.total}</p>
-              <p className="text-gray-500 text-xs mt-0.5">Tổng</p>
+            <div className="bg-gray-50 dark:bg-gray-950 rounded-xl py-2.5 px-1">
+              <p className="font-bold text-gray-800 dark:text-gray-200 text-lg leading-tight">{summary.total}</p>
+              <p className="text-gray-500 dark:text-gray-500 text-xs mt-0.5">Tổng</p>
             </div>
             <div className="bg-green-50 rounded-xl py-2.5 px-1">
               <p className="font-bold text-green-700 text-lg leading-tight">{summary.done}</p>
@@ -125,11 +125,11 @@ export default function ShipperOrderList() {
           {/* Progress bar */}
           {summary.total > 0 && (
             <div className="mt-2">
-              <div className="flex justify-between text-xs text-gray-400 mb-1">
+              <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mb-1">
                 <span>Tiến độ hoàn thành</span>
-                <span className="font-medium text-gray-600">{progress}%</span>
+                <span className="font-medium text-gray-600 dark:text-gray-400">{progress}%</span>
               </div>
-              <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full transition-all duration-500"
                   style={{ width: `${progress}%` }}
@@ -142,7 +142,7 @@ export default function ShipperOrderList() {
         {/* Search + sort */}
         <div className="px-4 pb-3 flex items-center gap-2">
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -152,26 +152,26 @@ export default function ShipperOrderList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm mã đơn, tên khách..."
-              className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+              className="w-full border border-gray-200 dark:border-gray-800 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-950"
             />
           </div>
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => setShowSort(v => !v)}
-              className="flex items-center gap-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-700 bg-gray-50 hover:bg-gray-100 whitespace-nowrap"
+              className="flex items-center gap-1 px-3 py-2.5 border border-gray-200 dark:border-gray-800 rounded-xl text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-950 hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap"
             >
-              <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-gray-500 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9M3 12h5m4 0l4 4m0 0l4-4m-4 4V4" />
               </svg>
               {SORT_OPTIONS.find(o => o.value === sort)?.label ?? 'Sắp xếp'}
             </button>
             {showSort && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+              <div className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg z-30 py-1">
                 {SORT_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => { setSort(opt.value); setShowSort(false) }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 ${sort === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}
                   >
                     {opt.label}
                   </button>
@@ -187,7 +187,7 @@ export default function ShipperOrderList() {
         {loading ? (
           <div className="space-y-3 mt-1">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl border border-gray-100 p-4">
+              <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4">
                 <div className="skeleton h-4 w-32 mb-2" />
                 <div className="skeleton h-3 w-48 mb-3" />
                 <div className="skeleton h-3 w-24" />
@@ -195,7 +195,7 @@ export default function ShipperOrderList() {
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="flex flex-col items-center py-16 text-gray-400">
+          <div className="flex flex-col items-center py-16 text-gray-400 dark:text-gray-500">
             <svg className="w-12 h-12 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
@@ -210,7 +210,7 @@ export default function ShipperOrderList() {
           </div>
         ) : (
           <>
-            <p className="text-xs text-gray-400 mb-3 px-1">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3 px-1">
               {search ? `Kết quả cho "${search}" · ` : ''}{sortedOrders.length} đơn hàng
             </p>
             {sortedOrders.map(o => (

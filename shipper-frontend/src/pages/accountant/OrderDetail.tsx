@@ -64,31 +64,31 @@ export default function AccountantOrderDetail() {
     }
   }
 
-  if (!order) return <div className="flex items-center justify-center min-h-screen text-gray-400">Đang tải...</div>
+  if (!order) return <div className="flex items-center justify-center min-h-screen text-gray-400 dark:text-gray-500">Đang tải...</div>
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white sticky top-0 z-10 border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="min-h-[48px] min-w-[48px] flex items-center justify-center text-gray-600">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate(-1)} className="min-h-[48px] min-w-[48px] flex items-center justify-center text-gray-600 dark:text-gray-400">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 className="font-bold text-gray-900">{order.orderCode}</h1>
+        <h1 className="font-bold text-gray-900 dark:text-gray-100">{order.orderCode}</h1>
       </div>
 
       <div className="px-4 pt-4 pb-8 space-y-4">
-        <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm">
           <div className="flex justify-between items-start mb-4">
-            <p className="text-xl font-bold text-gray-900">{order.customerName}</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{order.customerName}</p>
             <StatusBadge status={order.status} />
           </div>
           <div className="space-y-2 text-base">
-            <div className="flex justify-between"><span className="text-gray-500">Tổng tiền</span><span className="font-bold">{formatVND(order.amount)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Đã thu</span><span className="font-medium text-green-600">{formatVND(order.amountPaid)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Còn lại</span><span className="font-medium text-red-600">{formatVND(order.amountRemaining)}</span></div>
-            {order.shipperName && <div className="flex justify-between"><span className="text-gray-500">Nhân viên</span><span>{order.shipperName}</span></div>}
-            {order.deliveredAt && <div className="flex justify-between text-sm"><span className="text-gray-500">Đã giao lúc</span><span>{formatDate(order.deliveredAt)}</span></div>}
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-500">Tổng tiền</span><span className="font-bold">{formatVND(order.amount)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-500">Đã thu</span><span className="font-medium text-green-600">{formatVND(order.amountPaid)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-500">Còn lại</span><span className="font-medium text-red-600">{formatVND(order.amountRemaining)}</span></div>
+            {order.shipperName && <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-500">Nhân viên</span><span>{order.shipperName}</span></div>}
+            {order.deliveredAt && <div className="flex justify-between text-sm"><span className="text-gray-500 dark:text-gray-500">Đã giao lúc</span><span>{formatDate(order.deliveredAt)}</span></div>}
           </div>
         </div>
 
@@ -99,13 +99,13 @@ export default function AccountantOrderDetail() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-900 mb-2">Ghi chú kế toán (ẩn với nhân viên)</p>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm">
+          <p className="font-medium text-gray-900 dark:text-gray-100 mb-2">Ghi chú kế toán (ẩn với nhân viên)</p>
           <textarea
             value={accountantNote}
             onChange={(e) => setAccountantNote(e.target.value)}
             rows={3}
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="Ghi chú nội bộ..."
           />
           <button onClick={handleSaveNote} disabled={saving} className="mt-2 bg-gray-800 text-white px-4 py-2.5 rounded-xl text-sm font-medium min-h-[48px] disabled:opacity-60">
@@ -113,25 +113,25 @@ export default function AccountantOrderDetail() {
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="font-medium text-gray-900 mb-3">Ghi đè dữ liệu</p>
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm">
+          <p className="font-medium text-gray-900 dark:text-gray-100 mb-3">Ghi đè dữ liệu</p>
           <div className="space-y-2">
-            <select value={overrideField} onChange={(e) => setOverrideField(e.target.value)} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select value={overrideField} onChange={(e) => setOverrideField(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-base bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Chọn trường cần sửa</option>
               <option value="Status">Trạng thái</option>
               <option value="AmountPaid">Số tiền đã thu</option>
               <option value="ShipperNote">Ghi chú nhân viên</option>
             </select>
             {overrideField === 'Status' && (
-              <select value={overrideValue} onChange={(e) => setOverrideValue(e.target.value)} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <select value={overrideValue} onChange={(e) => setOverrideValue(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-base bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Chọn trạng thái</option>
                 {Object.entries(ORDER_STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             )}
             {overrideField !== 'Status' && overrideField && (
-              <input type="text" value={overrideValue} onChange={(e) => setOverrideValue(e.target.value)} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Giá trị mới" />
+              <input type="text" value={overrideValue} onChange={(e) => setOverrideValue(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Giá trị mới" />
             )}
-            <input type="text" value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="* Lý do bắt buộc" required />
+            <input type="text" value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="* Lý do bắt buộc" required />
             <button onClick={handleOverride} disabled={saving || !overrideField || !overrideReason} className="w-full bg-orange-600 text-white py-3 rounded-xl font-medium min-h-[48px] disabled:opacity-60">
               {saving ? 'Đang lưu...' : 'Áp dụng thay đổi'}
             </button>
@@ -139,8 +139,8 @@ export default function AccountantOrderDetail() {
         </div>
 
         {order.photos.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="font-medium text-gray-900 mb-3">Ảnh chứng từ</p>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm">
+            <p className="font-medium text-gray-900 dark:text-gray-100 mb-3">Ảnh chứng từ</p>
             <div className="grid grid-cols-3 gap-2">
               {order.photos.map(p => (
                 <img key={p.id} src={p.url} alt={p.caption ?? ''} className="w-full aspect-square object-cover rounded-xl" />
@@ -150,17 +150,17 @@ export default function AccountantOrderDetail() {
         )}
 
         {order.history.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <p className="font-medium text-gray-900 mb-3">Lịch sử thay đổi</p>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm">
+            <p className="font-medium text-gray-900 dark:text-gray-100 mb-3">Lịch sử thay đổi</p>
             <div className="space-y-3">
               {order.history.map(h => (
                 <div key={h.id} className="border-l-4 border-blue-200 pl-3 py-1">
-                  <div className="flex justify-between text-xs text-gray-400 mb-0.5">
+                  <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mb-0.5">
                     <span>{h.changedBy}</span>
                     <span>{formatDate(h.createdAt)}</span>
                   </div>
-                  <p className="text-sm text-gray-700">{h.fieldChanged}: <span className="line-through text-red-400">{h.oldValue}</span> → <span className="text-green-600">{h.newValue}</span></p>
-                  {h.reason && <p className="text-xs text-gray-500 mt-0.5">Lý do: {h.reason}</p>}
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{h.fieldChanged}: <span className="line-through text-red-400">{h.oldValue}</span> → <span className="text-green-600">{h.newValue}</span></p>
+                  {h.reason && <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">Lý do: {h.reason}</p>}
                 </div>
               ))}
             </div>

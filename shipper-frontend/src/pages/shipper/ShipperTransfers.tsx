@@ -113,14 +113,14 @@ export default function ShipperTransfers() {
       {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-start justify-between">
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Chuyển khoản chưa khớp</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Chuyển khoản chưa khớp</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">
             {total} giao dịch đang chờ — chọn đơn hàng của bạn để khớp
           </p>
         </div>
         <button
           onClick={handleRefresh}
-          className="text-sm font-medium text-gray-700 border border-gray-300 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors mt-0.5"
+          className="text-sm font-medium text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors mt-0.5"
         >
           Làm mới
         </button>
@@ -129,19 +129,19 @@ export default function ShipperTransfers() {
       {/* Transaction list */}
       <div className="px-4 space-y-3 pb-4">
         {loading ? (
-          <div className="py-12 text-center text-gray-400 text-sm">Đang tải...</div>
+          <div className="py-12 text-center text-gray-400 dark:text-gray-500 text-sm">Đang tải...</div>
         ) : txs.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 py-12 text-center text-gray-400 text-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 py-12 text-center text-gray-400 dark:text-gray-500 text-sm">
             Không có giao dịch chưa khớp
           </div>
         ) : (
           <>
             {txs.map(tx => (
-              <div key={tx.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div key={tx.id} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
                 {/* Transaction info */}
                 <div className="px-4 pt-4 pb-3">
                   <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <span className="font-bold text-sm text-gray-900 font-mono break-all leading-tight">
+                    <span className="font-bold text-sm text-gray-900 dark:text-gray-100 font-mono break-all leading-tight">
                       {tx.transactionCode}
                     </span>
                     <span className="font-bold text-green-600 whitespace-nowrap text-sm flex-shrink-0">
@@ -149,13 +149,13 @@ export default function ShipperTransfers() {
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-400 mb-1.5">
-                    {tx.gateway && <span className="text-gray-600">{tx.gateway} · </span>}
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mb-1.5">
+                    {tx.gateway && <span className="text-gray-600 dark:text-gray-400">{tx.gateway} · </span>}
                     {fmtDateTime(tx.transactionDate)}
                   </p>
 
                   {tx.content && (
-                    <p className="text-sm text-gray-600 leading-snug">{tx.content}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">{tx.content}</p>
                   )}
                 </div>
 
@@ -170,7 +170,7 @@ export default function ShipperTransfers() {
                         onChange={e => { setOrderInput(e.target.value); setMatchError('') }}
                         onKeyDown={e => { if (e.key === 'Enter') handleConfirmMatch(tx.id) }}
                         placeholder="Nhập mã đơn hàng của bạn..."
-                        className="w-full border border-gray-300 rounded-xl px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {matchError && <p className="text-red-500 text-xs">{matchError}</p>}
                       <div className="flex gap-2">
@@ -183,7 +183,7 @@ export default function ShipperTransfers() {
                         </button>
                         <button
                           onClick={handleCancelMatch}
-                          className="flex-1 border border-gray-300 text-gray-700 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors min-h-[48px]"
+                          className="flex-1 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[48px]"
                         >
                           Huỷ
                         </button>
@@ -192,7 +192,7 @@ export default function ShipperTransfers() {
                   ) : (
                     <button
                       onClick={() => handleStartMatch(tx.id)}
-                      className="w-full border border-gray-300 text-gray-700 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 min-h-[48px]"
+                      className="w-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 min-h-[48px]"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
@@ -209,7 +209,7 @@ export default function ShipperTransfers() {
               <button
                 onClick={handleLoadMore}
                 disabled={loadingMore}
-                className="w-full border border-gray-300 text-gray-700 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 transition-colors min-h-[48px]"
+                className="w-full border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[48px]"
               >
                 {loadingMore ? 'Đang tải...' : `Xem thêm (còn ${total - txs.length})`}
               </button>

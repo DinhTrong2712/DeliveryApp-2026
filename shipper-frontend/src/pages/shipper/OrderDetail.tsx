@@ -55,9 +55,9 @@ export default function ShipperOrderDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 dark:text-gray-500">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -65,7 +65,7 @@ export default function ShipperOrderDetail() {
           <div className="skeleton h-5 w-32" />
         </div>
         <div className="px-4 pt-4 space-y-3">
-          <div className="bg-white rounded-2xl p-5 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-sm">
             <div className="skeleton h-5 w-48 mb-3" />
             <div className="skeleton h-4 w-32 mb-4" />
             <div className="skeleton h-4 w-full mb-2" />
@@ -78,7 +78,7 @@ export default function ShipperOrderDetail() {
 
   if (!order) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen text-gray-400 gap-3">
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-400 dark:text-gray-500 gap-3">
         <svg className="w-10 h-10 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -93,63 +93,63 @@ export default function ShipperOrderDetail() {
   const isPaid = ['PaidCash', 'PaidTransfer'].includes(order.status)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white sticky top-0 z-10 border-b border-gray-100 shadow-sm px-4 py-3 flex items-center gap-3">
+      <div className="bg-white dark:bg-gray-900 sticky top-0 z-10 border-b border-gray-100 dark:border-gray-800 shadow-sm px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:text-gray-700 -ml-2 rounded-xl hover:bg-gray-100 transition-colors"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-gray-900 text-base truncate">{order.orderCode}</h1>
-          {order.routeCode && <p className="text-xs text-gray-400">Tuyến {order.routeCode}</p>}
+          <h1 className="font-bold text-gray-900 dark:text-gray-100 text-base truncate">{order.orderCode}</h1>
+          {order.routeCode && <p className="text-xs text-gray-400 dark:text-gray-500">Tuyến {order.routeCode}</p>}
         </div>
         <StatusBadge status={order.status} />
       </div>
 
       <div className="px-4 pt-4 pb-36 space-y-3">
         {/* Customer & amounts card */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm overflow-hidden">
           {/* Customer name */}
-          <div className="px-5 pt-5 pb-4 border-b border-gray-50">
-            <p className="text-xs text-gray-400 mb-0.5">Khách hàng</p>
-            <p className="text-xl font-bold text-gray-900">{order.customerName}</p>
+          <div className="px-5 pt-5 pb-4 border-b border-gray-50 dark:border-gray-800">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">Khách hàng</p>
+            <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{order.customerName}</p>
           </div>
 
           {/* Amounts */}
           <div className="px-5 py-4 space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-500 text-sm">Tổng tiền đơn</span>
-              <span className="font-bold text-gray-900 text-lg">{formatVND(order.amount)}</span>
+              <span className="text-gray-500 dark:text-gray-500 text-sm">Tổng tiền đơn</span>
+              <span className="font-bold text-gray-900 dark:text-gray-100 text-lg">{formatVND(order.amount)}</span>
             </div>
             {order.amountPaid > 0 && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-500 text-sm">Đã thu được</span>
+                <span className="text-gray-500 dark:text-gray-500 text-sm">Đã thu được</span>
                 <span className="font-semibold text-green-600">{formatVND(order.amountPaid)}</span>
               </div>
             )}
             {order.amountRemaining > 0 && (
               <>
-                <div className="border-t border-dashed border-gray-100" />
+                <div className="border-t border-dashed border-gray-100 dark:border-gray-800" />
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 text-sm font-medium">Còn phải thu</span>
+                  <span className="text-gray-600 dark:text-gray-400 text-sm font-medium">Còn phải thu</span>
                   <span className="font-bold text-red-600 text-lg">{formatVND(order.amountRemaining)}</span>
                 </div>
               </>
             )}
             {order.deliveredAt && (
-              <div className="flex justify-between items-center text-sm pt-1 border-t border-gray-50">
-                <span className="text-gray-400 flex items-center gap-1.5">
+              <div className="flex justify-between items-center text-sm pt-1 border-t border-gray-50 dark:border-gray-800">
+                <span className="text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   Giao lúc
                 </span>
-                <span className="text-gray-600">{formatDate(order.deliveredAt)}</span>
+                <span className="text-gray-600 dark:text-gray-400">{formatDate(order.deliveredAt)}</span>
               </div>
             )}
           </div>
@@ -157,20 +157,20 @@ export default function ShipperOrderDetail() {
 
         {/* QR chuyển khoản */}
         {order.status === 'WaitingTransfer' && qr && (
-          <div className="bg-white rounded-2xl shadow-sm p-4">
-            <p className="font-semibold text-gray-900 mb-1">Mã QR chuyển khoản</p>
-            <p className="text-xs text-gray-400 mb-3">Khách quét mã để chuyển khoản tự động</p>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-4">
+            <p className="font-semibold text-gray-900 dark:text-gray-100 mb-1">Mã QR chuyển khoản</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Khách quét mã để chuyển khoản tự động</p>
             <div className="flex flex-col items-center gap-3">
               <img
                 src={qr.qrUrl}
                 alt="VietQR"
-                className="w-56 h-56 rounded-xl border border-gray-100"
+                className="w-56 h-56 rounded-xl border border-gray-100 dark:border-gray-800"
               />
               <div className="text-center space-y-0.5">
-                <p className="font-semibold text-gray-800">{qr.accountName}</p>
-                <p className="text-sm text-gray-500">{qr.accountNo} · {qr.bank}</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">{qr.accountName}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">{qr.accountNo} · {qr.bank}</p>
                 <p className="text-sm font-bold text-blue-600">{formatVND(qr.amount)}</p>
-                <p className="text-xs text-gray-400">Nội dung: <span className="font-mono font-medium text-gray-700">{qr.orderCode}</span></p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Nội dung: <span className="font-mono font-medium text-gray-700 dark:text-gray-300">{qr.orderCode}</span></p>
               </div>
             </div>
           </div>
@@ -204,10 +204,10 @@ export default function ShipperOrderDetail() {
 
         {/* Photos */}
         {order.photos.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <p className="font-semibold text-gray-900 text-sm">Ảnh chứng từ</p>
-              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{order.photos.length}/5</span>
+              <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm">Ảnh chứng từ</p>
+              <span className="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">{order.photos.length}/5</span>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {order.photos.map(p => (
@@ -231,7 +231,7 @@ export default function ShipperOrderDetail() {
 
       {/* Bottom action bar */}
       {!isLocked && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 space-y-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 p-4 space-y-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
           {!isDelivered && (
             <button
               onClick={handleDelivered}
@@ -256,7 +256,7 @@ export default function ShipperOrderDetail() {
           )}
           <button
             onClick={() => navigate(`/shipper/orders/${order.id}/photo`)}
-            className="w-full border border-gray-200 text-gray-700 font-semibold py-3.5 rounded-2xl text-base min-h-[48px] hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="w-full border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 font-semibold py-3.5 rounded-2xl text-base min-h-[48px] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />

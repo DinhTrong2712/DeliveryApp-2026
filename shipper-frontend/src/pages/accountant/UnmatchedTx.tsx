@@ -111,12 +111,12 @@ export default function UnmatchedTx() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Khớp giao dịch</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString('vi-VN')} giao dịch chưa khớp</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Khớp giao dịch</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">{total.toLocaleString('vi-VN')} giao dịch chưa khớp</p>
         </div>
         <button
           onClick={handleRefresh}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Làm mới
         </button>
@@ -126,7 +126,7 @@ export default function UnmatchedTx() {
       <div className="flex items-center gap-3 mb-4">
         <form onSubmit={handleSearch} className="flex-1 relative">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
           </div>
@@ -135,48 +135,48 @@ export default function UnmatchedTx() {
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             placeholder="Tìm mã giao dịch, nội dung..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
         </form>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
         <table className="w-full text-sm min-w-[760px]">
           <thead>
-            <tr className="border-b border-gray-200 bg-white">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 whitespace-nowrap">Mã giao dịch</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Số tiền</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Nội dung</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600 whitespace-nowrap">Thời gian</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Cổng</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Thao tác</th>
+            <tr className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400 whitespace-nowrap">Mã giao dịch</th>
+              <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Số tiền</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Nội dung</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400 whitespace-nowrap">Thời gian</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Cổng</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Thao tác</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="text-center py-16 text-gray-400">Đang tải...</td>
+                <td colSpan={6} className="text-center py-16 text-gray-400 dark:text-gray-500">Đang tải...</td>
               </tr>
             ) : txs.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-16 text-gray-400">Không có giao dịch chưa khớp</td>
+                <td colSpan={6} className="text-center py-16 text-gray-400 dark:text-gray-500">Không có giao dịch chưa khớp</td>
               </tr>
             ) : txs.map((tx, i) => (
               <tr
                 key={tx.id}
-                className={`border-b border-gray-100 transition-colors ${i === txs.length - 1 ? 'border-b-0' : ''} ${matchingId === tx.id ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                className={`border-b border-gray-100 dark:border-gray-800 transition-colors ${i === txs.length - 1 ? 'border-b-0' : ''} ${matchingId === tx.id ? 'bg-blue-50' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
               >
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs text-gray-700">{tx.transactionCode}</span>
+                  <span className="font-mono text-xs text-gray-700 dark:text-gray-300">{tx.transactionCode}</span>
                 </td>
                 <td className="px-4 py-3 text-right font-semibold text-green-600">
                   {formatVND(tx.amount)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
-                  {tx.content ?? <span className="text-gray-400">—</span>}
+                <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
+                  {tx.content ?? <span className="text-gray-400 dark:text-gray-500">—</span>}
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap">
                   {fmtDate(tx.transactionDate)}
                 </td>
                 <td className="px-4 py-3">
@@ -184,7 +184,7 @@ export default function UnmatchedTx() {
                     <span className="inline-block px-2 py-0.5 bg-pink-100 text-pink-700 text-xs rounded-full">
                       {tx.gateway}
                     </span>
-                  ) : <span className="text-gray-400">—</span>}
+                  ) : <span className="text-gray-400 dark:text-gray-500">—</span>}
                 </td>
                 <td className="px-4 py-3">
                   {matchingId === tx.id ? (
@@ -210,7 +210,7 @@ export default function UnmatchedTx() {
                       </button>
                       <button
                         onClick={handleCancelMatch}
-                        className="px-3 py-1.5 border border-gray-300 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50 whitespace-nowrap"
+                        className="px-3 py-1.5 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 whitespace-nowrap"
                       >
                         Huỷ
                       </button>
@@ -231,15 +231,15 @@ export default function UnmatchedTx() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
-            <span className="text-xs text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+            <span className="text-xs text-gray-500 dark:text-gray-500">
               Trang {page}/{totalPages} — {total.toLocaleString('vi-VN')} giao dịch
             </span>
             <div className="flex gap-1">
               <PagBtn label="←" disabled={page <= 1} onClick={() => setPage(p => p - 1)} />
               {pageWindow(page, totalPages).map((p, i) =>
                 p === '...'
-                  ? <span key={`e${i}`} className="w-8 text-center text-gray-400 text-xs self-center">…</span>
+                  ? <span key={`e${i}`} className="w-8 text-center text-gray-400 dark:text-gray-500 text-xs self-center">…</span>
                   : <PagBtn key={p} label={String(p)} active={p === page} onClick={() => setPage(p as number)} />
               )}
               <PagBtn label="→" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} />
@@ -260,8 +260,8 @@ function PagBtn({ label, disabled, active, onClick }: {
       disabled={disabled}
       className={`w-8 h-8 rounded text-xs font-medium transition-colors ${
         active ? 'bg-gray-900 text-white'
-          : disabled ? 'text-gray-300 cursor-not-allowed'
-          : 'text-gray-600 hover:bg-gray-100'
+          : disabled ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
       }`}
     >
       {label}

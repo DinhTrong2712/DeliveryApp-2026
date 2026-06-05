@@ -189,8 +189,8 @@ export default function SePayPage() {
     <AdminLayout>
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">SePay</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Quản lý giao dịch ngân hàng & đối soát đơn hàng</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">SePay</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">Quản lý giao dịch ngân hàng & đối soát đơn hàng</p>
       </div>
 
       {/* Stats */}
@@ -216,7 +216,7 @@ export default function SePayPage() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 mb-4">
+      <div className="border-b border-gray-200 dark:border-gray-800 mb-4">
         <div className="flex gap-6">
           {(['transactions', 'webhooks'] as const).map(t => (
             <button
@@ -224,8 +224,8 @@ export default function SePayPage() {
               onClick={() => setTab(t)}
               className={`pb-3 text-sm font-medium border-b-2 transition-colors ${
                 tab === t
-                  ? 'border-gray-900 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-gray-900 text-gray-900 dark:text-gray-100'
+                  : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
               {t === 'transactions' ? 'Giao dịch' : 'Webhook logs'}
@@ -239,15 +239,15 @@ export default function SePayPage() {
         <>
           {/* Filter row */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
               {FILTER_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => handleStatusFilter(opt.value)}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     statusFilter === opt.value
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'
                   }`}
                 >
                   {opt.label}
@@ -260,7 +260,7 @@ export default function SePayPage() {
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
                 placeholder="Tìm mã GD, nội dung, mã đơn..."
-                className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+                className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
               />
               <button
                 type="submit"
@@ -272,54 +272,54 @@ export default function SePayPage() {
                 <button
                   type="button"
                   onClick={() => { setSearch(''); setSearchInput(''); setTxPage(1) }}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
+                  className="text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 text-sm"
                 >
                   Xóa
                 </button>
               )}
             </form>
-            <span className="text-sm text-gray-500 ml-auto">{txTotal} giao dịch</span>
+            <span className="text-sm text-gray-500 dark:text-gray-500 ml-auto">{txTotal} giao dịch</span>
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
             <table className="w-full text-sm min-w-[900px]">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Mã giao dịch</th>
-                  <th className="text-right px-4 py-3 font-semibold text-gray-600">Số tiền</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Nội dung</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Đơn hàng</th>
-                  <th className="text-center px-4 py-3 font-semibold text-gray-600">Trạng thái</th>
-                  <th className="text-left px-4 py-3 font-semibold text-gray-600">Thời gian</th>
+                <tr className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800">
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Mã giao dịch</th>
+                  <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Số tiền</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Nội dung</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Đơn hàng</th>
+                  <th className="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Trạng thái</th>
+                  <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Thời gian</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {txLoading ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-gray-400">Đang tải...</td></tr>
+                  <tr><td colSpan={7} className="text-center py-12 text-gray-400 dark:text-gray-500">Đang tải...</td></tr>
                 ) : txRows.length === 0 ? (
-                  <tr><td colSpan={7} className="text-center py-12 text-gray-400">Không có giao dịch</td></tr>
+                  <tr><td colSpan={7} className="text-center py-12 text-gray-400 dark:text-gray-500">Không có giao dịch</td></tr>
                 ) : txRows.map((tx, i) => (
-                  <tr key={tx.id} className={`border-b border-gray-100 hover:bg-gray-50 ${i % 2 === 1 ? 'bg-gray-50/30' : ''}`}>
-                    <td className="px-4 py-3 font-mono text-xs text-gray-700">{tx.transactionCode}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-gray-900">{fmt(tx.amount)}</td>
-                    <td className="px-4 py-3 text-gray-600 max-w-xs">
+                  <tr key={tx.id} className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 ${i % 2 === 1 ? 'bg-gray-50/30' : ''}`}>
+                    <td className="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-300">{tx.transactionCode}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-gray-100">{fmt(tx.amount)}</td>
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-xs">
                       <span className="line-clamp-2 text-xs">{tx.content ?? '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       {tx.orderCode ? (
-                        <span className="font-medium text-gray-800">{tx.orderCode}</span>
+                        <span className="font-medium text-gray-800 dark:text-gray-200">{tx.orderCode}</span>
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-gray-400 dark:text-gray-500">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[tx.matchStatus] ?? 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE[tx.matchStatus] ?? 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
                         {STATUS_LABEL[tx.matchStatus] ?? tx.matchStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{fmtDate(tx.transactionDate)}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap">{fmtDate(tx.transactionDate)}</td>
                     <td className="px-4 py-3">
                       {tx.matchStatus === 'Unmatched' && (
                         <button
@@ -345,8 +345,8 @@ export default function SePayPage() {
 
             {/* Pagination */}
             {txPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
-                <span className="text-xs text-gray-500">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+                <span className="text-xs text-gray-500 dark:text-gray-500">
                   Trang {txPage}/{txPages} — {txTotal} kết quả
                 </span>
                 <div className="flex gap-1">
@@ -368,29 +368,29 @@ export default function SePayPage() {
 
       {/* Webhook logs tab */}
       {tab === 'webhooks' && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
-            <span className="text-sm font-semibold text-gray-700">Webhook logs</span>
-            <span className="text-xs text-gray-500">{wTotal} bản ghi</span>
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Webhook logs</span>
+            <span className="text-xs text-gray-500 dark:text-gray-500">{wTotal} bản ghi</span>
           </div>
           <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[700px]">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Thời gian</th>
-                <th className="text-center px-4 py-3 font-semibold text-gray-600">Mã phản hồi</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Lỗi</th>
-                <th className="text-left px-4 py-3 font-semibold text-gray-600">Nội dung (preview)</th>
+              <tr className="border-b border-gray-200 dark:border-gray-800">
+                <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Thời gian</th>
+                <th className="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Mã phản hồi</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Lỗi</th>
+                <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Nội dung (preview)</th>
               </tr>
             </thead>
             <tbody>
               {wLoading ? (
-                <tr><td colSpan={4} className="text-center py-12 text-gray-400">Đang tải...</td></tr>
+                <tr><td colSpan={4} className="text-center py-12 text-gray-400 dark:text-gray-500">Đang tải...</td></tr>
               ) : wRows.length === 0 ? (
-                <tr><td colSpan={4} className="text-center py-12 text-gray-400">Chưa có webhook log</td></tr>
+                <tr><td colSpan={4} className="text-center py-12 text-gray-400 dark:text-gray-500">Chưa có webhook log</td></tr>
               ) : wRows.map(log => (
-                <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{fmtDate(log.createdAt)}</td>
+                <tr key={log.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-500 whitespace-nowrap">{fmtDate(log.createdAt)}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       log.responseCode === '00' ? 'bg-green-100 text-green-700' :
@@ -401,7 +401,7 @@ export default function SePayPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-red-600">{log.errorMessage ?? '—'}</td>
-                  <td className="px-4 py-3 text-xs text-gray-500 font-mono max-w-md">
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-500 font-mono max-w-md">
                     <span className="line-clamp-2">{log.rawBodyPreview ?? '—'}</span>
                   </td>
                 </tr>
@@ -411,8 +411,8 @@ export default function SePayPage() {
           </div>
 
           {wPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
-              <span className="text-xs text-gray-500">Trang {wPage}/{wPages}</span>
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
+              <span className="text-xs text-gray-500 dark:text-gray-500">Trang {wPage}/{wPages}</span>
               <div className="flex gap-1">
                 <PageBtn label="←" disabled={wPage <= 1} onClick={() => setWPage(p => p - 1)} />
                 <PageBtn label="→" disabled={wPage >= wPages} onClick={() => setWPage(p => p + 1)} />
@@ -425,25 +425,25 @@ export default function SePayPage() {
       {/* Manual match modal */}
       {matchingTx && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Ghép đôi thủ công</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Giao dịch: <span className="font-mono text-gray-700">{matchingTx.transactionCode}</span>
-              {' — '}<span className="font-semibold text-gray-900">{fmt(matchingTx.amount)}</span>
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">Ghép đôi thủ công</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
+              Giao dịch: <span className="font-mono text-gray-700 dark:text-gray-300">{matchingTx.transactionCode}</span>
+              {' — '}<span className="font-semibold text-gray-900 dark:text-gray-100">{fmt(matchingTx.amount)}</span>
             </p>
             {matchingTx.content && (
-              <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 mb-4 font-mono break-all">
+              <p className="text-xs text-gray-500 dark:text-gray-500 bg-gray-50 dark:bg-gray-950 rounded-lg p-3 mb-4 font-mono break-all">
                 {matchingTx.content}
               </p>
             )}
 
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mã đơn hàng</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mã đơn hàng</label>
             <input
               type="text"
               value={orderCodeInput}
               onChange={e => setOrderCodeInput(e.target.value.toUpperCase())}
               placeholder="BH..."
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 mb-3"
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 mb-3"
               onKeyDown={e => e.key === 'Enter' && handleManualMatch()}
             />
             {matchError && <p className="text-sm text-red-500 mb-3">{matchError}</p>}
@@ -451,7 +451,7 @@ export default function SePayPage() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setMatchingTx(null)}
-                className="px-4 py-2 text-sm rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
+                className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               >
                 Hủy
               </button>
@@ -511,8 +511,8 @@ function PageBtn({
         active
           ? 'bg-gray-900 text-white'
           : disabled
-          ? 'text-gray-300 cursor-not-allowed'
-          : 'text-gray-600 hover:bg-gray-100'
+          ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
       }`}
     >
       {label}

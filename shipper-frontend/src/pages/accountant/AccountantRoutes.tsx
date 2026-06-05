@@ -91,8 +91,8 @@ export default function AccountantRoutes() {
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Đơn gộp</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{total.toLocaleString('vi-VN')} đơn gộp</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Đơn gộp</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">{total.toLocaleString('vi-VN')} đơn gộp</p>
         </div>
         <button
           onClick={() => navigate('/accountant/import')}
@@ -110,7 +110,7 @@ export default function AccountantRoutes() {
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1 relative">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
             </svg>
           </div>
@@ -119,7 +119,7 @@ export default function AccountantRoutes() {
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
             placeholder="Tìm mã đơn gộp..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
         </form>
 
@@ -129,14 +129,14 @@ export default function AccountantRoutes() {
             type="date"
             value={from}
             onChange={e => setFrom(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
-          <span className="text-gray-400 text-sm">—</span>
+          <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
           <input
             type="date"
             value={to}
             onChange={e => setTo(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+            className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
           />
         </div>
 
@@ -147,7 +147,7 @@ export default function AccountantRoutes() {
             className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
               sort
                 ? 'border-gray-900 bg-gray-900 text-white'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -159,13 +159,13 @@ export default function AccountantRoutes() {
             </svg>
           </button>
           {showSort && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg z-30 py-1">
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt.value || 'default'}
                   onClick={() => { setSort(opt.value); setShowSort(false) }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                    sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    sort === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {opt.label}
@@ -177,61 +177,61 @@ export default function AccountantRoutes() {
 
         <button
           onClick={handleRefresh}
-          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           Làm mới
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">
           <thead>
-            <tr className="border-b border-gray-200 bg-white">
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Mã đơn gộp</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Ngày</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-600">Nhân viên</th>
-              <th className="text-center px-4 py-3 font-semibold text-gray-600">Số KH</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Tổng cần thu</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Đã thu</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-600">Còn lại</th>
+            <tr className="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Mã đơn gộp</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Ngày</th>
+              <th className="text-left px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Nhân viên</th>
+              <th className="text-center px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Số KH</th>
+              <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Tổng cần thu</th>
+              <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Đã thu</th>
+              <th className="text-right px-4 py-3 font-semibold text-gray-600 dark:text-gray-400">Còn lại</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center py-16 text-gray-400">Đang tải...</td>
+                <td colSpan={7} className="text-center py-16 text-gray-400 dark:text-gray-500">Đang tải...</td>
               </tr>
             ) : sortedRoutes.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-16 text-gray-400">Không có đơn gộp</td>
+                <td colSpan={7} className="text-center py-16 text-gray-400 dark:text-gray-500">Không có đơn gộp</td>
               </tr>
             ) : sortedRoutes.map((r, i) => {
               const remaining = r.totalAmount - r.totalPaid
               return (
                 <tr
                   key={r.routeCode}
-                  className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${i === sortedRoutes.length - 1 ? 'border-b-0' : ''}`}
+                  className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${i === sortedRoutes.length - 1 ? 'border-b-0' : ''}`}
                 >
                   <td className="px-4 py-3">
-                    <span className="font-mono text-sm font-semibold text-gray-900">{r.routeCode}</span>
+                    <span className="font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">{r.routeCode}</span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     {fmtDate(r.orderDate)}
                   </td>
                   <td className="px-4 py-3">
                     {r.shipperName ? (
-                      <span className="text-sm font-medium text-gray-900">{r.shipperName}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{r.shipperName}</span>
                     ) : (
-                      <span className="text-sm italic text-gray-400">Chưa phân công</span>
+                      <span className="text-sm italic text-gray-400 dark:text-gray-500">Chưa phân công</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center justify-center w-7 h-7 bg-gray-100 rounded-full text-xs font-semibold text-gray-700">
+                    <span className="inline-flex items-center justify-center w-7 h-7 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-semibold text-gray-700 dark:text-gray-300">
                       {r.customerCount}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-900">
+                  <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
                     {formatVND(r.totalAmount)}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-green-600">
@@ -241,7 +241,7 @@ export default function AccountantRoutes() {
                     {remaining > 0 ? (
                       <span className="text-orange-600">{formatVND(remaining)}</span>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-gray-400 dark:text-gray-500">—</span>
                     )}
                   </td>
                 </tr>

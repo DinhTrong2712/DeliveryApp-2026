@@ -127,7 +127,7 @@ export default function Contact() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 scroll-smooth">
+    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 scroll-smooth">
       {/* HEADER */}
       <header
         className={`fixed top-0 inset-x-0 z-50 transition-all ${
@@ -140,7 +140,7 @@ export default function Contact() {
           <Link to="/" className="flex items-center gap-2">
             <img src={iconSrc} alt="Hương Cường" width={36} height={36} className="rounded-xl object-cover" />
             <div className="leading-none">
-              <div className="font-extrabold text-[15px] tracking-wide text-gray-900">HƯƠNG</div>
+              <div className="font-extrabold text-[15px] tracking-wide text-gray-900 dark:text-gray-100">HƯƠNG</div>
               <div className="font-extrabold text-[15px] tracking-wide" style={{ color: BRAND }}>
                 CƯỜNG
               </div>
@@ -149,13 +149,13 @@ export default function Contact() {
           <nav className="hidden md:flex items-center gap-1">
             <Link
               to="/"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Trang chủ
             </Link>
             <Link
               to="/about"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-orange-600 rounded-full hover:bg-orange-50 transition-colors"
             >
               Về chúng tôi
             </Link>
@@ -202,7 +202,7 @@ export default function Contact() {
               Chúng tôi luôn sẵn sàng hỗ trợ
             </p>
             <h1 className="text-4xl sm:text-5xl font-black text-white mb-5">Liên Hệ Với Chúng Tôi</h1>
-            <p className="text-gray-400 max-w-xl mx-auto text-sm leading-relaxed">
+            <p className="text-gray-400 dark:text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">
               Liên hệ trực tiếp qua điện thoại hoặc ghé thăm văn phòng của chúng tôi tại TP. Phổ Yên,
               Thái Nguyên.
             </p>
@@ -211,34 +211,34 @@ export default function Contact() {
       </section>
 
       {/* BREADCRUMB */}
-      <div className="bg-gray-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-xs text-gray-500">
+      <div className="bg-gray-50 dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
           <Link to="/" className="hover:text-[#F26B2C] transition-colors">
             Trang chủ
           </Link>
           <span>/</span>
-          <span className="text-gray-700 font-medium">Liên hệ</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">Liên hệ</span>
         </div>
       </div>
 
       {/* 4 INFO CARDS */}
-      <section className="py-12 bg-white">
+      <section className="py-12 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {INFO_CARDS.map((card, i) => (
               <Reveal key={card.label} delay={i * 80}>
-                <div className="h-full rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow p-6">
+                <div className="h-full rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow p-6">
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center mb-4"
                     style={{ backgroundColor: `${BRAND}1A` }}
                   >
                     <card.Icon className="w-5 h-5" style={{ color: BRAND }} />
                   </div>
-                  <p className="text-[11px] font-bold tracking-widest uppercase text-gray-400 mb-2">
+                  <p className="text-[11px] font-bold tracking-widest uppercase text-gray-400 dark:text-gray-500 mb-2">
                     {card.label}
                   </p>
                   {card.lines.map((line) => (
-                    <p key={line} className="text-sm text-gray-700 leading-relaxed">
+                    <p key={line} className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                       {line}
                     </p>
                   ))}
@@ -250,10 +250,10 @@ export default function Contact() {
       </section>
 
       {/* MAP + WORKING HOURS */}
-      <section className="pb-20 bg-gray-50">
+      <section className="pb-20 bg-gray-50 dark:bg-gray-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
           <Reveal>
-            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-gray-100 mb-8">
               Vị Trí Của Chúng Tôi
             </h2>
           </Reveal>
@@ -261,7 +261,7 @@ export default function Contact() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* MAP */}
             <Reveal direction="left" className="lg:col-span-2">
-              <div className="relative rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white h-[440px]">
+              <div className="relative rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 h-[440px]">
                 <iframe
                   title="Bản đồ Công Ty TNHH Khương Phúc"
                   src={MAP_EMBED}
@@ -275,7 +275,7 @@ export default function Contact() {
 
             {/* WORKING HOURS CARD */}
             <Reveal direction="right">
-              <div className="h-full rounded-2xl bg-white shadow-sm border border-gray-100 p-6 flex flex-col">
+              <div className="h-full rounded-2xl bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800 p-6 flex flex-col">
                 <div className="flex items-center gap-3 mb-5">
                   <div
                     className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -283,42 +283,42 @@ export default function Contact() {
                   >
                     <Clock className="w-5 h-5" style={{ color: BRAND }} />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Giờ Làm Việc</h3>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Giờ Làm Việc</h3>
                 </div>
 
                 <ul className="space-y-3 mb-6">
                   {SCHEDULE.map((row) => (
                     <li
                       key={row.day}
-                      className="flex items-center justify-between text-sm border-b border-dashed border-gray-100 pb-3 last:border-0 last:pb-0"
+                      className="flex items-center justify-between text-sm border-b border-dashed border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0"
                     >
-                      <span className="text-gray-600">{row.day}</span>
-                      <span className="font-semibold text-gray-900">{row.time}</span>
+                      <span className="text-gray-600 dark:text-gray-400">{row.day}</span>
+                      <span className="font-semibold text-gray-900 dark:text-gray-100">{row.time}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-auto space-y-2 pt-5 border-t border-gray-100">
+                <div className="mt-auto space-y-2 pt-5 border-t border-gray-100 dark:border-gray-800">
                   <a
                     href={`tel:${PHONE_1.replace(/\s/g, '')}`}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors"
                   >
                     <Phone className="w-4 h-4" style={{ color: BRAND }} />
-                    <span className="text-sm font-semibold text-gray-800">{PHONE_1}</span>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{PHONE_1}</span>
                   </a>
                   <a
                     href={`tel:${PHONE_2.replace(/\s/g, '')}`}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors"
                   >
                     <Phone className="w-4 h-4" style={{ color: BRAND }} />
-                    <span className="text-sm font-semibold text-gray-800">{PHONE_2}</span>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{PHONE_2}</span>
                   </a>
                   <a
                     href={`mailto:${EMAIL}`}
                     className="flex items-center gap-3 px-4 py-3 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors"
                   >
                     <Mail className="w-4 h-4" style={{ color: BRAND }} />
-                    <span className="text-sm font-semibold text-gray-800 truncate">{EMAIL}</span>
+                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{EMAIL}</span>
                   </a>
                 </div>
               </div>
@@ -328,7 +328,7 @@ export default function Contact() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-300 pt-14 pb-8">
+      <footer className="bg-gray-900 text-gray-300 dark:text-gray-600 pt-14 pb-8">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-10">
             <div className="md:col-span-2">
@@ -347,7 +347,7 @@ export default function Contact() {
                   </div>
                 </div>
               </div>
-              <p className="text-sm leading-relaxed text-gray-400 max-w-md">
+              <p className="text-sm leading-relaxed text-gray-400 dark:text-gray-500 max-w-md">
                 Công ty TNHH Khương Phúc – NPP Hương Cường. Nhà phân phối FMCG hàng đầu khu vực
                 Thái Nguyên, gần 20 năm kinh nghiệm phục vụ hơn 3.000 đại lý.
               </p>
@@ -379,7 +379,7 @@ export default function Contact() {
             </div>
             <div>
               <h4 className="text-white font-bold mb-4">Thông tin liên hệ</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <ul className="space-y-2 text-sm text-gray-400 dark:text-gray-500">
                 <li>📞 {PHONE_2}</li>
                 <li>✉️ {EMAIL}</li>
                 <li>📍 {ADDRESS}</li>
@@ -387,7 +387,7 @@ export default function Contact() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-500">
+          <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-3 text-sm text-gray-500 dark:text-gray-500">
             <p>
               © {new Date().getFullYear()} Công ty TNHH Khương Phúc. Tất cả quyền được bảo lưu.
             </p>

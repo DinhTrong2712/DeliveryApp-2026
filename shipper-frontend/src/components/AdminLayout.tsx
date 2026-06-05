@@ -22,12 +22,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-20">
         <div className="max-w-screen-2xl mx-auto px-4 md:px-6 flex items-center h-14 gap-4 md:gap-8">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="md:hidden p-2 -ml-2 text-gray-700 hover:text-gray-900"
+            className="md:hidden p-2 -ml-2 text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             aria-label="Mở menu"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <span className="font-bold text-gray-900 text-sm">Sổ Ghi Chép</span>
+            <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">Sổ Ghi Chép</span>
           </div>
 
           <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto">
@@ -52,8 +52,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 className={({ isActive }) =>
                   `px-3 lg:px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     isActive
-                      ? 'bg-gray-900 text-white'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800'
                   }`
                 }
               >
@@ -63,10 +63,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden md:flex items-center gap-3 flex-shrink-0 ml-auto">
-            <span className="text-sm text-gray-600 truncate max-w-[160px]">{user?.fullName}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[160px]">{user?.fullName}</span>
             <button
               onClick={handleLogout}
-              className="bg-gray-900 text-white text-sm px-3 py-1.5 rounded-md font-medium hover:bg-gray-700 transition-colors"
+              className="bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 text-sm px-3 py-1.5 rounded-md font-medium hover:bg-gray-700 dark:hover:bg-white transition-colors"
             >
               Đăng xuất
             </button>

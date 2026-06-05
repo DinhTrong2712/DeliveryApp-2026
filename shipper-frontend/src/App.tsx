@@ -24,6 +24,7 @@ import AuditLogs from './pages/admin/AuditLogs'
 import RouteManagement from './pages/admin/RouteManagement'
 import SePayPage from './pages/admin/SePayPage'
 import AiAssistantWidget from './components/AiAssistantWidget'
+import LampToggle from './components/LampToggle'
 
 function RequireAuth({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const user = useAuthStore((s) => s.user)
@@ -88,6 +89,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AiAssistantWidget />
+      <LampToggle />
     </BrowserRouter>
   )
 }

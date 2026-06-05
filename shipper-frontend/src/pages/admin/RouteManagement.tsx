@@ -59,7 +59,7 @@ const daysAgo = (n: number) => {
 const svgProps = { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' } as const
 
 const IconSearch = () => (
-  <svg className="w-4 h-4 text-gray-400 flex-shrink-0" {...svgProps}>
+  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" {...svgProps}>
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 )
@@ -97,7 +97,7 @@ function Modal({ onClose, maxWidth = 'max-w-sm', children, closeOnBackdrop = fal
       onClick={closeOnBackdrop ? onClose : undefined}
     >
       <div
-        className={`bg-white rounded-2xl w-full ${maxWidth} shadow-xl ${maxWidth === 'max-w-5xl' ? 'max-h-[90vh] flex flex-col' : ''}`}
+        className={`bg-white dark:bg-gray-900 rounded-2xl w-full ${maxWidth} shadow-xl ${maxWidth === 'max-w-5xl' ? 'max-h-[90vh] flex flex-col' : ''}`}
         onClick={e => e.stopPropagation()}
       >
         {children}
@@ -224,8 +224,8 @@ export default function RouteManagement() {
   return (
     <AdminLayout>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="font-semibold text-gray-900 text-xl">Quản lý đơn gộp</h1>
-        <span className="text-sm text-gray-500">{total} đơn gộp</span>
+        <h1 className="font-semibold text-gray-900 dark:text-gray-100 text-xl">Quản lý đơn gộp</h1>
+        <span className="text-sm text-gray-500 dark:text-gray-500">{total} đơn gộp</span>
       </div>
 
       {error && (
@@ -234,18 +234,18 @@ export default function RouteManagement() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 mb-4 flex flex-wrap items-center gap-3">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3 mb-4 flex flex-wrap items-center gap-3">
         {!allDates && (
           <>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Từ</span>
+              <span className="text-sm text-gray-500 dark:text-gray-500">Từ</span>
               <input type="date" value={from} onChange={e => setFrom(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">Đến</span>
+              <span className="text-sm text-gray-500 dark:text-gray-500">Đến</span>
               <input type="date" value={to} onChange={e => setTo(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
+                className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" />
             </div>
           </>
         )}
@@ -254,12 +254,12 @@ export default function RouteManagement() {
           <IconSearch />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             placeholder="Tìm mã đơn gộp..."
-            className="flex-1 text-sm focus:outline-none text-gray-700 placeholder-gray-400" />
+            className="flex-1 text-sm focus:outline-none text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500" />
         </div>
 
         <button onClick={() => setAllDates(v => !v)}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-            allDates ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            allDates ? 'bg-gray-900 text-white border-gray-900' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}>
           Tất cả ngày
         </button>
@@ -268,7 +268,7 @@ export default function RouteManagement() {
           <button
             onClick={() => setShowSort(v => !v)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-              sort ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              sort ? 'bg-gray-900 text-white border-gray-900' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -280,13 +280,13 @@ export default function RouteManagement() {
             </svg>
           </button>
           {showSort && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-xl shadow-lg z-30 py-1">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-lg z-30 py-1">
               {SORT_OPTIONS.map(opt => (
                 <button
                   key={opt.value || 'default'}
                   onClick={() => { setSort(opt.value); setShowSort(false) }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                    sort === opt.value ? 'font-semibold text-gray-900' : 'text-gray-700'
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    sort === opt.value ? 'font-semibold text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   {opt.label}
@@ -297,42 +297,42 @@ export default function RouteManagement() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-x-auto">
         <table className="w-full text-sm min-w-[900px]">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50 text-left">
-              <th className="px-5 py-3 font-medium text-gray-500">Mã đơn gộp</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Ngày đơn hàng</th>
-              <th className="px-5 py-3 font-medium text-gray-500">Nhân viên</th>
-              <th className="px-5 py-3 font-medium text-gray-500 text-center">Số KH</th>
-              <th className="px-5 py-3 font-medium text-gray-500 text-right">Tổng cần thu</th>
-              <th className="px-5 py-3 font-medium text-gray-500 text-right">Đã thu</th>
-              <th className="px-5 py-3 font-medium text-gray-500" />
+            <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 text-left">
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Mã đơn gộp</th>
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Ngày đơn hàng</th>
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Nhân viên</th>
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500 text-center">Số KH</th>
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500 text-right">Tổng cần thu</th>
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500 text-right">Đã thu</th>
+              <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500" />
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-400">Đang tải...</td></tr>
+              <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-400 dark:text-gray-500">Đang tải...</td></tr>
             ) : sortedRoutes.length === 0 ? (
-              <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-400">Không có đơn gộp</td></tr>
+              <tr><td colSpan={7} className="px-5 py-12 text-center text-gray-400 dark:text-gray-500">Không có đơn gộp</td></tr>
             ) : sortedRoutes.map(r => (
               <tr key={r.routeCode} onClick={() => openDetail(r.routeCode)}
-                className="border-b border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
-                <td className="px-5 py-3.5 font-semibold text-gray-800">{r.routeCode}</td>
-                <td className="px-5 py-3.5 text-gray-500">{formatDateOnly(r.orderDate)}</td>
-                <td className="px-5 py-3.5 text-gray-700">{r.shipperName ?? <NotAssigned />}</td>
-                <td className="px-5 py-3.5 text-center text-gray-700">{r.customerCount}</td>
-                <td className="px-5 py-3.5 text-right text-gray-800">{formatVND(r.totalAmount)}</td>
+                className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
+                <td className="px-5 py-3.5 font-semibold text-gray-800 dark:text-gray-200">{r.routeCode}</td>
+                <td className="px-5 py-3.5 text-gray-500 dark:text-gray-500">{formatDateOnly(r.orderDate)}</td>
+                <td className="px-5 py-3.5 text-gray-700 dark:text-gray-300">{r.shipperName ?? <NotAssigned />}</td>
+                <td className="px-5 py-3.5 text-center text-gray-700 dark:text-gray-300">{r.customerCount}</td>
+                <td className="px-5 py-3.5 text-right text-gray-800 dark:text-gray-200">{formatVND(r.totalAmount)}</td>
                 <td className="px-5 py-3.5 text-right font-medium text-green-600">{formatVND(r.totalPaid)}</td>
                 <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-2">
                     <button onClick={() => openEdit(r)} title="Sửa nhân viên"
-                      className="p-1.5 text-gray-400 hover:text-gray-700 transition-colors rounded-md hover:bg-gray-100">
+                      className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-800">
                       <IconEdit />
                     </button>
                     {isAdmin && (
                       <button onClick={() => setDeleteRoute(r)} title="Xoá đơn gộp"
-                        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors rounded-md hover:bg-red-50">
+                        className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 transition-colors rounded-md hover:bg-red-50">
                         <IconTrash />
                       </button>
                     )}
@@ -343,10 +343,10 @@ export default function RouteManagement() {
           </tbody>
 
           {sortedRoutes.length > 0 && !loading && (
-            <tfoot className="border-t border-gray-200 bg-gray-50">
+            <tfoot className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950">
               <tr>
-                <td colSpan={4} className="px-5 py-3 text-sm font-medium text-gray-600">Tổng ({total} đơn gộp)</td>
-                <td className="px-5 py-3 text-right font-semibold text-gray-800">
+                <td colSpan={4} className="px-5 py-3 text-sm font-medium text-gray-600 dark:text-gray-400">Tổng ({total} đơn gộp)</td>
+                <td className="px-5 py-3 text-right font-semibold text-gray-800 dark:text-gray-200">
                   {formatVND(sortedRoutes.reduce((s, r) => s + r.totalAmount, 0))}
                 </td>
                 <td className="px-5 py-3 text-right font-semibold text-green-600">
@@ -361,27 +361,27 @@ export default function RouteManagement() {
 
       {editRoute && (
         <Modal onClose={() => setEditRoute(null)}>
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
             <div>
-              <h2 className="font-semibold text-gray-900">Đổi nhân viên</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{editRoute.routeCode} · {editRoute.customerCount} KH</p>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100">Đổi nhân viên</h2>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{editRoute.routeCode} · {editRoute.customerCount} KH</p>
             </div>
-            <button onClick={() => setEditRoute(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={() => setEditRoute(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
               <IconX />
             </button>
           </div>
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nhân viên giao hàng</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nhân viên giao hàng</label>
               <select value={selectedShipper} onChange={e => setSelectedShipper(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                className="w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2.5 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900">
                 <option value="">— Chưa phân công —</option>
                 {shippers.map(s => <option key={s.id} value={s.id}>{s.fullName}</option>)}
               </select>
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={() => setEditRoute(null)}
-                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                className="flex-1 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 Huỷ
               </button>
               <button onClick={handleSaveEdit} disabled={saving}
@@ -395,58 +395,58 @@ export default function RouteManagement() {
 
       {detail && (
         <Modal onClose={() => setDetail(null)} maxWidth="max-w-5xl" closeOnBackdrop>
-          <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
             <div>
-              <h2 className="font-semibold text-gray-900 text-lg">Chi tiết đơn gộp</h2>
-              <p className="text-sm text-gray-500 mt-0.5">
-                <span className="font-mono font-medium text-gray-800">{detail.routeCode}</span>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Chi tiết đơn gộp</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-0.5">
+                <span className="font-mono font-medium text-gray-800 dark:text-gray-200">{detail.routeCode}</span>
                 {!loadingDetail && detail.items.length > 0 && (
                   <>
-                    <span className="mx-2 text-gray-300">·</span>
+                    <span className="mx-2 text-gray-300 dark:text-gray-600">·</span>
                     <span>{detail.customerCount} đơn hàng</span>
-                    <span className="mx-2 text-gray-300">·</span>
-                    <span>Cần thu <span className="font-medium text-gray-800">{formatVND(detail.totalAmount)}</span></span>
-                    <span className="mx-2 text-gray-300">·</span>
+                    <span className="mx-2 text-gray-300 dark:text-gray-600">·</span>
+                    <span>Cần thu <span className="font-medium text-gray-800 dark:text-gray-200">{formatVND(detail.totalAmount)}</span></span>
+                    <span className="mx-2 text-gray-300 dark:text-gray-600">·</span>
                     <span>Đã thu <span className="font-medium text-green-600">{formatVND(detail.totalPaid)}</span></span>
                   </>
                 )}
               </p>
             </div>
-            <button onClick={() => setDetail(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <button onClick={() => setDetail(null)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
               <IconX />
             </button>
           </div>
 
           <div className="overflow-auto flex-1">
             {loadingDetail ? (
-              <div className="px-6 py-16 text-center text-gray-400 text-sm">Đang tải...</div>
+              <div className="px-6 py-16 text-center text-gray-400 dark:text-gray-500 text-sm">Đang tải...</div>
             ) : detail.items.length === 0 ? (
-              <div className="px-6 py-16 text-center text-gray-400 text-sm">Không có đơn hàng nào</div>
+              <div className="px-6 py-16 text-center text-gray-400 dark:text-gray-500 text-sm">Không có đơn hàng nào</div>
             ) : (
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 sticky top-0">
-                  <tr className="border-b border-gray-100 text-left">
-                    <th className="px-5 py-3 font-medium text-gray-500">Mã đơn</th>
-                    <th className="px-5 py-3 font-medium text-gray-500">Khách hàng</th>
-                    <th className="px-5 py-3 font-medium text-gray-500">Trạng thái</th>
-                    <th className="px-5 py-3 font-medium text-gray-500">Nhân viên</th>
-                    <th className="px-5 py-3 font-medium text-gray-500 text-right">Cần thu</th>
-                    <th className="px-5 py-3 font-medium text-gray-500 text-right">Đã thu</th>
-                    <th className="px-5 py-3 font-medium text-gray-500">Giao lúc</th>
-                    <th className="px-5 py-3 font-medium text-gray-500">Ghi chú</th>
+                <thead className="bg-gray-50 dark:bg-gray-950 sticky top-0">
+                  <tr className="border-b border-gray-100 dark:border-gray-800 text-left">
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Mã đơn</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Khách hàng</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Trạng thái</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Nhân viên</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500 text-right">Cần thu</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500 text-right">Đã thu</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Giao lúc</th>
+                    <th className="px-5 py-3 font-medium text-gray-500 dark:text-gray-500">Ghi chú</th>
                   </tr>
                 </thead>
                 <tbody>
                   {detail.items.map(o => (
-                    <tr key={o.id} className="border-b border-gray-50 hover:bg-gray-50">
-                      <td className="px-5 py-3 font-mono text-xs text-gray-800">{o.orderCode}</td>
-                      <td className="px-5 py-3 text-gray-700">{o.customerName}</td>
+                    <tr key={o.id} className="border-b border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="px-5 py-3 font-mono text-xs text-gray-800 dark:text-gray-200">{o.orderCode}</td>
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-300">{o.customerName}</td>
                       <td className="px-5 py-3"><StatusBadge status={o.status} /></td>
-                      <td className="px-5 py-3 text-gray-600">{o.shipperName ?? <NotAssigned />}</td>
-                      <td className="px-5 py-3 text-right text-gray-800">{formatVND(o.amount)}</td>
+                      <td className="px-5 py-3 text-gray-600 dark:text-gray-400">{o.shipperName ?? <NotAssigned />}</td>
+                      <td className="px-5 py-3 text-right text-gray-800 dark:text-gray-200">{formatVND(o.amount)}</td>
                       <td className="px-5 py-3 text-right font-medium text-green-600">{formatVND(o.amountPaid)}</td>
-                      <td className="px-5 py-3 text-gray-500 text-xs">{o.deliveredAt ? formatDate(o.deliveredAt) : '—'}</td>
-                      <td className="px-5 py-3 text-gray-500 text-xs max-w-[200px] truncate" title={o.shipperNote ?? o.unpaidReason ?? ''}>
+                      <td className="px-5 py-3 text-gray-500 dark:text-gray-500 text-xs">{o.deliveredAt ? formatDate(o.deliveredAt) : '—'}</td>
+                      <td className="px-5 py-3 text-gray-500 dark:text-gray-500 text-xs max-w-[200px] truncate" title={o.shipperNote ?? o.unpaidReason ?? ''}>
                         {o.shipperNote ?? o.unpaidReason ?? '—'}
                       </td>
                     </tr>
@@ -456,9 +456,9 @@ export default function RouteManagement() {
             )}
           </div>
 
-          <div className="px-6 py-3 border-t border-gray-100 flex justify-end">
+          <div className="px-6 py-3 border-t border-gray-100 dark:border-gray-800 flex justify-end">
             <button onClick={() => setDetail(null)}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800">
               Đóng
             </button>
           </div>
@@ -473,15 +473,15 @@ export default function RouteManagement() {
                 <IconWarning />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900">Xoá đơn gộp?</h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">Xoá đơn gộp?</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
                   Toàn bộ <strong>{deleteRoute.customerCount}</strong> đơn hàng trong <strong>{deleteRoute.routeCode}</strong> sẽ bị xoá vĩnh viễn.
                 </p>
               </div>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setDeleteRoute(null)}
-                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                className="flex-1 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 Huỷ
               </button>
               <button onClick={handleDelete} disabled={deleting}

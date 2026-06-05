@@ -69,13 +69,13 @@ export function AccountantNav({ title, actions, backTo }: Props) {
   }
 
   return (
-    <div className="bg-white border-b border-gray-100 sticky top-0 z-20">
+    <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 sticky top-0 z-20">
       {/* Header row */}
       <div className="px-4 py-3 flex items-center gap-2">
         {backTo ? (
           <Link
             to={backTo}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 hover:text-gray-700 -ml-2 rounded-xl hover:bg-gray-100 transition-colors"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 -ml-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -85,10 +85,10 @@ export function AccountantNav({ title, actions, backTo }: Props) {
 
         <div className="flex-1 min-w-0">
           {title && (
-            <h1 className="font-bold text-gray-900 text-base leading-tight truncate">{title}</h1>
+            <h1 className="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight truncate">{title}</h1>
           )}
           {!backTo && user && (
-            <p className="text-xs text-gray-400 leading-tight">{user.fullName} · {user.role === 'Admin' ? 'Quản trị' : 'Kế toán'}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 leading-tight">{user.fullName} · {user.role === 'Admin' ? 'Quản trị' : 'Kế toán'}</p>
           )}
         </div>
 
@@ -97,7 +97,7 @@ export function AccountantNav({ title, actions, backTo }: Props) {
         {!backTo && (
           <button
             onClick={handleLogout}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-red-600 min-h-[44px] px-2 rounded-xl hover:bg-red-50 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-500 hover:text-red-600 min-h-[44px] px-2 rounded-xl hover:bg-red-50 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -119,7 +119,7 @@ export function AccountantNav({ title, actions, backTo }: Props) {
                 className={`flex items-center gap-1.5 px-3 py-2.5 text-sm font-medium whitespace-nowrap rounded-t-lg transition-colors border-b-2 ${
                   active
                     ? 'border-blue-600 text-blue-700 bg-blue-50'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                 }`}
               >
                 {nav.icon}

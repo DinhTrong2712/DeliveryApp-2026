@@ -50,7 +50,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#FFF8F2]">
+    <div className="min-h-screen flex bg-[#FFF8F2] dark:bg-gray-950">
       {/* ─────────── Left: Hero illustration (desktop only) ─────────── */}
       <div className="hidden md:block relative w-1/2 h-screen overflow-hidden bg-gradient-to-b from-[#FCE0CB] via-[#FFE9D6] to-[#FFF8F2]">
         <img
@@ -114,7 +114,7 @@ export default function Login() {
         {/* Mobile back link */}
         <Link
           to="/"
-          className="md:hidden inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors w-fit"
+          className="md:hidden inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors w-fit"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -134,18 +134,18 @@ export default function Login() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Sổ Ghi Chép</h1>
-              <p className="text-gray-500 text-xs mt-0.5">Quản lý giao hàng — Hương Cường</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Sổ Ghi Chép</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Quản lý giao hàng — Hương Cường</p>
             </div>
 
             {/* Heading */}
             <div className="mb-7 hidden md:block">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 text-orange-600 text-[11px] font-semibold uppercase tracking-wider mb-3">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[11px] font-semibold uppercase tracking-wider mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                 Chào mừng trở lại
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Đăng nhập</h1>
-              <p className="text-gray-500 text-sm mt-1.5">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Đăng nhập</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1.5">
                 Nhập thông tin tài khoản để tiếp tục.
               </p>
             </div>
@@ -153,7 +153,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Username */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Tên đăng nhập
                 </label>
                 <div className="relative">
@@ -166,7 +166,7 @@ export default function Login() {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
+                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl pl-10 pr-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white dark:focus:bg-gray-900 transition-all"
                     placeholder="Nhập tên đăng nhập"
                     required
                     autoComplete="username"
@@ -176,7 +176,7 @@ export default function Login() {
 
               {/* Password */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                   Mật khẩu
                 </label>
                 <div className="relative">
@@ -189,7 +189,7 @@ export default function Login() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-12 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white transition-all"
+                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-xl pl-10 pr-12 py-3 text-base focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:bg-white dark:focus:bg-gray-900 transition-all"
                     placeholder="Nhập mật khẩu"
                     required
                     autoComplete="current-password"
@@ -216,7 +216,7 @@ export default function Login() {
               </div>
 
               {/* Remember */}
-              <label className="flex items-center gap-2 select-none cursor-pointer text-sm text-gray-600 w-fit">
+              <label className="flex items-center gap-2 select-none cursor-pointer text-sm text-gray-600 dark:text-gray-400 w-fit">
                 <input
                   type="checkbox"
                   checked={remember}
@@ -229,7 +229,7 @@ export default function Login() {
 
               {/* Error */}
               {error && (
-                <div role="alert" className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-3 rounded-xl text-sm border border-red-100">
+                <div role="alert" className="flex items-center gap-2 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl text-sm border border-red-100 dark:border-red-900/50">
                   <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -264,7 +264,7 @@ export default function Login() {
             </form>
 
             {/* Footer */}
-            <p className="text-center text-xs text-gray-400 mt-8">
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-8">
               © {new Date().getFullYear()} Công ty TNHH Khương Phúc — NPP Hương Cường
             </p>
           </div>
