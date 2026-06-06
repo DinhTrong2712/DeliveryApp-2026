@@ -332,62 +332,163 @@ export default function ChibiAvatar({ mode = 'fab', className = '' }: ChibiAvata
         <ellipse cx="50" cy="70" rx="22" ry="8" fill="url(#chibi-face-shade)" />
       </g>
 
-      {/* === NẮM ĐẤM === (mode peek — 2 nắm tròn cạnh má, tựa trên mép header) */}
+      {/* === TAY NẮM MÉP === (peek mode — mu bàn tay trên mép + 4 ngón cong xuống nắm) */}
       {mode === 'peek' && (
         <g>
-          {/* NẮM ĐẤM TRÁI — bên má trái */}
-          <g className="chibi-fist chibi-fist-left">
-            {/* mu nắm đấm — hình tròn co lại */}
-            <ellipse cx="15" cy="66" rx="8.5" ry="8" fill="url(#chibi-skin)" />
-
-            {/* 4 đốt ngón nhô lên đỉnh nắm đấm */}
-            <ellipse cx="9.5" cy="60" rx="2" ry="2.5" fill="url(#chibi-skin)" />
-            <ellipse cx="12.8" cy="58.5" rx="2.1" ry="2.7" fill="url(#chibi-skin)" />
-            <ellipse cx="16.5" cy="58.5" rx="2.1" ry="2.7" fill="url(#chibi-skin)" />
-            <ellipse cx="20" cy="60" rx="2" ry="2.5" fill="url(#chibi-skin)" />
-
-            {/* ngón cái cuộn ra phía mặt (bên phải nắm tay trái) */}
-            <ellipse cx="22" cy="66" rx="3.2" ry="3.8" fill="url(#chibi-skin)" />
+          {/* TAY TRÁI nắm mép — bên má trái */}
+          <g className="chibi-hand chibi-hand-left">
+            {/* mu bàn tay (đặt trên đỉnh mép tường) */}
             <path
-              d="M 20 64 Q 23.5 65 23 69"
+              d="M 2 60
+                 Q 2 53 9 52
+                 L 23 52
+                 Q 28 54 28 62
+                 L 28 73
+                 L 2 73 Z"
+              fill="url(#chibi-skin)"
+            />
+            {/* ngón cái cuộn trên (lộ trên mu bàn tay) */}
+            <ellipse cx="25" cy="56" rx="3" ry="3.2" fill="url(#chibi-skin)" />
+            <path
+              d="M 23 54 Q 27 55 27.5 58"
               stroke="#d9a578"
               strokeWidth="0.5"
               fill="none"
               opacity="0.55"
             />
 
-            {/* khía giữa các ngón cho rõ nắm */}
-            <path d="M 11.5 62 Q 11.5 67 11 72" stroke="#d9a578" strokeWidth="0.45" opacity="0.55" fill="none" />
-            <path d="M 14.5 61 Q 14.7 67 14.7 73" stroke="#d9a578" strokeWidth="0.45" opacity="0.55" fill="none" />
-            <path d="M 18 61 Q 18 67 18 73" stroke="#d9a578" strokeWidth="0.45" opacity="0.55" fill="none" />
+            {/* 4 ngón cong xuống nắm qua mép (lộ trên gradient) */}
+            {/* ngón trỏ (gần mặt nhất) */}
+            <path
+              d="M 22 71
+                 Q 23 80 21 86
+                 Q 20 87 18.5 87
+                 Q 17 86.5 17 84
+                 L 17 71 Z"
+              fill="url(#chibi-skin)"
+            />
+            {/* ngón giữa (dài nhất) */}
+            <path
+              d="M 17 71
+                 Q 17.5 83 16 88
+                 Q 15 89 13.5 89
+                 Q 12 88.5 12 86
+                 L 12 71 Z"
+              fill="url(#chibi-skin)"
+            />
+            {/* ngón áp út */}
+            <path
+              d="M 12 71
+                 Q 12 82 11 87
+                 Q 10 88 8.5 88
+                 Q 7 87.5 7 85
+                 L 7 71 Z"
+              fill="url(#chibi-skin)"
+            />
+            {/* ngón út (ngắn nhất) */}
+            <path
+              d="M 7 71
+                 Q 6.5 78 5.5 83
+                 Q 4.5 84 3 84
+                 Q 1.5 83.5 1.5 81
+                 L 1.5 71 Z"
+              fill="url(#chibi-skin)"
+            />
 
-            {/* highlight bóng đỉnh */}
-            <ellipse cx="13" cy="62" rx="4" ry="1.3" fill="#fff2e0" opacity="0.45" />
+            {/* khía giữa các ngón */}
+            <path
+              d="M 17 73 L 17.5 85 M 12 73 L 12.5 87 M 7 73 L 7.5 84"
+              stroke="#d9a578"
+              strokeWidth="0.4"
+              opacity="0.55"
+            />
+            {/* highlight bóng trên mu bàn tay */}
+            <path
+              d="M 5 56 Q 14 54 23 56"
+              stroke="#fff2e0"
+              strokeWidth="0.8"
+              fill="none"
+              opacity="0.55"
+              strokeLinecap="round"
+            />
+            {/* móng ngón nhỏ trên đầu ngón */}
+            <ellipse cx="19" cy="85.5" rx="1.2" ry="0.8" fill="#ffd9b5" opacity="0.7" />
+            <ellipse cx="14" cy="87.5" rx="1.2" ry="0.8" fill="#ffd9b5" opacity="0.7" />
+            <ellipse cx="9" cy="86.5" rx="1.2" ry="0.8" fill="#ffd9b5" opacity="0.7" />
+            <ellipse cx="4" cy="82.5" rx="1.1" ry="0.7" fill="#ffd9b5" opacity="0.7" />
           </g>
 
-          {/* NẮM ĐẤM PHẢI — mirror, bên má phải */}
-          <g className="chibi-fist chibi-fist-right">
-            <ellipse cx="85" cy="66" rx="8.5" ry="8" fill="url(#chibi-skin)" />
-
-            <ellipse cx="80" cy="60" rx="2" ry="2.5" fill="url(#chibi-skin)" />
-            <ellipse cx="83.5" cy="58.5" rx="2.1" ry="2.7" fill="url(#chibi-skin)" />
-            <ellipse cx="87.2" cy="58.5" rx="2.1" ry="2.7" fill="url(#chibi-skin)" />
-            <ellipse cx="90.5" cy="60" rx="2" ry="2.5" fill="url(#chibi-skin)" />
-
-            <ellipse cx="78" cy="66" rx="3.2" ry="3.8" fill="url(#chibi-skin)" />
+          {/* TAY PHẢI nắm mép — mirror */}
+          <g className="chibi-hand chibi-hand-right">
             <path
-              d="M 80 64 Q 76.5 65 77 69"
+              d="M 98 60
+                 Q 98 53 91 52
+                 L 77 52
+                 Q 72 54 72 62
+                 L 72 73
+                 L 98 73 Z"
+              fill="url(#chibi-skin)"
+            />
+            <ellipse cx="75" cy="56" rx="3" ry="3.2" fill="url(#chibi-skin)" />
+            <path
+              d="M 77 54 Q 73 55 72.5 58"
               stroke="#d9a578"
               strokeWidth="0.5"
               fill="none"
               opacity="0.55"
             />
 
-            <path d="M 82 62 Q 82 67 82.3 72" stroke="#d9a578" strokeWidth="0.45" opacity="0.55" fill="none" />
-            <path d="M 85.5 61 Q 85.3 67 85.3 73" stroke="#d9a578" strokeWidth="0.45" opacity="0.55" fill="none" />
-            <path d="M 89 61 Q 89 67 89 73" stroke="#d9a578" strokeWidth="0.45" opacity="0.55" fill="none" />
+            <path
+              d="M 78 71
+                 Q 77 80 79 86
+                 Q 80 87 81.5 87
+                 Q 83 86.5 83 84
+                 L 83 71 Z"
+              fill="url(#chibi-skin)"
+            />
+            <path
+              d="M 83 71
+                 Q 82.5 83 84 88
+                 Q 85 89 86.5 89
+                 Q 88 88.5 88 86
+                 L 88 71 Z"
+              fill="url(#chibi-skin)"
+            />
+            <path
+              d="M 88 71
+                 Q 88 82 89 87
+                 Q 90 88 91.5 88
+                 Q 93 87.5 93 85
+                 L 93 71 Z"
+              fill="url(#chibi-skin)"
+            />
+            <path
+              d="M 93 71
+                 Q 93.5 78 94.5 83
+                 Q 95.5 84 97 84
+                 Q 98.5 83.5 98.5 81
+                 L 98.5 71 Z"
+              fill="url(#chibi-skin)"
+            />
 
-            <ellipse cx="87" cy="62" rx="4" ry="1.3" fill="#fff2e0" opacity="0.45" />
+            <path
+              d="M 83 73 L 82.5 85 M 88 73 L 87.5 87 M 93 73 L 92.5 84"
+              stroke="#d9a578"
+              strokeWidth="0.4"
+              opacity="0.55"
+            />
+            <path
+              d="M 95 56 Q 86 54 77 56"
+              stroke="#fff2e0"
+              strokeWidth="0.8"
+              fill="none"
+              opacity="0.55"
+              strokeLinecap="round"
+            />
+            <ellipse cx="81" cy="85.5" rx="1.2" ry="0.8" fill="#ffd9b5" opacity="0.7" />
+            <ellipse cx="86" cy="87.5" rx="1.2" ry="0.8" fill="#ffd9b5" opacity="0.7" />
+            <ellipse cx="91" cy="86.5" rx="1.2" ry="0.8" fill="#ffd9b5" opacity="0.7" />
+            <ellipse cx="96" cy="82.5" rx="1.1" ry="0.7" fill="#ffd9b5" opacity="0.7" />
           </g>
         </g>
       )}

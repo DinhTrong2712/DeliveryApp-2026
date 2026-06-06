@@ -183,12 +183,11 @@ export default function AiAssistantWidget() {
 
       {open && (
         <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
-          {/* Chibi lấp ló trên header — 2 nắm đấm tựa lên mép header, cằm khuất sau gradient.
-              Render TRƯỚC header trong DOM + KHÔNG z-index → header gradient phủ phần dưới
-              SVG tự nhiên (cằm, đáy nắm đấm) tạo hiệu ứng tựa lên tường. */}
+          {/* Chibi nắm mép header — đầu nhô qua + 2 tay vắt qua mép, ngón cong xuống
+              hiện trên gradient cam như đang nắm thật. z-10 để ngón nổi lên trên header. */}
           <div
-            className="absolute left-3 sm:left-5 pointer-events-none chibi-climb"
-            style={{ top: -53, width: 72, height: 72 }}
+            className="absolute left-3 sm:left-5 pointer-events-none chibi-climb z-10"
+            style={{ top: -56, width: 72, height: 72 }}
             aria-hidden
           >
             <div className="chibi-sway w-full h-full">
