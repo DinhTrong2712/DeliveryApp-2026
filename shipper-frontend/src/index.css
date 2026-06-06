@@ -123,12 +123,12 @@ p {
 }
 .chibi-eye-left {
   transform-box: view-box;
-  transform-origin: 40px 46px;
+  transform-origin: 40px 53px;
   animation: chibiBlink 5s ease-in-out infinite;
 }
 .chibi-eye-right {
   transform-box: view-box;
-  transform-origin: 60px 46px;
+  transform-origin: 60px 53px;
   animation: chibiBlink 5s ease-in-out infinite;
 }
 
