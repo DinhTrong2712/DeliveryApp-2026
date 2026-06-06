@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 import api from '../lib/api'
 import { formatVND } from '../lib/formatters'
 import { useAuthStore } from '../stores/authStore'
-import aiAvatar from '../assets/ai-assistant.png'
+import ChibiAvatar from './ChibiAvatar'
 
 interface ChatMessage {
   id: string
@@ -36,18 +36,6 @@ const SUGGESTIONS_BY_ROLE: Record<string, string[]> = {
 }
 
 const svgProps = { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' } as const
-
-/**
- * Avatar bé shipper — trợ lý AI (ảnh chibi tròn, viền trắng).
- */
-const BoyAvatar = ({ className }: { className?: string }) => (
-  <img
-    src={aiAvatar}
-    alt="Trợ lý AI"
-    draggable={false}
-    className={`rounded-full object-cover ring-2 ring-white dark:ring-gray-900 ${className ?? ''}`}
-  />
-)
 
 const IconClose = ({ className }: { className: string }) => (
   <svg className={className} {...svgProps}>
@@ -180,29 +168,37 @@ export default function AiAssistantWidget() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Mở trợ lý AI"
-          className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-16 h-16 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group"
+          className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-16 h-16 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group chibi-bob"
         >
-          <BoyAvatar className="w-16 h-16 drop-shadow-[0_4px_8px_rgba(217,82,26,0.35)] group-hover:drop-shadow-[0_6px_12px_rgba(217,82,26,0.5)] transition-[filter] duration-200" />
-          {/* Notification dot trên vai avatar */}
-          <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white dark:ring-gray-900 animate-pulse" />
+          {/* Vòng tròn gradient cam — viền trắng + bóng đổ */}
+          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-300 via-orange-400 to-orange-600 ring-2 ring-white dark:ring-gray-900 shadow-[0_4px_14px_rgba(217,82,26,0.4)] group-hover:shadow-[0_6px_20px_rgba(217,82,26,0.55)] transition-shadow duration-200" />
+          {/* Chibi trong vòng — clip để gọn trong hình tròn */}
+          <span className="relative w-full h-full rounded-full overflow-hidden">
+            <ChibiAvatar mode="fab" className="w-full h-full" />
+          </span>
+          {/* Notification dot */}
+          <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white dark:ring-gray-900 animate-pulse" />
         </button>
       )}
 
       {open && (
         <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
-          {/* Avatar bé shipper lấp ló — nhô lên trên GÓC TRÁI, phần dưới khuất sau header chat.
-              Render TRƯỚC header trong DOM → gradient cam vẽ đè lên phần dưới avatar. */}
+          {/* Chibi trèo lên mép tường — đầu nhô qua trên header, hai bàn tay nắm mép.
+              Render TRƯỚC header trong DOM nhưng tay nằm trong vùng z thấp hơn header gradient
+              vì gradient sẽ phủ phần dưới SVG tự nhiên (overflow: visible giúp đầu vẫn hiện). */}
           <div
-            className="absolute left-4 sm:left-6 pointer-events-none chibi-peek-in chibi-bob"
-            style={{ top: -22, width: 56, height: 56 }}
+            className="absolute left-3 sm:left-5 pointer-events-none chibi-climb z-10"
+            style={{ top: -48, width: 72, height: 72 }}
             aria-hidden
           >
-            <BoyAvatar className="w-14 h-14 drop-shadow-md" />
+            <div className="chibi-sway w-full h-full">
+              <ChibiAvatar mode="peek" className="w-full h-full drop-shadow-[0_4px_6px_rgba(0,0,0,0.18)]" />
+            </div>
           </div>
 
           <div className="relative bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center gap-3 text-white rounded-t-2xl">
-            {/* Chỗ trống cho avatar lấp ló phía trên-trái */}
-            <div className="w-12 flex-shrink-0" />
+            {/* Chỗ trống cho chibi lấp ló phía trên-trái (tay nắm mép) */}
+            <div className="w-16 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm leading-tight">Trợ lý AI</h2>
               <p className="text-[11px] text-white/85 leading-tight">Truy vấn dữ liệu bằng tiếng Việt</p>
