@@ -22,8 +22,8 @@ export default function ShipperLayout({ children }: { children: ReactNode }) {
   }, [])
 
   const handleLogout = () => {
+    navigate('/login', { replace: true })
     logout()
-    navigate('/login')
   }
 
   return (

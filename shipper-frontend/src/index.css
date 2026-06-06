@@ -17,6 +17,12 @@
   color-scheme: light;
 }
 
+/* Reserve scrollbar gutter — tránh viewport bị widen 15px khi chuyển từ trang
+   có scrollbar (dashboard) sang trang không có (login). Hết flash chuyển trang. */
+html {
+  scrollbar-gutter: stable;
+}
+
 :root.dark {
   color-scheme: dark;
 }

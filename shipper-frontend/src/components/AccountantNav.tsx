@@ -64,8 +64,8 @@ export function AccountantNav({ title, actions, backTo }: Props) {
   const { user, logout } = useAuthStore()
 
   const handleLogout = () => {
+    navigate('/login', { replace: true })
     logout()
-    navigate('/login')
   }
 
   return (

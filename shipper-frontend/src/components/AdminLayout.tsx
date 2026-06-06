@@ -18,8 +18,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const handleLogout = () => {
+    navigate('/login', { replace: true })
     logout()
-    navigate('/login')
   }
 
   return (
