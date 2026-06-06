@@ -156,52 +156,64 @@ export default function ChibiAvatar({ mode = 'fab', className = '' }: ChibiAvata
         {/* shading dưới mũ làm trán có chiều sâu */}
         <ellipse cx="50" cy="44" rx="22" ry="6" fill="#7c4a2a" opacity="0.12" />
 
-        {/* ============ MŨ LƯỠI TRAI ============ */}
-        {/* phần chỏm (crown) — vòm trên đầu */}
+        {/* ============ MŨ LƯỠI TRAI (chìa sang TRÁI, to bự) ============ */}
+        {/* chỏm mũ — to hơn, phủ rộng đến gần đỉnh viewBox */}
         <path
-          d="M 22 40
-             Q 22 18 50 18
-             Q 78 18 78 40
-             Q 70 36 50 35
-             Q 30 36 22 40 Z"
+          d="M 14 44
+             Q 14 6 50 4
+             Q 86 6 86 44
+             Q 72 39 50 38
+             Q 28 39 14 44 Z"
           fill="url(#chibi-cap)"
         />
-        {/* đường khâu giữa mũ */}
+        {/* gân/sườn mũ chạy ngang (mũ đang xoay) */}
         <path
-          d="M 50 18 L 50 35"
+          d="M 22 22 Q 50 14 78 22"
           stroke="#7c2d12"
-          strokeWidth="0.6"
-          opacity="0.5"
+          strokeWidth="0.7"
+          opacity="0.45"
+          fill="none"
           strokeDasharray="1.5 1.2"
         />
         {/* nút chóp mũ */}
-        <circle cx="50" cy="19" r="1.5" fill="#7c2d12" />
+        <circle cx="50" cy="7" r="2" fill="#7c2d12" />
+        <circle cx="49.4" cy="6.4" r="0.6" fill="#fcd9b5" opacity="0.6" />
 
-        {/* lưỡi trai — chìa ra phía trước (cong xuống nhẹ) */}
+        {/* LƯỠI TRAI — wing chìa hẳn sang trái */}
         <path
-          d="M 16 38
-             Q 50 50 84 38
-             Q 84 42 82 44
-             Q 50 53 18 44
-             Q 16 42 16 38 Z"
+          d="M 18 36
+             Q 4 34 -6 40
+             Q -10 46 -4 50
+             Q 10 52 22 47
+             Q 25 41 18 36 Z"
           fill="url(#chibi-brim)"
+        />
+        {/* mặt dưới lưỡi trai (bóng tối) */}
+        <path
+          d="M -4 48 Q 10 51 22 47"
+          stroke="#5a1f0a"
+          strokeWidth="0.8"
+          fill="none"
+          opacity="0.55"
         />
         {/* highlight bóng trên đỉnh lưỡi trai */}
         <path
-          d="M 22 40 Q 50 47 78 40"
+          d="M -2 40 Q 10 37 20 40"
           stroke="#fcd9b5"
-          strokeWidth="0.8"
+          strokeWidth="0.9"
           fill="none"
-          opacity="0.5"
+          opacity="0.6"
           strokeLinecap="round"
         />
+        {/* bóng đổ của lưỡi trai lên má bên trái */}
+        <ellipse cx="22" cy="50" rx="10" ry="3" fill="#000" opacity="0.1" />
 
-        {/* logo nhỏ trắng phía trước mũ */}
-        <rect x="44" y="25" width="12" height="7" rx="1.2" fill="#ffffff" />
-        {/* icon hộp ship trên logo */}
-        <rect x="46.5" y="27" width="7" height="3.5" rx="0.4" fill="#ea580c" />
-        <line x1="50" y1="27" x2="50" y2="30.5" stroke="#ffffff" strokeWidth="0.4" />
-        <line x1="46.5" y1="28.5" x2="53.5" y2="28.5" stroke="#ffffff" strokeWidth="0.4" />
+        {/* logo trắng — chuyển sang phải vì lưỡi trai quay trái */}
+        <rect x="54" y="22" width="14" height="9" rx="1.5" fill="#ffffff" />
+        {/* icon hộp ship */}
+        <rect x="57" y="24.5" width="8" height="4.5" rx="0.5" fill="#ea580c" />
+        <line x1="61" y1="24.5" x2="61" y2="29" stroke="#ffffff" strokeWidth="0.5" />
+        <line x1="57" y1="26.7" x2="65" y2="26.7" stroke="#ffffff" strokeWidth="0.5" />
 
         {/* === MẶT === */}
         {/* má hồng */}
