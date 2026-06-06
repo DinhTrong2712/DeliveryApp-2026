@@ -76,8 +76,9 @@ export default function LampToggle({ variant = 'header' }: LampToggleProps) {
     : 'hidden md:inline-block relative select-none pointer-events-none'
 
   // Mobile button: hiện trên mobile, ẩn từ md trở lên
+  // Floating: đặt top-20 (dưới header h-16 của landing pages) để không che nút Đăng nhập
   const mobileBtnCls = variant === 'floating'
-    ? 'md:hidden fixed top-3 right-4 z-50 w-9 h-9 rounded-lg bg-white/85 backdrop-blur-md shadow-sm flex items-center justify-center text-orange-500 dark:bg-gray-800/85 dark:text-orange-300 active:scale-95 transition'
+    ? 'md:hidden fixed top-20 right-4 z-50 w-9 h-9 rounded-lg bg-white/85 backdrop-blur-md shadow-sm flex items-center justify-center text-orange-500 dark:bg-gray-800/85 dark:text-orange-300 active:scale-95 transition'
     : 'md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-orange-500 dark:text-orange-300 hover:bg-orange-50 dark:hover:bg-gray-800 active:scale-95 transition'
 
   // Container size cho lamp SVG (desktop only)
