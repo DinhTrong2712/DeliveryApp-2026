@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import api from '../lib/api'
 import { formatVND } from '../lib/formatters'
 import { useAuthStore } from '../stores/authStore'
+import aiAvatar from '../assets/ai-assistant.png'
 
 interface ChatMessage {
   id: string
@@ -36,159 +37,17 @@ const SUGGESTIONS_BY_ROLE: Record<string, string[]> = {
 
 const svgProps = { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' } as const
 
-const SKIN = '#FDE2C9'
-const SKIN_STROKE = '#A87650'
-const SHIRT = '#F26B2C'
-const SHIRT_DARK = '#D9521A'
-const CAP_TOP = '#F26B2C'
-const CAP_BRIM = '#9C3812'
-const EYES = '#1F2937'
-const BLUSH = '#FCA5A5'
-
 /**
- * Chibi bé shipper đội mũ lưỡi trai — trợ lý AI.
- * - `waving`: tay phải vẫy nhẹ (nút FAB).
- * - `peeking`: ẩn thân, chỉ giữ đầu+mũ (chế độ lấp ló sau khung chat).
- * - Mắt: con ngươi liếc theo vị trí chuột trên màn hình.
+ * Avatar bé shipper — trợ lý AI (ảnh chibi tròn, viền trắng).
  */
-const ChibiBoy = ({ className, waving = false, peeking = false }: {
-  className?: string
-  waving?: boolean
-  peeking?: boolean
-}) => {
-  const svgRef = useRef<SVGSVGElement>(null)
-  const [pupil, setPupil] = useState({ x: 0, y: 0 })
-
-  // Theo dõi vị trí chuột → tính offset con ngươi.
-  // Ghi vào state nhưng throttle bằng requestAnimationFrame để mượt.
-  useEffect(() => {
-    let raf = 0
-    let latest: { x: number; y: number } | null = null
-
-    const handle = (e: MouseEvent) => {
-      latest = { x: e.clientX, y: e.clientY }
-      if (raf) return
-      raf = requestAnimationFrame(() => {
-        raf = 0
-        if (!latest || !svgRef.current) return
-        const rect = svgRef.current.getBoundingClientRect()
-        // Tâm cụm mắt ở khoảng y=26 trên viewBox 64 → 40% chiều cao
-        const cx = rect.left + rect.width / 2
-        const cy = rect.top + rect.height * 0.4
-        const dx = latest.x - cx
-        const dy = latest.y - cy
-        const dist = Math.hypot(dx, dy)
-        const MAX_OFFSET = 1.7 // đơn vị viewBox
-        if (dist < 1) {
-          setPupil({ x: 0, y: 0 })
-          return
-        }
-        const intensity = Math.min(dist / 280, 1)
-        setPupil({
-          x: (dx / dist) * MAX_OFFSET * intensity,
-          y: (dy / dist) * MAX_OFFSET * intensity * 0.85,
-        })
-      })
-    }
-
-    window.addEventListener('mousemove', handle, { passive: true })
-    return () => {
-      window.removeEventListener('mousemove', handle)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [])
-
-  return (
-    <svg ref={svgRef} className={className} viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-      {/* ─── Thân + tay (ẩn khi peeking) ─── */}
-      {!peeking && (
-        <>
-          {/* Áo polo cam — body cực nhỏ kiểu chibi (chỉ 14px cao) */}
-          <path
-            d="M 22 50 Q 22 49 25 49 L 39 49 Q 42 49 42 50 L 45 64 L 19 64 Z"
-            fill={SHIRT}
-            stroke={SHIRT_DARK}
-            strokeWidth="0.8"
-            strokeLinejoin="round"
-          />
-          {/* Badge ngực */}
-          <rect x="36" y="53" width="5" height="2.5" rx="0.5" fill="#FFFFFF" opacity="0.9" />
-          {/* Khuy áo */}
-          <circle cx="27" cy="54" r="0.9" fill="#FFFFFF" />
-          {/* Cổ siêu ngắn */}
-          <rect x="29" y="47" width="6" height="3" fill={SKIN} />
-        </>
-      )}
-
-      {/* ─── ĐẦU TO (head = 60% chiều cao thân) ─── */}
-      <circle cx="32" cy="26" r="18" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.9" />
-
-      {/* ─── MŨ LƯỠI TRAI ─── */}
-      {/* Chao mũ — ôm đỉnh đầu, to hơn để cân với đầu */}
-      <path
-        d="M 16 16 Q 16 4 32 3 Q 48 4 48 16 Q 48 17 46 17 L 18 17 Q 16 17 16 16 Z"
-        fill={CAP_TOP}
-        stroke={CAP_BRIM}
-        strokeWidth="0.9"
-        strokeLinejoin="round"
-      />
-      {/* Highlight bóng cong trên chao */}
-      <path d="M 22 8 Q 28 5 38 6" stroke="#FFFFFF" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.4" />
-      {/* Lưỡi trai chìa sang trái */}
-      <path
-        d="M 4 17 Q 4 13 10 13 L 27 13 Q 28 17 27 18 L 10 18 Q 4 19 4 17 Z"
-        fill={CAP_BRIM}
-        stroke={CAP_BRIM}
-        strokeWidth="0.5"
-        strokeLinejoin="round"
-      />
-      {/* Logo tròn trắng-cam giữa chao */}
-      <circle cx="32" cy="10" r="2.2" fill="#FFFFFF" />
-      <circle cx="32" cy="10" r="1.2" fill={SHIRT_DARK} />
-
-      {/* ─── MẮT TO TRÒN (chibi sparkle) ─── */}
-      {/* Tròng trắng — to gấp đôi so với bản cũ */}
-      <ellipse cx="25" cy="27" rx="3.6" ry="4.4" fill="#FFFFFF" stroke={EYES} strokeWidth="0.7" />
-      <ellipse cx="39" cy="27" rx="3.6" ry="4.4" fill="#FFFFFF" stroke={EYES} strokeWidth="0.7" />
-      {/* Con ngươi đen liếc theo chuột */}
-      <ellipse cx={25 + pupil.x} cy={27 + pupil.y} rx="2.3" ry="2.9" fill={EYES} />
-      <ellipse cx={39 + pupil.x} cy={27 + pupil.y} rx="2.3" ry="2.9" fill={EYES} />
-      {/* Sparkle to + nhỏ trong con ngươi */}
-      <circle cx={24 + pupil.x} cy={25.8 + pupil.y} r="1.1" fill="#FFFFFF" />
-      <circle cx={38 + pupil.x} cy={25.8 + pupil.y} r="1.1" fill="#FFFFFF" />
-      <circle cx={26 + pupil.x} cy={28 + pupil.y} r="0.5" fill="#FFFFFF" />
-      <circle cx={40 + pupil.x} cy={28 + pupil.y} r="0.5" fill="#FFFFFF" />
-
-      {/* ─── MÁ HỒNG + MIỆNG ─── */}
-      <ellipse cx="20" cy="33" rx="2.8" ry="1.8" fill={BLUSH} opacity="0.7" />
-      <ellipse cx="44" cy="33" rx="2.8" ry="1.8" fill={BLUSH} opacity="0.7" />
-      {/* Miệng nhỏ kiểu uwu */}
-      <path d="M 30 36.5 Q 32 38.5 34 36.5" stroke="#7A4A2F" strokeWidth="1.3" fill="none" strokeLinecap="round" />
-
-      {/* ─── TAY CHIBI nhỏ tròn (mitten) ─── */}
-      {!peeking && (
-        waving ? (
-          <>
-            {/* Tay trái buông xuôi — mitten tròn */}
-            <ellipse cx="20" cy="54" rx="3" ry="3.4" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
-            {/* Tay phải vẫy — cánh tay ngắn + bàn tay tròn */}
-            <g className="chibi-wave-hand">
-              <path d="M 44 52 Q 50 42 52 32" stroke={SKIN} strokeWidth="4.5" strokeLinecap="round" fill="none" />
-              <circle cx="52" cy="30" r="3.8" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
-              {/* Mấy ngón gợi ý */}
-              <path d="M 50 28 L 51 26 M 52 27 L 53 25 M 54 28 L 55 26" stroke={SKIN_STROKE} strokeWidth="0.55" strokeLinecap="round" />
-            </g>
-          </>
-        ) : (
-          <>
-            <ellipse cx="20" cy="54" rx="3" ry="3.4" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
-            <ellipse cx="44" cy="54" rx="3" ry="3.4" fill={SKIN} stroke={SKIN_STROKE} strokeWidth="0.7" />
-          </>
-        )
-      )}
-    </svg>
-  )
-}
+const BoyAvatar = ({ className }: { className?: string }) => (
+  <img
+    src={aiAvatar}
+    alt="Trợ lý AI"
+    draggable={false}
+    className={`rounded-full object-cover ring-2 ring-white dark:ring-gray-900 ${className ?? ''}`}
+  />
+)
 
 const IconClose = ({ className }: { className: string }) => (
   <svg className={className} {...svgProps}>
@@ -323,29 +182,26 @@ export default function AiAssistantWidget() {
           aria-label="Mở trợ lý AI"
           className="fixed bottom-20 right-4 sm:bottom-5 sm:right-5 z-40 w-16 h-16 hover:scale-110 active:scale-95 transition-transform flex items-center justify-center group"
         >
-          <ChibiBoy
-            className="w-16 h-16 drop-shadow-[0_4px_8px_rgba(217,82,26,0.35)] group-hover:drop-shadow-[0_6px_12px_rgba(217,82,26,0.5)] transition-[filter] duration-200"
-            waving
-          />
-          {/* Notification dot trên vai chibi */}
+          <BoyAvatar className="w-16 h-16 drop-shadow-[0_4px_8px_rgba(217,82,26,0.35)] group-hover:drop-shadow-[0_6px_12px_rgba(217,82,26,0.5)] transition-[filter] duration-200" />
+          {/* Notification dot trên vai avatar */}
           <span className="absolute top-1 right-2 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white dark:ring-gray-900 animate-pulse" />
         </button>
       )}
 
       {open && (
         <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
-          {/* Chibi lấp ló — đầu+mũ nhô lên trên GÓC TRÁI, phần thân khuất sau header chat.
-              Render TRƯỚC header trong DOM → gradient cam vẽ đè lên phần dưới chibi. */}
+          {/* Avatar bé shipper lấp ló — nhô lên trên GÓC TRÁI, phần dưới khuất sau header chat.
+              Render TRƯỚC header trong DOM → gradient cam vẽ đè lên phần dưới avatar. */}
           <div
             className="absolute left-4 sm:left-6 pointer-events-none chibi-peek-in chibi-bob"
             style={{ top: -22, width: 56, height: 56 }}
             aria-hidden
           >
-            <ChibiBoy className="w-14 h-14 drop-shadow-md" peeking />
+            <BoyAvatar className="w-14 h-14 drop-shadow-md" />
           </div>
 
           <div className="relative bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 flex items-center gap-3 text-white rounded-t-2xl">
-            {/* Chỗ trống cho chibi peeking phía trên-trái */}
+            {/* Chỗ trống cho avatar lấp ló phía trên-trái */}
             <div className="w-12 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm leading-tight">Trợ lý AI</h2>
@@ -355,53 +211,6 @@ export default function AiAssistantWidget() {
               className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center flex-shrink-0">
               <IconClose className="w-5 h-5" />
             </button>
-          </div>
-
-          {/* HAI BÀN TAY chibi đặt LÊN MÉP TRÊN khung chat (resting on edge).
-              Mu bàn tay nằm trên thành, các ngón cong gập xuống mép — không xuyên qua khung.
-              Render SAU phần Chibi peek nhưng style với top âm để palm sit trên mép. */}
-          <div
-            className="absolute left-4 sm:left-7 pointer-events-none chibi-peek-in"
-            style={{ top: -6, width: 44, height: 12 }}
-            aria-hidden
-          >
-            <svg viewBox="0 0 44 12" width="44" height="12" overflow="visible">
-              {/* ── Bàn tay trái ── */}
-              <g>
-                {/* Mu bàn tay tròn nằm trên mép — ellipse dẹt */}
-                <ellipse
-                  cx="9" cy="5" rx="6" ry="3.5"
-                  fill={SKIN}
-                  stroke={SKIN_STROKE}
-                  strokeWidth="0.7"
-                />
-                {/* Bóng dưới mu để gợi 3D */}
-                <ellipse cx="9" cy="6.5" rx="5" ry="1" fill="#000000" opacity="0.12" />
-                {/* 4 ngón nhỏ gập xuống mép (đầu ngón thấp hơn mu) */}
-                <path d="M 4 6 Q 4 8.5 4.5 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <path d="M 7 6.5 Q 7 9.2 7 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <path d="M 10 6.5 Q 10 9.2 10 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <path d="M 13 6 Q 13.2 8.5 13 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                {/* Highlight bóng đỉnh mu */}
-                <ellipse cx="9" cy="3" rx="3" ry="0.8" fill="#FFFFFF" opacity="0.35" />
-              </g>
-
-              {/* ── Bàn tay phải ── */}
-              <g>
-                <ellipse
-                  cx="33" cy="5" rx="6" ry="3.5"
-                  fill={SKIN}
-                  stroke={SKIN_STROKE}
-                  strokeWidth="0.7"
-                />
-                <ellipse cx="33" cy="6.5" rx="5" ry="1" fill="#000000" opacity="0.12" />
-                <path d="M 28 6 Q 28 8.5 28.5 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <path d="M 31 6.5 Q 31 9.2 31 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <path d="M 34 6.5 Q 34 9.2 34 9.5" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <path d="M 37 6 Q 37.2 8.5 37 9" stroke={SKIN} strokeWidth="1.6" strokeLinecap="round" fill="none" />
-                <ellipse cx="33" cy="3" rx="3" ry="0.8" fill="#FFFFFF" opacity="0.35" />
-              </g>
-            </svg>
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50 dark:bg-gray-950">
