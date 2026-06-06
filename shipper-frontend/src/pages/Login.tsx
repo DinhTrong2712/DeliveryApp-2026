@@ -3,6 +3,7 @@ import { useNavigate, Navigate, Link } from 'react-router-dom'
 import api from '../lib/api'
 import { useAuthStore } from '../stores/authStore'
 import loginHero from '../assets/login-hero.webp'
+import HuongCuongLogo from '../components/HuongCuongLogo'
 
 const BRAND = '#F26B2C'
 const BRAND_DARK = '#D9521A'
@@ -67,18 +68,10 @@ export default function Login() {
         {/* Top bar: logo */}
         <Link
           to="/"
-          className="absolute top-7 left-7 inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-md text-gray-900 shadow-sm hover:bg-white transition-colors"
+          className="absolute top-7 left-7 inline-flex items-center px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-md text-gray-900 shadow-sm hover:bg-white transition-colors"
           title="Về trang chủ"
         >
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-white"
-            style={{ background: `linear-gradient(135deg, ${BRAND} 0%, ${BRAND_DARK} 100%)` }}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-          </div>
-          <span className="text-sm font-semibold">Sổ Ghi Chép</span>
+          <HuongCuongLogo size={26} />
         </Link>
 
         {/* Bottom caption */}
@@ -126,16 +119,8 @@ export default function Login() {
           <div className="w-full max-w-sm">
             {/* Mobile logo */}
             <div className="flex flex-col items-center mb-8 md:hidden">
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3 shadow-lg text-white"
-                style={{ background: `linear-gradient(135deg, ${BRAND} 0%, ${BRAND_DARK} 100%)` }}
-              >
-                <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Sổ Ghi Chép</h1>
-              <p className="text-gray-500 dark:text-gray-400 text-xs mt-0.5">Quản lý giao hàng — Hương Cường</p>
+              <HuongCuongLogo size={48} className="mb-2" />
+              <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">Hệ thống quản lý giao hàng nội bộ</p>
             </div>
 
             {/* Heading */}
