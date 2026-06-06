@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useEffect } from 'react'
+import brandIcon from '../assets/landing/icon.png'
 
 export interface DrawerTab {
   label: string
@@ -30,11 +31,7 @@ export default function MobileDrawer({ open, onClose, tabs, userFullName, onLogo
       <aside className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] bg-white dark:bg-gray-900 shadow-xl flex flex-col">
         <div className="h-14 px-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-orange-500 rounded-md flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
+            <img src={brandIcon} alt="Hương Cường" width={28} height={28} className="rounded-md object-cover" draggable={false} />
             <span className="font-bold text-gray-900 dark:text-gray-100 text-sm">Sổ Ghi Chép</span>
           </div>
           <button
