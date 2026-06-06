@@ -183,10 +183,10 @@ export default function AiAssistantWidget() {
 
       {open && (
         <div className="fixed left-0 right-0 bottom-0 top-16 z-30 sm:inset-auto sm:bottom-5 sm:right-5 sm:top-auto sm:w-[380px] sm:h-[560px] flex flex-col bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800">
-          {/* Chibi nắm mép header — đầu nhô qua + 2 tay vắt qua mép, ngón cong xuống
-              hiện trên gradient cam như đang nắm thật. z-10 để ngón nổi lên trên header. */}
+          {/* Chibi peek — đầu nhô qua header, chỉ 4 đầu ngón ngoi lên trên mép (style
+              kid-peek-over-wall). Không z-index → header gradient phủ cằm tự nhiên. */}
           <div
-            className="absolute left-3 sm:left-5 pointer-events-none chibi-climb z-10"
+            className="absolute left-3 sm:left-5 pointer-events-none chibi-climb"
             style={{ top: -56, width: 72, height: 72 }}
             aria-hidden
           >
