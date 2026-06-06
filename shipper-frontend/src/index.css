@@ -23,13 +23,15 @@
 
 body {
   margin: 0;
-  background: #f8fafc;
+  /* Match dominant page bg (Tailwind gray-50/950 trong các layout) để khi route đổi
+     không lộ frame body khác màu → tránh flash khi đăng xuất / chuyển trang. */
+  background: #f9fafb;
   color: #111827;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 :root.dark body {
-  background: #0b0f17;
+  background: #030712;
   color: #e5e7eb;
 }
 
