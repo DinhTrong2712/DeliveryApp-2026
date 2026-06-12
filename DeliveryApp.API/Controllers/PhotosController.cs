@@ -21,7 +21,9 @@ public class PhotosController : ControllerBase
     {
         var result = await _photos.UploadPhotoAsync(orderId, file, caption, CallerId);
         if (result == null) return BadRequest(new { message = "Không thể tải ảnh lên" });
-        return Ok(result);
+        // Trả DTO phẳng — KHÔNG trả entity thô vì OrderPhoto.Order ↔ Order.Photos
+        // tạo vòng lặp tham chiếu khiến serialize JSON ném lỗi (500) dù ảnh đã lưu.
+        return Ok(new { result.Id, result.Url, result.Caption, result.CreatedAt });
     }
 
     [HttpDelete("{photoId:guid}")]
