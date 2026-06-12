@@ -41,6 +41,7 @@ public class SePayController : ControllerBase
             apiKey = Request.Headers["x-api-key"].FirstOrDefault()?.Trim() ?? "";
 
         var signature = Request.Headers["X-Sepay-Signature"].FirstOrDefault()?.Trim() ?? "";
+        var timestamp = Request.Headers["X-Sepay-Timestamp"].FirstOrDefault()?.Trim() ?? "";
 
         // Log toàn bộ header (loại Cookie)
         var allHeaders = string.Join("; ", Request.Headers
@@ -51,7 +52,7 @@ public class SePayController : ControllerBase
         _db.WebhookLogs.Add(log);
         await _db.SaveChangesAsync();
 
-        if (!await _sepay.VerifyWebhookAsync(apiKey, signature, rawBody))
+        if (!await _sepay.VerifyWebhookAsync(apiKey, signature, timestamp, rawBody))
         {
             log.ResponseCode = "09";
             log.ErrorMessage = string.IsNullOrEmpty(apiKey) && string.IsNullOrEmpty(signature)

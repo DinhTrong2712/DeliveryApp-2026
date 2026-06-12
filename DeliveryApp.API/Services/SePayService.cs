@@ -50,10 +50,12 @@ public class SePayService
 
     /// <summary>
     /// Xác thực webhook SePay. Hỗ trợ 2 phương thức:
-    /// 1. HMAC SHA256 signature (mặc định, SePay gửi qua "X-Sepay-Signature: sha256=...")
-    /// 2. Static API key (legacy, SePay gửi qua "Authorization: Apikey ..." hoặc "x-api-key: ...")
+    /// 1. HMAC SHA256 signature (khuyến nghị). SePay ký chuỗi "{timestamp}.{raw_body}"
+    ///    rồi gửi qua header "X-SePay-Signature: sha256=&lt;hex&gt;" và "X-SePay-Timestamp: &lt;unix_seconds&gt;".
+    ///    (Tham khảo: https://developer.sepay.vn/sepay-webhooks/xac-thuc)
+    /// 2. Static API key (SePay gửi qua "Authorization: Apikey ..." hoặc "x-api-key: ...").
     /// </summary>
-    public async Task<bool> VerifyWebhookAsync(string? apiKey, string? signature, string rawBody)
+    public async Task<bool> VerifyWebhookAsync(string? apiKey, string? signature, string? timestamp, string rawBody)
     {
         var cfg = await _db.SystemConfigs.FirstOrDefaultAsync(c => c.Key == "sepay_apikey");
         var storedSecret = cfg?.Value ?? _config["SePay:ApiKey"] ?? "";
@@ -69,16 +71,25 @@ public class SePayService
                 : signature.Trim();
 
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(storedSecret));
-            var computed = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(rawBody))).ToLowerInvariant();
 
-            if (string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase)) return true;
+            // Chuỗi được ký: chuẩn SePay là "{timestamp}.{raw_body}"; fallback raw_body thuần
+            // để tương thích ngược nếu thiếu header timestamp.
+            var candidates = new List<string>();
+            if (!string.IsNullOrEmpty(timestamp)) candidates.Add($"{timestamp}.{rawBody}");
+            candidates.Add(rawBody);
+
+            foreach (var data in candidates)
+            {
+                var computed = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(data))).ToLowerInvariant();
+                if (string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase)) return true;
+            }
         }
 
         return false;
     }
 
     [Obsolete("Use VerifyWebhookAsync instead", false)]
-    public Task<bool> VerifyApiKeyAsync(string apiKey) => VerifyWebhookAsync(apiKey, null, "");
+    public Task<bool> VerifyApiKeyAsync(string apiKey) => VerifyWebhookAsync(apiKey, null, null, "");
 
     public async Task<string> ProcessWebhookAsync(SePayWebhookPayload payload, string rawJson)
     {
