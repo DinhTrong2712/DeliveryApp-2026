@@ -37,7 +37,9 @@ export default function UpdatePayment() {
         scheduledDate: selected?.needDate ? scheduledDate : undefined,
         note: note || undefined,
       })
-      navigate('/shipper/orders')
+      // Quay lại đúng màn hình trước đó (chi tiết đơn / Đơn gộp) thay vì
+      // văng sang trang danh sách phẳng /shipper/orders (không có trong nav).
+      navigate(-1)
     } catch (e: any) {
       const serverMsg = e?.response?.data?.message
       const status = e?.response?.status
