@@ -106,6 +106,8 @@ public class OrderService
 
         if (newStatus == OrderStatus.PaidCash && req.AmountPaid.HasValue)
             order.AmountPaid = req.AmountPaid.Value;
+        else if (newStatus == OrderStatus.PaidTransfer)
+            order.AmountPaid = req.AmountPaid ?? order.Amount;
         else if (newStatus == OrderStatus.Partial && req.AmountPaid.HasValue)
             order.AmountPaid = req.AmountPaid.Value;
         else if (newStatus == OrderStatus.Unpaid)

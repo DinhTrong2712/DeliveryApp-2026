@@ -27,7 +27,7 @@ export default function Login() {
     setError('')
     try {
       const res = await api.post('/auth/login', { username, password })
-      setAuth(res.data.token, res.data.user)
+      setAuth(res.data.token, res.data.user, remember)
       if (remember) localStorage.setItem(REMEMBER_KEY, username)
       else localStorage.removeItem(REMEMBER_KEY)
       const role = res.data.user.role

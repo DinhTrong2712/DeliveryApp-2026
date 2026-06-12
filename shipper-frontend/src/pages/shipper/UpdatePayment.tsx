@@ -4,6 +4,7 @@ import api from '../../lib/api'
 
 const STATUS_OPTIONS = [
   { value: 'PaidCash', label: 'Thu tiền mặt', needAmount: true },
+  { value: 'PaidTransfer', label: 'Đã chuyển khoản', needAmount: true },
   { value: 'WaitingTransfer', label: 'Chờ chuyển khoản', needAmount: false },
   { value: 'Partial', label: 'Thu một phần', needAmount: true },
   { value: 'Scheduled', label: 'Hẹn lại', needDate: true },
@@ -37,8 +38,10 @@ export default function UpdatePayment() {
         note: note || undefined,
       })
       navigate(`/shipper/orders/${id}`)
-    } catch {
-      setError('Cập nhật thất bại. Vui lòng thử lại.')
+    } catch (e: any) {
+      const serverMsg = e?.response?.data?.message
+      const status = e?.response?.status
+      setError(serverMsg ?? `Cập nhật thất bại${status ? ` (HTTP ${status})` : ''}. Vui lòng thử lại.`)
     } finally {
       setLoading(false)
     }

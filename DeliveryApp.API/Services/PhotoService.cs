@@ -15,7 +15,7 @@ public class PhotoService
     private readonly IConfiguration _config;
     private readonly AuditService _audit;
     private readonly IWebHostEnvironment _env;
-    private static readonly string[] AllowedTypes = ["image/jpeg", "image/png", "image/heic"];
+    private static readonly string[] AllowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/heic", "image/heif", "image/webp"];
 
     public PhotoService(AppDbContext db, IConfiguration config, AuditService audit, IWebHostEnvironment env)
     {

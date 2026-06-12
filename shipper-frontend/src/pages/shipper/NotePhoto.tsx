@@ -32,8 +32,10 @@ export default function NotePhoto() {
       if (caption) form.append('caption', caption)
       await api.post(`/orders/${id}/photos`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
       navigate(-1)
-    } catch {
-      setError('Tải ảnh thất bại. Kiểm tra: tối đa 5 ảnh, mỗi ảnh < 10MB.')
+    } catch (e: any) {
+      const serverMsg = e?.response?.data?.message
+      const status = e?.response?.status
+      setError(serverMsg ?? `Tải ảnh thất bại${status ? ` (HTTP ${status})` : ''}. Kiểm tra: tối đa 5 ảnh, mỗi ảnh < 10MB, định dạng JPG/PNG/HEIC/WEBP.`)
     } finally {
       setLoading(false)
     }
