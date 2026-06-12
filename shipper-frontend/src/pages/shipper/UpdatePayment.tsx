@@ -37,7 +37,7 @@ export default function UpdatePayment() {
         scheduledDate: selected?.needDate ? scheduledDate : undefined,
         note: note || undefined,
       })
-      navigate(`/shipper/orders/${id}`)
+      navigate('/shipper/orders')
     } catch (e: any) {
       const serverMsg = e?.response?.data?.message
       const status = e?.response?.status
