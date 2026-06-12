@@ -37,7 +37,22 @@ public record OrderDetailDto(
     DateTime CreatedAt,
     DateTime UpdatedAt,
     List<PhotoDto> Photos,
-    List<HistoryDto> History
+    List<HistoryDto> History,
+    string? OriginNote,
+    List<OrderTxnDto> Transactions
+);
+
+public record OrderTxnDto(
+    Guid Id,
+    string TransactionCode,
+    decimal Amount,
+    string? Gateway,
+    string? ReferenceCode,
+    string? Content,
+    DateTime TransactionDate,
+    string MatchStatus,
+    string? MatchedBy,
+    DateTime? MatchedAt
 );
 
 public record PhotoDto(Guid Id, string Url, string? Caption, DateTime CreatedAt);

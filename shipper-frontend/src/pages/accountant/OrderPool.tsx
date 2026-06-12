@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import { formatVND } from '../../lib/formatters'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '../../lib/constants'
@@ -43,6 +44,7 @@ export default function AccountantOrderPool() {
   const sortRef = useRef<HTMLDivElement>(null)
   const [showFilter, setShowFilter] = useState(false)
   const [showSort, setShowSort] = useState(false)
+  const navigate = useNavigate()
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
@@ -242,7 +244,8 @@ export default function AccountantOrderPool() {
             ) : orders.map((o, i) => (
               <tr
                 key={o.id}
-                className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${i === orders.length - 1 ? 'border-b-0' : ''}`}
+                onClick={() => navigate(`/accountant/orders/${o.id}`)}
+                className={`border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer ${i === orders.length - 1 ? 'border-b-0' : ''}`}
               >
                 <td className="px-4 py-3">
                   <span className="font-mono text-sm font-semibold text-gray-900 dark:text-gray-100">{o.orderCode}</span>

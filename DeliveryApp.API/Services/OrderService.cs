@@ -76,12 +76,14 @@ public class OrderService
             .Include(o => o.Shipper)
             .Include(o => o.Photos)
             .Include(o => o.History)
+            .Include(o => o.Transactions)
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (o == null) return null;
         if (callerRole == UserRole.Shipper && o.ShipperId != callerId) return null;
 
-        var accountantNote = callerRole == UserRole.Shipper ? null : o.AccountantNote;
+        var isShipper = callerRole == UserRole.Shipper;
+        var accountantNote = isShipper ? null : o.AccountantNote;
 
         return new OrderDetailDto(
             o.Id, o.OrderCode, o.RouteCode, o.CustomerName, o.Amount, o.AmountPaid,
@@ -90,7 +92,13 @@ public class OrderService
             o.ShipperId, o.ShipperNameXlsx ?? o.Shipper?.FullName, o.LockedAt, o.CreatedAt, o.UpdatedAt,
             o.Photos.Select(p => new PhotoDto(p.Id, p.Url, p.Caption, p.CreatedAt)).ToList(),
             o.History.OrderByDescending(h => h.CreatedAt)
-                .Select(h => new HistoryDto(h.Id, h.ChangedBy, h.FieldChanged, h.OldValue, h.NewValue, h.Reason, h.CreatedAt)).ToList()
+                .Select(h => new HistoryDto(h.Id, h.ChangedBy, h.FieldChanged, h.OldValue, h.NewValue, h.Reason, h.CreatedAt)).ToList(),
+            o.OriginNote,
+            isShipper
+                ? new List<OrderTxnDto>()
+                : o.Transactions.OrderBy(t => t.TransactionDate)
+                    .Select(t => new OrderTxnDto(t.Id, t.TransactionCode, t.Amount, t.Gateway, t.ReferenceCode,
+                        t.Content, t.TransactionDate, t.MatchStatus.ToString(), t.MatchedBy, t.MatchedAt)).ToList()
         );
     }
 
