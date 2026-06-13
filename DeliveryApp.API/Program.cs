@@ -92,6 +92,16 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+// CLI: `dotnet run -- seed-demo` chạy seeder demo + thoát (không khởi động web server).
+if (args.Length > 0 && args[0] == "seed-demo")
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    await DemoSeeder.RunAsync(db, logger);
+    return;
+}
+
 // Trust X-Forwarded-* headers from Caddy + Nginx so Request.IsHttps,
 // Request.Host and the remote IP reflect the original client, not the proxy.
 // KnownNetworks/Proxies are cleared because proxies live in the docker network.
