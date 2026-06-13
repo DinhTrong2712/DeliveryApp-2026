@@ -72,6 +72,11 @@ public class AdminController : ControllerBase
         if (!Enum.TryParse<UserRole>(req.Role, out var role))
             return BadRequest(new { message = "Vai trò không hợp lệ" });
 
+        // Chống admin tự hạ vai trò → mất quyền truy cập sau lần lưu này.
+        var callerId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var cid) ? cid : Guid.Empty;
+        if (user.Id == callerId && user.Role == UserRole.Admin && role != UserRole.Admin)
+            return BadRequest(new { message = "Không thể tự thay đổi vai trò Admin của chính mình" });
+
         user.FullName = req.FullName;
         user.Role = role;
         user.XlsxName = req.XlsxName;
@@ -89,6 +94,19 @@ public class AdminController : ControllerBase
     {
         var user = await _db.Users.FindAsync(id);
         if (user == null) return NotFound();
+
+        // Chống admin tự deactivate → không thể đăng nhập lại để bật cho mình.
+        var callerId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var cid) ? cid : Guid.Empty;
+        if (user.Id == callerId && user.IsActive)
+            return BadRequest(new { message = "Không thể tự vô hiệu hoá tài khoản của chính mình" });
+
+        // Chống vô hiệu hoá admin cuối cùng — sẽ không còn ai quản trị.
+        if (user.IsActive && user.Role == UserRole.Admin)
+        {
+            var activeAdminCount = await _db.Users.CountAsync(u => u.Role == UserRole.Admin && u.IsActive);
+            if (activeAdminCount <= 1)
+                return BadRequest(new { message = "Không thể vô hiệu hoá admin cuối cùng" });
+        }
 
         user.IsActive = !user.IsActive;
         user.UpdatedAt = DateTime.UtcNow;

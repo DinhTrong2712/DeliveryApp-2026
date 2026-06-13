@@ -42,7 +42,8 @@ public class OrderService
 
         if (date.HasValue)
         {
-            var start = DateTime.SpecifyKind(date.Value.Date, DateTimeKind.Utc);
+            // Vietnam UTC+7 — user nhập "2026-06-13" hiểu là 1 ngày local, không phải ngày UTC.
+            var start = new DateTimeOffset(date.Value.Date, TimeSpan.FromHours(7)).UtcDateTime;
             q = q.Where(o => o.CreatedAt >= start && o.CreatedAt < start.AddDays(1));
         }
 
@@ -105,30 +106,56 @@ public class OrderService
     public async Task<Order?> UpdateStatusAsync(Guid id, UpdateStatusRequest req, string changedBy, Guid callerId)
     {
         var order = await _db.Orders.FindAsync(id);
-        if (order == null || order.ShipperId != callerId || IsLocked(order)) return null;
+        if (order == null || order.ShipperId != callerId || await IsLockedAsync(order)) return null;
 
         if (!Enum.TryParse<OrderStatus>(req.Status, out var newStatus)) return null;
 
         var oldStatus = order.Status.ToString();
-        order.Status = newStatus;
 
-        if (newStatus == OrderStatus.PaidCash && req.AmountPaid.HasValue)
-            order.AmountPaid = req.AmountPaid.Value;
-        else if (newStatus == OrderStatus.PaidTransfer)
-            order.AmountPaid = req.AmountPaid ?? order.Amount;
-        else if (newStatus == OrderStatus.Partial && req.AmountPaid.HasValue)
-            order.AmountPaid = req.AmountPaid.Value;
-        else if (newStatus == OrderStatus.Unpaid)
+        switch (newStatus)
         {
-            order.UnpaidReason = req.UnpaidReason;
-            if (req.ScheduledDate.HasValue)
-                order.ScheduledDate = DateTime.SpecifyKind(req.ScheduledDate.Value, DateTimeKind.Utc);
-        }
-        else if (newStatus == OrderStatus.Scheduled)
-            order.ScheduledDate = req.ScheduledDate.HasValue
-                ? DateTime.SpecifyKind(req.ScheduledDate.Value, DateTimeKind.Utc)
-                : null;
+            case OrderStatus.PaidCash:
+                // Nếu shipper không truyền AmountPaid coi như thu đủ; số tiền âm/0 là vô nghĩa.
+                var cashPaid = req.AmountPaid ?? order.Amount;
+                if (cashPaid <= 0) return null;
+                order.AmountPaid = Math.Min(cashPaid, order.Amount);
+                break;
 
+            case OrderStatus.PaidTransfer:
+                order.AmountPaid = req.AmountPaid ?? order.Amount;
+                break;
+
+            case OrderStatus.Partial:
+                // Partial bắt buộc phải có số tiền cụ thể (0 < paid < Amount), nếu không sẽ ghi đè 0 hoặc sai logic.
+                if (!req.AmountPaid.HasValue || req.AmountPaid.Value <= 0 || req.AmountPaid.Value >= order.Amount)
+                    return null;
+                order.AmountPaid = req.AmountPaid.Value;
+                break;
+
+            case OrderStatus.Unpaid:
+                order.AmountPaid = 0;
+                order.UnpaidReason = req.UnpaidReason;
+                if (req.ScheduledDate.HasValue)
+                    order.ScheduledDate = DateTime.SpecifyKind(req.ScheduledDate.Value, DateTimeKind.Utc);
+                break;
+
+            case OrderStatus.Scheduled:
+                order.AmountPaid = 0;
+                order.ScheduledDate = req.ScheduledDate.HasValue
+                    ? DateTime.SpecifyKind(req.ScheduledDate.Value, DateTimeKind.Utc)
+                    : null;
+                break;
+
+            case OrderStatus.WaitingTransfer:
+                // Giữ nguyên AmountPaid hiện có (có thể đã có 1 phần CK từ trước).
+                break;
+
+            default:
+                // Pending / Unassigned: shipper không được tự đặt về các trạng thái này.
+                return null;
+        }
+
+        order.Status = newStatus;
         if (req.Note != null) order.ShipperNote = req.Note;
         order.UpdatedAt = DateTime.UtcNow;
 
@@ -158,7 +185,7 @@ public class OrderService
     public async Task<Order?> SetDeliveredAsync(Guid id, Guid callerId)
     {
         var order = await _db.Orders.FindAsync(id);
-        if (order == null || order.ShipperId != callerId || IsLocked(order)) return null;
+        if (order == null || order.ShipperId != callerId || await IsLockedAsync(order)) return null;
         if (order.DeliveredAt.HasValue) return order;
 
         order.DeliveredAt = DateTime.UtcNow;
@@ -173,7 +200,7 @@ public class OrderService
     public async Task<Order?> UpdateShipperNoteAsync(Guid id, string note, Guid callerId)
     {
         var order = await _db.Orders.FindAsync(id);
-        if (order == null || order.ShipperId != callerId || IsLocked(order)) return null;
+        if (order == null || order.ShipperId != callerId || await IsLockedAsync(order)) return null;
 
         var oldNote = order.ShipperNote;
         note ??= string.Empty;
@@ -216,17 +243,22 @@ public class OrderService
             _ => null
         };
 
+        // Validate trước khi gán — tránh tình huống parse fail vẫn ghi audit + lịch sử như đã thành công.
         switch (req.Field)
         {
             case "Status":
-                if (Enum.TryParse<OrderStatus>(req.Value, out var s)) order.Status = s;
+                if (!Enum.TryParse<OrderStatus>(req.Value, out var s)) return null;
+                order.Status = s;
                 break;
             case "AmountPaid":
-                if (decimal.TryParse(req.Value, out var a)) order.AmountPaid = a;
+                if (!decimal.TryParse(req.Value, out var a) || a < 0) return null;
+                order.AmountPaid = Math.Min(a, order.Amount);
                 break;
             case "ShipperNote":
                 order.ShipperNote = req.Value;
                 break;
+            default:
+                return null;
         }
 
         order.UpdatedAt = DateTime.UtcNow;
@@ -259,9 +291,18 @@ public class OrderService
         return order;
     }
 
-    private bool IsLocked(Order order)
+    private async Task<bool> IsLockedAsync(Order order)
     {
-        var lockTime = _config["App:LockTime"] ?? "23:59";
+        // Đơn đã đánh dấu khoá tay (admin set LockedAt = thời điểm khoá) thì chốt khoá.
+        if (order.LockedAt.HasValue && order.LockedAt.Value <= DateTime.UtcNow) return true;
+
+        // Ưu tiên đọc lock_time từ SystemConfigs (admin chỉnh nóng trong UI); fallback appsettings.
+        var dbCfg = await _db.SystemConfigs
+            .Where(c => c.Key == "lock_time")
+            .Select(c => c.Value)
+            .FirstOrDefaultAsync();
+        var lockTime = !string.IsNullOrWhiteSpace(dbCfg) ? dbCfg : (_config["App:LockTime"] ?? "23:59");
+
         var parts = lockTime.Split(':');
         if (parts.Length != 2) return false;
         if (!int.TryParse(parts[0], out var lockHour)) return false;

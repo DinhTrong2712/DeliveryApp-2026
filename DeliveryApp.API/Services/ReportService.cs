@@ -1,8 +1,10 @@
+using System.Drawing;
 using DeliveryApp.API.Data;
 using DeliveryApp.API.DTOs.Dashboard;
 using DeliveryApp.API.Models;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 
 namespace DeliveryApp.API.Services;
 
@@ -47,15 +49,26 @@ public class ReportService
         );
     }
 
+    // Vietnam là UTC+7 cố định (không có DST). Trước đây code dùng SpecifyKind(Utc) coi 00:00 local
+    // như 00:00 UTC → khoảng báo cáo bị lệch 7 giờ, đơn tạo lúc 0–7h sáng VN bị tính sang ngày trước.
+    private static readonly TimeSpan VietnamOffset = TimeSpan.FromHours(7);
+
+    private static (DateTime startUtc, DateTime endUtc) VietnamDayToUtcRange(DateTime date)
+    {
+        var startUtc = new DateTimeOffset(date.Date, VietnamOffset).UtcDateTime;
+        return (startUtc, startUtc.AddDays(1));
+    }
+
     public async Task<DailyReportDto> GetDailyReportAsync(DateTime date)
     {
-        var start = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
-        var end   = start.AddDays(1);
+        var (start, end) = VietnamDayToUtcRange(date);
         var orders = await _db.Orders
             .Include(o => o.Shipper)
             .Where(o => o.CreatedAt >= start && o.CreatedAt < end)
             .ToListAsync();
 
+        // Đơn Partial là CK đã thu được 1 phần (qua SePay) — phần đã thu phải tính vào doanh thu CK,
+        // phần còn lại tính vào nợ. Trước đây bị bỏ sót khiến doanh thu hụt.
         var byShipper = orders
             .Where(o => o.ShipperId.HasValue)
             .GroupBy(o => o.ShipperNameXlsx ?? o.Shipper?.FullName ?? "Chưa phân công")
@@ -64,7 +77,8 @@ public class ReportService
                 TotalOrders: g.Count(),
                 TotalAmount: g.Sum(o => o.Amount),
                 CashAmount: g.Where(o => o.Status == OrderStatus.PaidCash).Sum(o => o.AmountPaid),
-                TransferAmount: g.Where(o => o.Status == OrderStatus.PaidTransfer).Sum(o => o.AmountPaid),
+                TransferAmount: g.Where(o => o.Status == OrderStatus.PaidTransfer || o.Status == OrderStatus.Partial)
+                                  .Sum(o => o.AmountPaid),
                 WaitingTransferCount: g.Count(o => o.Status == OrderStatus.WaitingTransfer),
                 UnpaidAmount: g.Where(o => o.Status is OrderStatus.Unpaid or OrderStatus.Partial)
                                .Sum(o => o.Amount - o.AmountPaid),
@@ -74,7 +88,8 @@ public class ReportService
             )).ToList();
 
         var cash = orders.Where(o => o.Status == OrderStatus.PaidCash).Sum(o => o.AmountPaid);
-        var transfer = orders.Where(o => o.Status == OrderStatus.PaidTransfer).Sum(o => o.AmountPaid);
+        var transfer = orders.Where(o => o.Status == OrderStatus.PaidTransfer || o.Status == OrderStatus.Partial)
+                             .Sum(o => o.AmountPaid);
         var debt = orders.Where(o => o.Status is OrderStatus.Unpaid or OrderStatus.Partial)
                          .Sum(o => o.Amount - o.AmountPaid);
 
@@ -92,67 +107,119 @@ public class ReportService
         );
     }
 
+    // Định dạng số tiền VND: 1234567 → "1,234,567 đ"
+    private const string VndFormat = "#,##0\" đ\"";
+
+    // Mã hex màu thương hiệu (cam Khương Phúc).
+    private static readonly Color BrandPrimary = ColorTranslator.FromHtml("#F26B2C");
+    private static readonly Color BrandHeader = ColorTranslator.FromHtml("#FFF1E6");
+    private static readonly Color BorderColor = ColorTranslator.FromHtml("#D1D5DB");
+    private static readonly Color SubtleGray = ColorTranslator.FromHtml("#F3F4F6");
+
+    private static string ComposeNote(string? shipperNote, string? unpaidReason)
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(shipperNote)) parts.Add(shipperNote.Trim());
+        if (!string.IsNullOrWhiteSpace(unpaidReason)) parts.Add($"Lý do: {unpaidReason.Trim()}");
+        return string.Join(" — ", parts);
+    }
+
+    private static string ToVietnameseStatus(OrderStatus s) => s switch
+    {
+        OrderStatus.Unassigned       => "Chưa phân",
+        OrderStatus.Pending          => "Chờ giao",
+        OrderStatus.WaitingTransfer  => "Chờ CK",
+        OrderStatus.PaidCash         => "Đã thu TM",
+        OrderStatus.PaidTransfer     => "Đã CK",
+        OrderStatus.Partial          => "CK một phần",
+        OrderStatus.Scheduled        => "Hẹn lại",
+        OrderStatus.Unpaid           => "Chưa thu",
+        _                            => s.ToString()
+    };
+
     public async Task<byte[]> ExportDailyReportAsync(DateTime date, string? shipperName = null)
     {
         var report = await GetDailyReportAsync(date);
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-        var rows = string.IsNullOrWhiteSpace(shipperName)
-            ? report.ByShipper
-            : report.ByShipper.Where(s => string.Equals(s.ShipperName, shipperName, StringComparison.OrdinalIgnoreCase)).ToList();
-
         var isPerShipper = !string.IsNullOrWhiteSpace(shipperName);
+        var rows = isPerShipper
+            ? report.ByShipper.Where(s => string.Equals(s.ShipperName, shipperName, StringComparison.OrdinalIgnoreCase)).ToList()
+            : report.ByShipper;
+
+        var totalOrders = isPerShipper ? rows.Sum(s => s.TotalOrders) : report.TotalOrders;
         var totalAmount = isPerShipper ? rows.Sum(s => s.TotalAmount) : report.TotalAmount;
-        var cash = isPerShipper ? rows.Sum(s => s.CashAmount) : report.Cash;
-        var transfer = isPerShipper ? rows.Sum(s => s.TransferAmount) : report.Transfer;
-        var unpaid = isPerShipper ? rows.Sum(s => s.UnpaidAmount) : report.UnpaidAmount;
-        var scheduled = isPerShipper ? rows.Sum(s => s.ScheduledAmount) : report.ScheduledAmount;
+        var cash        = isPerShipper ? rows.Sum(s => s.CashAmount)  : report.Cash;
+        var transfer    = isPerShipper ? rows.Sum(s => s.TransferAmount) : report.Transfer;
+        var unpaid      = isPerShipper ? rows.Sum(s => s.UnpaidAmount) : report.UnpaidAmount;
+        var scheduled   = isPerShipper ? rows.Sum(s => s.ScheduledAmount) : report.ScheduledAmount;
+        var remaining   = totalAmount - cash - transfer;
 
         using var package = new ExcelPackage();
+
+        // Tên sheet tối đa 31 ký tự (giới hạn Excel).
         var sheetTitle = isPerShipper ? $"BC {shipperName} {date:dd-MM-yyyy}" : $"Báo cáo {date:dd-MM-yyyy}";
         if (sheetTitle.Length > 31) sheetTitle = sheetTitle[..31];
         var ws = package.Workbook.Worksheets.Add(sheetTitle);
+        ws.View.ShowGridLines = false;
 
-        ws.Cells[1, 1].Value = isPerShipper ? $"Nhân viên: {shipperName}" : "Tổng cần thu";
-        ws.Cells[1, 2].Value = isPerShipper ? null : (object)totalAmount;
-        if (isPerShipper)
+        // ── Hàng tiêu đề ─────────────────────────────────────────────────────
+        var title = isPerShipper
+            ? $"BÁO CÁO DOANH THU — {shipperName!.ToUpperInvariant()} — NGÀY {date:dd/MM/yyyy}"
+            : $"BÁO CÁO DOANH THU CUỐI NGÀY — {date:dd/MM/yyyy}";
+
+        ws.Cells[1, 1, 1, 9].Merge = true;
+        ws.Cells[1, 1].Value = title;
+        ws.Cells[1, 1].Style.Font.Size = 16;
+        ws.Cells[1, 1].Style.Font.Bold = true;
+        ws.Cells[1, 1].Style.Font.Color.SetColor(Color.White);
+        ws.Cells[1, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+        ws.Cells[1, 1].Style.Fill.BackgroundColor.SetColor(BrandPrimary);
+        ws.Cells[1, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        ws.Cells[1, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+        ws.Row(1).Height = 28;
+
+        ws.Cells[2, 1, 2, 9].Merge = true;
+        ws.Cells[2, 1].Value = $"Công ty TNHH Khương Phúc — NPP Hương Cường   |   Xuất lúc {DateTime.Now:HH:mm dd/MM/yyyy}";
+        ws.Cells[2, 1].Style.Font.Italic = true;
+        ws.Cells[2, 1].Style.Font.Color.SetColor(Color.Gray);
+        ws.Cells[2, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+        // ── Khối tổng quan ───────────────────────────────────────────────────
+        var summaryStart = 4;
+        WriteSummaryBlock(ws, summaryStart, new (string Label, decimal Value, bool IsCount)[]
         {
-            ws.Cells[2, 1].Value = "Tổng cần thu";
-            ws.Cells[2, 2].Value = totalAmount;
-            ws.Cells[3, 1].Value = "Tiền mặt thu được";
-            ws.Cells[3, 2].Value = cash;
-            ws.Cells[4, 1].Value = "Chuyển khoản";
-            ws.Cells[4, 2].Value = transfer;
-            ws.Cells[5, 1].Value = "Chưa thu được";
-            ws.Cells[5, 2].Value = unpaid;
-            ws.Cells[6, 1].Value = "Nợ hẹn";
-            ws.Cells[6, 2].Value = scheduled;
-        }
-        else
+            ("Tổng số đơn",       totalOrders,  true),
+            ("Tổng cần thu",      totalAmount,  false),
+            ("Tiền mặt thu được", cash,         false),
+            ("Chuyển khoản",      transfer,     false),
+            ("Còn lại chưa thu",  remaining,    false),
+            ("Nợ hẹn lại",        scheduled,    false),
+            ("Chưa thu được",     unpaid,       false),
+        });
+
+        // ── Tiêu đề khối nhân viên ──────────────────────────────────────────
+        var sectionRow = summaryStart + 8;
+        ws.Cells[sectionRow, 1, sectionRow, 9].Merge = true;
+        ws.Cells[sectionRow, 1].Value = "CHI TIẾT THEO NHÂN VIÊN";
+        ws.Cells[sectionRow, 1].Style.Font.Bold = true;
+        ws.Cells[sectionRow, 1].Style.Font.Size = 12;
+        ws.Cells[sectionRow, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+        ws.Cells[sectionRow, 1].Style.Fill.BackgroundColor.SetColor(SubtleGray);
+
+        // Header bảng nhân viên.
+        var headerRow = sectionRow + 1;
+        string[] headers = ["Nhân viên", "Số đơn", "Tổng cần thu", "Tiền mặt",
+                            "Chuyển khoản", "Còn lại", "Đang CK", "Chưa thu", "Nợ hẹn"];
+        for (int c = 0; c < headers.Length; c++)
         {
-            ws.Cells[2, 1].Value = "Tiền mặt thu được";
-            ws.Cells[2, 2].Value = cash;
-            ws.Cells[3, 1].Value = "Chuyển khoản";
-            ws.Cells[3, 2].Value = transfer;
-            ws.Cells[4, 1].Value = "Chưa thu được";
-            ws.Cells[4, 2].Value = unpaid;
-            ws.Cells[5, 1].Value = "Nợ hẹn";
-            ws.Cells[5, 2].Value = scheduled;
+            ws.Cells[headerRow, c + 1].Value = headers[c];
         }
+        StyleHeaderRow(ws, headerRow, 9);
 
-        var headerRow = isPerShipper ? 8 : 7;
-        ws.Cells[headerRow, 1].Value = "Nhân viên";
-        ws.Cells[headerRow, 2].Value = "Tổng đơn";
-        ws.Cells[headerRow, 3].Value = "Tổng cần thu";
-        ws.Cells[headerRow, 4].Value = "Tiền mặt";
-        ws.Cells[headerRow, 5].Value = "Chuyển khoản";
-        ws.Cells[headerRow, 6].Value = "Còn lại";
-        ws.Cells[headerRow, 7].Value = "Đang CK";
-        ws.Cells[headerRow, 8].Value = "Chưa thu";
-        ws.Cells[headerRow, 9].Value = "Nợ hẹn";
-
+        // Dữ liệu từng shipper.
         var row = headerRow + 1;
-        foreach (var s in rows)
+        foreach (var s in rows.OrderByDescending(s => s.TotalAmount))
         {
             ws.Cells[row, 1].Value = s.ShipperName;
             ws.Cells[row, 2].Value = s.TotalOrders;
@@ -166,41 +233,160 @@ public class ReportService
             row++;
         }
 
+        // Hàng tổng cộng.
+        if (rows.Count > 0)
+        {
+            ws.Cells[row, 1].Value = "TỔNG CỘNG";
+            ws.Cells[row, 2].Value = rows.Sum(s => s.TotalOrders);
+            ws.Cells[row, 3].Value = rows.Sum(s => s.TotalAmount);
+            ws.Cells[row, 4].Value = rows.Sum(s => s.CashAmount);
+            ws.Cells[row, 5].Value = rows.Sum(s => s.TransferAmount);
+            ws.Cells[row, 6].Value = rows.Sum(s => s.TotalAmount - s.CashAmount - s.TransferAmount);
+            ws.Cells[row, 7].Value = rows.Sum(s => s.WaitingTransferCount);
+            ws.Cells[row, 8].Value = rows.Sum(s => s.UnpaidAmount);
+            ws.Cells[row, 9].Value = rows.Sum(s => s.ScheduledAmount);
+            ws.Cells[row, 1, row, 9].Style.Font.Bold = true;
+            ws.Cells[row, 1, row, 9].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws.Cells[row, 1, row, 9].Style.Fill.BackgroundColor.SetColor(BrandHeader);
+        }
+
+        var tableLastRow = row;
+        // Format tiền tệ cho các cột tiền (cột 3..6, 8..9) trong bảng nhân viên.
+        var moneyCols = new[] { 3, 4, 5, 6, 8, 9 };
+        foreach (var c in moneyCols)
+            ws.Cells[headerRow + 1, c, tableLastRow, c].Style.Numberformat.Format = VndFormat;
+
+        // Đường viền cho bảng.
+        ApplyBorders(ws.Cells[headerRow, 1, tableLastRow, 9]);
+
+        // ── Chi tiết đơn (chỉ khi xuất theo nhân viên) ─────────────────────
         if (isPerShipper)
         {
             var orders = await GetOrdersOfShipperAsync(date, shipperName!);
             if (orders.Count > 0)
             {
-                row += 1;
-                ws.Cells[row, 1].Value = "Chi tiết đơn hàng";
-                row++;
-                ws.Cells[row, 1].Value = "Mã đơn";
-                ws.Cells[row, 2].Value = "Khách hàng";
-                ws.Cells[row, 3].Value = "Tổng tiền";
-                ws.Cells[row, 4].Value = "Đã thu";
-                ws.Cells[row, 5].Value = "Trạng thái";
-                ws.Cells[row, 6].Value = "Ghi chú";
-                row++;
-                foreach (var o in orders)
+                var detailSection = tableLastRow + 2;
+                ws.Cells[detailSection, 1, detailSection, 9].Merge = true;
+                ws.Cells[detailSection, 1].Value = $"CHI TIẾT {orders.Count} ĐƠN HÀNG";
+                ws.Cells[detailSection, 1].Style.Font.Bold = true;
+                ws.Cells[detailSection, 1].Style.Font.Size = 12;
+                ws.Cells[detailSection, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                ws.Cells[detailSection, 1].Style.Fill.BackgroundColor.SetColor(SubtleGray);
+
+                var detailHeader = detailSection + 1;
+                string[] dh = ["STT", "Mã đơn", "Khách hàng", "Tổng tiền", "Đã thu",
+                                "Còn lại", "Trạng thái", "Ghi chú shipper", "Diễn giải nhập"];
+                for (int c = 0; c < dh.Length; c++)
+                    ws.Cells[detailHeader, c + 1].Value = dh[c];
+                StyleHeaderRow(ws, detailHeader, 9);
+
+                var dr = detailHeader + 1;
+                var stt = 1;
+                foreach (var o in orders.OrderBy(o => o.OrderCode))
                 {
-                    ws.Cells[row, 1].Value = o.OrderCode;
-                    ws.Cells[row, 2].Value = o.CustomerName;
-                    ws.Cells[row, 3].Value = o.Amount;
-                    ws.Cells[row, 4].Value = o.AmountPaid;
-                    ws.Cells[row, 5].Value = o.Status.ToString();
-                    ws.Cells[row, 6].Value = o.ShipperNote ?? o.OriginNote;
-                    row++;
+                    ws.Cells[dr, 1].Value = stt++;
+                    ws.Cells[dr, 2].Value = o.OrderCode;
+                    ws.Cells[dr, 3].Value = o.CustomerName;
+                    ws.Cells[dr, 4].Value = o.Amount;
+                    ws.Cells[dr, 5].Value = o.AmountPaid;
+                    ws.Cells[dr, 6].Value = o.Amount - o.AmountPaid;
+                    ws.Cells[dr, 7].Value = ToVietnameseStatus(o.Status);
+                    // Gộp ShipperNote + UnpaidReason (lý do chưa thu) để 1 ô vẫn đủ ngữ cảnh
+                    // mà không phải thêm cột riêng — UnpaidReason chỉ có khi status = Unpaid.
+                    ws.Cells[dr, 8].Value = ComposeNote(o.ShipperNote, o.UnpaidReason);
+                    ws.Cells[dr, 9].Value = o.OriginNote;
+                    dr++;
                 }
+
+                // Tổng cộng chi tiết đơn.
+                ws.Cells[dr, 1, dr, 3].Merge = true;
+                ws.Cells[dr, 1].Value = "TỔNG";
+                ws.Cells[dr, 4].Value = orders.Sum(o => o.Amount);
+                ws.Cells[dr, 5].Value = orders.Sum(o => o.AmountPaid);
+                ws.Cells[dr, 6].Value = orders.Sum(o => o.Amount - o.AmountPaid);
+                ws.Cells[dr, 1, dr, 9].Style.Font.Bold = true;
+                ws.Cells[dr, 1, dr, 9].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                ws.Cells[dr, 1, dr, 9].Style.Fill.BackgroundColor.SetColor(BrandHeader);
+
+                foreach (var c in new[] { 4, 5, 6 })
+                    ws.Cells[detailHeader + 1, c, dr, c].Style.Numberformat.Format = VndFormat;
+                ws.Cells[detailHeader + 1, 1, dr, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells[detailHeader + 1, 7, dr - 1, 7].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells[detailHeader + 1, 8, dr - 1, 9].Style.WrapText = true;
+
+                ApplyBorders(ws.Cells[detailHeader, 1, dr, 9]);
             }
+        }
+
+        // Auto-fit cột cho gọn.
+        ws.Cells[ws.Dimension.Address].AutoFitColumns(8, 40);
+        // Giữ STT hẹp + Trạng thái vừa đủ.
+        if (isPerShipper)
+        {
+            ws.Column(1).Width = Math.Min(ws.Column(1).Width, 6);
+            ws.Column(7).Width = Math.Max(ws.Column(7).Width, 14);
         }
 
         return await package.GetAsByteArrayAsync();
     }
 
+    // ── Helpers vẽ Excel ──────────────────────────────────────────────────────
+
+    private static void WriteSummaryBlock(ExcelWorksheet ws, int startRow,
+        IReadOnlyList<(string Label, decimal Value, bool IsCount)> entries)
+    {
+        ws.Cells[startRow, 1, startRow, 9].Merge = true;
+        ws.Cells[startRow, 1].Value = "TỔNG QUAN";
+        ws.Cells[startRow, 1].Style.Font.Bold = true;
+        ws.Cells[startRow, 1].Style.Font.Size = 12;
+        ws.Cells[startRow, 1].Style.Fill.PatternType = ExcelFillStyle.Solid;
+        ws.Cells[startRow, 1].Style.Fill.BackgroundColor.SetColor(SubtleGray);
+
+        var r = startRow + 1;
+        foreach (var e in entries)
+        {
+            ws.Cells[r, 1, r, 3].Merge = true;
+            ws.Cells[r, 1].Value = e.Label;
+            ws.Cells[r, 1].Style.Font.Bold = true;
+            ws.Cells[r, 1].Style.Indent = 1;
+
+            ws.Cells[r, 4, r, 5].Merge = true;
+            ws.Cells[r, 4].Value = e.Value;
+            ws.Cells[r, 4].Style.Numberformat.Format = e.IsCount ? "#,##0\" đơn\"" : VndFormat;
+            ws.Cells[r, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+            r++;
+        }
+        ApplyBorders(ws.Cells[startRow + 1, 1, r - 1, 5]);
+    }
+
+    private static void StyleHeaderRow(ExcelWorksheet ws, int row, int colCount)
+    {
+        var range = ws.Cells[row, 1, row, colCount];
+        range.Style.Font.Bold = true;
+        range.Style.Font.Color.SetColor(Color.White);
+        range.Style.Fill.PatternType = ExcelFillStyle.Solid;
+        range.Style.Fill.BackgroundColor.SetColor(BrandPrimary);
+        range.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+        range.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+        ws.Row(row).Height = 22;
+    }
+
+    private static void ApplyBorders(ExcelRange range)
+    {
+        var border = range.Style.Border;
+        border.Top.Style = ExcelBorderStyle.Thin;
+        border.Bottom.Style = ExcelBorderStyle.Thin;
+        border.Left.Style = ExcelBorderStyle.Thin;
+        border.Right.Style = ExcelBorderStyle.Thin;
+        border.Top.Color.SetColor(BorderColor);
+        border.Bottom.Color.SetColor(BorderColor);
+        border.Left.Color.SetColor(BorderColor);
+        border.Right.Color.SetColor(BorderColor);
+    }
+
     private async Task<List<Order>> GetOrdersOfShipperAsync(DateTime date, string shipperName)
     {
-        var start = DateTime.SpecifyKind(date.Date, DateTimeKind.Utc);
-        var end = start.AddDays(1);
+        var (start, end) = VietnamDayToUtcRange(date);
         var all = await _db.Orders
             .Include(o => o.Shipper)
             .Where(o => o.CreatedAt >= start && o.CreatedAt < end && o.ShipperId.HasValue)

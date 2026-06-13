@@ -26,8 +26,11 @@ public class ImportController : ControllerBase
     private string CallerName => User.FindFirstValue(ClaimTypes.Name) ?? "";
 
     [HttpPost]
+    [RequestSizeLimit(20 * 1024 * 1024)] // 20 MB
     public async Task<IActionResult> Preview(IFormFile file)
     {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "Chưa chọn file" });
         if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
             return BadRequest(new { message = "Chỉ hỗ trợ file .xlsx" });
 

@@ -20,7 +20,14 @@ public class SePayServiceTests
 
         if (storedApiKey != null)
         {
-            db.SystemConfigs.Add(new SystemConfig { Key = "sepay_apikey", Value = storedApiKey });
+            // AppDbContext seed sẵn row sepay_apikey với Value="" — update tại chỗ
+            // thay vì Add (InMemory không enforce unique index → tránh tạo 2 row trùng key
+            // khiến FirstOrDefault có thể trả về row rỗng).
+            var existing = db.SystemConfigs.FirstOrDefault(c => c.Key == "sepay_apikey");
+            if (existing != null)
+                existing.Value = storedApiKey;
+            else
+                db.SystemConfigs.Add(new SystemConfig { Key = "sepay_apikey", Value = storedApiKey });
             db.SaveChanges();
         }
 
@@ -45,24 +52,24 @@ public class SePayServiceTests
     // ── VerifyApiKey ──────────────────────────────────────────────────────────
 
     [Fact]
-    public async Task VerifyApiKey_CorrectKey_ReturnsTrue()
+    public async Task VerifyWebhook_CorrectKey_ReturnsTrue()
     {
         var svc = CreateService(out _, storedApiKey: "secret-key-123");
-        Assert.True(await svc.VerifyApiKeyAsync("secret-key-123"));
+        Assert.True(await svc.VerifyWebhookAsync("secret-key-123", null, null, ""));
     }
 
     [Fact]
-    public async Task VerifyApiKey_WrongKey_ReturnsFalse()
+    public async Task VerifyWebhook_WrongKey_ReturnsFalse()
     {
         var svc = CreateService(out _, storedApiKey: "secret-key-123");
-        Assert.False(await svc.VerifyApiKeyAsync("wrong-key"));
+        Assert.False(await svc.VerifyWebhookAsync("wrong-key", null, null, ""));
     }
 
     [Fact]
-    public async Task VerifyApiKey_EmptyKey_ReturnsFalse()
+    public async Task VerifyWebhook_EmptyKey_ReturnsFalse()
     {
         var svc = CreateService(out _, storedApiKey: "secret-key-123");
-        Assert.False(await svc.VerifyApiKeyAsync(""));
+        Assert.False(await svc.VerifyWebhookAsync("", null, null, ""));
     }
 
     // ── ProcessWebhook - Auto match ───────────────────────────────────────────
@@ -168,15 +175,16 @@ public class SePayServiceTests
     public async Task ProcessWebhook_DuplicateTransaction_Skipped()
     {
         var svc = CreateService(out var db);
-        db.SePayTransactions.Add(TestDbHelper.CreateTransaction(content: "dup"));
-        db.SePayTransactions.First().TransactionCode = "TX-DUP";
-        // override the transaction code directly
+
+        // Seed 1 transaction đã tồn tại với TransactionCode = "TX-DUPLICATE".
         var existingTx = new SePayTransaction
         {
+            Id = Guid.NewGuid(),
             TransactionCode = "TX-DUPLICATE",
             Amount = 100000,
             Content = "test",
-            TransactionDate = DateTime.UtcNow
+            TransactionDate = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow
         };
         db.SePayTransactions.Add(existingTx);
         await db.SaveChangesAsync();
@@ -192,7 +200,7 @@ public class SePayServiceTests
 
         var result = await svc.ProcessWebhookAsync(payload, "{}");
         Assert.Equal("02", result);
-        Assert.Equal(2, db.SePayTransactions.Count()); // không thêm mới
+        Assert.Equal(1, db.SePayTransactions.Count()); // không thêm mới
     }
 
     // ── AssignTransaction ─────────────────────────────────────────────────────
@@ -261,5 +269,215 @@ public class SePayServiceTests
         var svc = CreateService(out var db);
         var ok = await svc.UnassignTransactionAsync(Guid.NewGuid(), "acc");
         Assert.False(ok);
+    }
+
+    // ── Multi-CK: regression cho fix Partial → continuation summed ────────────
+
+    [Fact]
+    public async Task ProcessWebhook_PartialOrder_NextTransfer_SumsToFullPaid()
+    {
+        var svc = CreateService(out var db);
+        // Đơn 500k, đã có 1 CK 200k khớp → đang Partial.
+        var order = TestDbHelper.CreateOrder("BHMULTI", 500_000, OrderStatus.Partial);
+        order.AmountPaid = 200_000;
+        var firstTx = TestDbHelper.CreateTransaction(200_000, "BHMULTI lần 1", MatchStatus.AutoMatched, order.Id);
+        firstTx.TransactionCode = "FIRST-200K";
+        db.Orders.Add(order);
+        db.SePayTransactions.Add(firstTx);
+        await db.SaveChangesAsync();
+
+        // Webhook CK lần 2 với mã đơn trùng. Trước fix: bỏ qua vì status != WaitingTransfer.
+        var payload = new SePayWebhookPayload
+        {
+            Id = 1234,
+            TransferType = "in",
+            TransferAmount = 300_000,
+            Content = "Tra tiep BHMULTI",
+            ReferenceCode = "SECOND-300K"
+        };
+        await svc.ProcessWebhookAsync(payload, "{}");
+
+        var updated = await db.Orders.FindAsync(order.Id);
+        Assert.Equal(OrderStatus.PaidTransfer, updated!.Status);
+        Assert.Equal(500_000, updated.AmountPaid); // 200k + 300k
+    }
+
+    [Fact]
+    public async Task ProcessWebhook_PartialOrder_StillPartial_AfterPartialFollowup()
+    {
+        var svc = CreateService(out var db);
+        var order = TestDbHelper.CreateOrder("BHFRAG", 1_000_000, OrderStatus.Partial);
+        order.AmountPaid = 200_000;
+        var firstTx = TestDbHelper.CreateTransaction(200_000, "BHFRAG", MatchStatus.AutoMatched, order.Id);
+        firstTx.TransactionCode = "P1";
+        db.Orders.Add(order);
+        db.SePayTransactions.Add(firstTx);
+        await db.SaveChangesAsync();
+
+        var payload = new SePayWebhookPayload
+        {
+            Id = 5,
+            TransferType = "in",
+            TransferAmount = 300_000,
+            Content = "BHFRAG lan 2",
+            ReferenceCode = "P2"
+        };
+        await svc.ProcessWebhookAsync(payload, "{}");
+
+        var updated = await db.Orders.FindAsync(order.Id);
+        Assert.Equal(OrderStatus.Partial, updated!.Status);
+        Assert.Equal(500_000, updated.AmountPaid);
+    }
+
+    // ── Longest-match: regression cho fix vòng 1 (DG2 ⊂ DG2001) ──────────────
+
+    [Fact]
+    public async Task ProcessWebhook_MultipleCandidates_ChoosesLongestOrderCode()
+    {
+        var svc = CreateService(out var db);
+        var shortOrder = TestDbHelper.CreateOrder("DG2", 100_000, OrderStatus.WaitingTransfer);
+        var longOrder = TestDbHelper.CreateOrder("DG2001", 200_000, OrderStatus.WaitingTransfer);
+        db.Orders.AddRange(shortOrder, longOrder);
+        await db.SaveChangesAsync();
+
+        var payload = new SePayWebhookPayload
+        {
+            Id = 77,
+            TransferType = "in",
+            TransferAmount = 200_000,
+            Content = "Thanh toan DG2001",
+            ReferenceCode = "L1"
+        };
+        await svc.ProcessWebhookAsync(payload, "{}");
+
+        var updatedShort = await db.Orders.FindAsync(shortOrder.Id);
+        var updatedLong = await db.Orders.FindAsync(longOrder.Id);
+        Assert.Equal(OrderStatus.WaitingTransfer, updatedShort!.Status); // không bị match nhầm
+        Assert.Equal(OrderStatus.PaidTransfer, updatedLong!.Status);
+    }
+
+    // ── Unassign: regression — recompute từ các CK còn lại ────────────────────
+
+    [Fact]
+    public async Task UnassignTransaction_LeavesOtherMatchedTx_RecomputesAmountPaid()
+    {
+        var svc = CreateService(out var db);
+        var order = TestDbHelper.CreateOrder("BHCK", 500_000, OrderStatus.PaidTransfer);
+        order.AmountPaid = 500_000;
+
+        var tx1 = TestDbHelper.CreateTransaction(200_000, "BHCK 1", MatchStatus.AutoMatched, order.Id);
+        tx1.TransactionCode = "T1";
+        var tx2 = TestDbHelper.CreateTransaction(300_000, "BHCK 2", MatchStatus.AutoMatched, order.Id);
+        tx2.TransactionCode = "T2";
+
+        db.Orders.Add(order);
+        db.SePayTransactions.AddRange(tx1, tx2);
+        await db.SaveChangesAsync();
+
+        // Bỏ khớp tx2 (300k) → còn tx1 (200k) → đơn về Partial.
+        await svc.UnassignTransactionAsync(tx2.Id, "kt");
+
+        var updated = await db.Orders.FindAsync(order.Id);
+        Assert.Equal(OrderStatus.Partial, updated!.Status);
+        Assert.Equal(200_000, updated.AmountPaid); // không bị reset về 0
+    }
+
+    [Fact]
+    public async Task UnassignTransaction_LastMatchedTx_ResetsToWaitingTransfer()
+    {
+        var svc = CreateService(out var db);
+        var order = TestDbHelper.CreateOrder("BHONE", 500_000, OrderStatus.PaidTransfer);
+        order.AmountPaid = 500_000;
+        var tx = TestDbHelper.CreateTransaction(500_000, "BHONE", MatchStatus.AutoMatched, order.Id);
+        tx.TransactionCode = "ONLY";
+        db.Orders.Add(order);
+        db.SePayTransactions.Add(tx);
+        await db.SaveChangesAsync();
+
+        await svc.UnassignTransactionAsync(tx.Id, "kt");
+
+        var updated = await db.Orders.FindAsync(order.Id);
+        Assert.Equal(OrderStatus.WaitingTransfer, updated!.Status);
+        Assert.Equal(0, updated.AmountPaid);
+    }
+
+    // ── AssignTransaction: regression — không gán vào đơn đã PaidCash ────────
+
+    [Fact]
+    public async Task AssignTransaction_PaidCashOrder_Rejected()
+    {
+        var svc = CreateService(out var db);
+        var order = TestDbHelper.CreateOrder("BHC", 300_000, OrderStatus.PaidCash);
+        order.AmountPaid = 300_000;
+        var tx = TestDbHelper.CreateTransaction(300_000, "BHC", MatchStatus.Unmatched);
+        db.Orders.Add(order);
+        db.SePayTransactions.Add(tx);
+        await db.SaveChangesAsync();
+
+        var ok = await svc.AssignTransactionAsync(tx.Id, order.Id, "kt");
+        Assert.False(ok);
+
+        var reloadedOrder = await db.Orders.FindAsync(order.Id);
+        Assert.Equal(300_000, reloadedOrder!.AmountPaid); // không bị thay đổi
+    }
+
+    // ── HMAC verify ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task VerifyWebhook_ValidHmacSignature_ReturnsTrue()
+    {
+        var svc = CreateService(out _, storedApiKey: "hmac-secret");
+        var rawBody = "{\"id\":1,\"transferAmount\":1000}";
+        var timestamp = "1700000000";
+
+        using var hmac = new System.Security.Cryptography.HMACSHA256(
+            System.Text.Encoding.UTF8.GetBytes("hmac-secret"));
+        var sig = Convert.ToHexString(
+            hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes($"{timestamp}.{rawBody}")))
+            .ToLowerInvariant();
+
+        Assert.True(await svc.VerifyWebhookAsync(null, $"sha256={sig}", timestamp, rawBody));
+    }
+
+    [Fact]
+    public async Task VerifyWebhook_TamperedBody_ReturnsFalse()
+    {
+        var svc = CreateService(out _, storedApiKey: "hmac-secret");
+        var rawBody = "{\"id\":1}";
+        var timestamp = "1700000000";
+
+        using var hmac = new System.Security.Cryptography.HMACSHA256(
+            System.Text.Encoding.UTF8.GetBytes("hmac-secret"));
+        var sig = Convert.ToHexString(
+            hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes($"{timestamp}.{rawBody}")))
+            .ToLowerInvariant();
+
+        // Đổi body sau khi ký → signature không khớp.
+        Assert.False(await svc.VerifyWebhookAsync(null, $"sha256={sig}", timestamp, "{\"tampered\":true}"));
+    }
+
+    [Fact]
+    public async Task ProcessWebhook_ContentMatchesOrderCodeButNotInWaitingState_Skipped()
+    {
+        var svc = CreateService(out var db);
+        var order = TestDbHelper.CreateOrder("BH_DONE", 100_000, OrderStatus.PaidCash);
+        order.AmountPaid = 100_000;
+        db.Orders.Add(order);
+        await db.SaveChangesAsync();
+
+        var payload = new SePayWebhookPayload
+        {
+            Id = 9,
+            TransferType = "in",
+            TransferAmount = 100_000,
+            Content = "BH_DONE",
+            ReferenceCode = "RX"
+        };
+        await svc.ProcessWebhookAsync(payload, "{}");
+
+        // Order vẫn PaidCash; tx được lưu nhưng Unmatched (đơn không ở trạng thái nhận CK).
+        var tx = db.SePayTransactions.Single(t => t.TransactionCode == "RX");
+        Assert.Equal(MatchStatus.Unmatched, tx.MatchStatus);
+        Assert.Equal(OrderStatus.PaidCash, (await db.Orders.FindAsync(order.Id))!.Status);
     }
 }

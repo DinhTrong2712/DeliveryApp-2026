@@ -62,7 +62,9 @@ public class SePayService
 
         if (string.IsNullOrEmpty(storedSecret)) return false;
 
-        if (!string.IsNullOrEmpty(apiKey) && storedSecret == apiKey) return true;
+        // So sánh constant-time để chống timing attack — kẻ tấn công không suy ra được key
+        // qua thời gian phản hồi khác nhau giữa các lần fail.
+        if (!string.IsNullOrEmpty(apiKey) && FixedTimeEqualsString(storedSecret, apiKey)) return true;
 
         if (!string.IsNullOrEmpty(signature) && !string.IsNullOrEmpty(rawBody))
         {
@@ -81,11 +83,18 @@ public class SePayService
             foreach (var data in candidates)
             {
                 var computed = Convert.ToHexString(hmac.ComputeHash(Encoding.UTF8.GetBytes(data))).ToLowerInvariant();
-                if (string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase)) return true;
+                if (FixedTimeEqualsString(computed, expected.ToLowerInvariant())) return true;
             }
         }
 
         return false;
+    }
+
+    private static bool FixedTimeEqualsString(string a, string b)
+    {
+        var ba = Encoding.UTF8.GetBytes(a);
+        var bb = Encoding.UTF8.GetBytes(b);
+        return ba.Length == bb.Length && CryptographicOperations.FixedTimeEquals(ba, bb);
     }
 
     [Obsolete("Use VerifyWebhookAsync instead", false)]
@@ -116,13 +125,18 @@ public class SePayService
         };
 
         var contentToSearch = $"{payload.Content} {payload.Description}".Trim().ToUpperInvariant();
-        var waitingOrders = await _db.Orders
-            .Where(o => o.Status == OrderStatus.WaitingTransfer)
+        // Match cả đơn WaitingTransfer (chờ CK) lẫn Partial (đã CK 1 phần, đang chờ phần còn lại).
+        var candidateOrders = await _db.Orders
+            .Where(o => o.Status == OrderStatus.WaitingTransfer || o.Status == OrderStatus.Partial)
             .Select(o => new { o.Id, o.OrderCode })
             .ToListAsync();
 
-        var matchedId = waitingOrders
-            .FirstOrDefault(o => contentToSearch.Contains(o.OrderCode.ToUpperInvariant()))?.Id;
+        // Ưu tiên match OrderCode dài nhất để tránh match nhầm khi 1 code là prefix của code khác (DG2 ⊂ DG2001).
+        var matchedId = candidateOrders
+            .Where(o => contentToSearch.Contains(o.OrderCode.ToUpperInvariant()))
+            .OrderByDescending(o => o.OrderCode.Length)
+            .Select(o => (Guid?)o.Id)
+            .FirstOrDefault();
 
         var order = matchedId.HasValue ? await _db.Orders.FindAsync(matchedId.Value) : null;
 
@@ -133,7 +147,7 @@ public class SePayService
             tx.MatchedAt = DateTime.UtcNow;
             tx.MatchedBy = WebhookActor;
 
-            ApplyMatchToOrder(order, payload.TransferAmount, WebhookActor, $"SePay auto-match: {transactionCode}");
+            await ApplyMatchToOrderAsync(order, payload.TransferAmount, WebhookActor, $"SePay auto-match: {transactionCode}");
             _db.SePayTransactions.Add(tx);
 
             _audit.Add("AUTO_MATCH", "SePayTransaction", tx.Id,
@@ -254,13 +268,15 @@ public class SePayService
         var order = await _db.Orders.FindAsync(orderId);
         if (tx == null || order == null) return false;
         if (tx.MatchStatus != MatchStatus.Unmatched) return false;
+        // Không cho gán CK vào đơn đã thu đủ bằng tiền mặt — tránh ghi đè AmountPaid và mất dữ liệu.
+        if (order.Status == OrderStatus.PaidCash) return false;
 
         tx.OrderId = orderId;
         tx.MatchStatus = MatchStatus.ManualMatched;
         tx.MatchedBy = assignedBy;
         tx.MatchedAt = DateTime.UtcNow;
 
-        ApplyMatchToOrder(order, tx.Amount, assignedBy, $"Manual match: {tx.TransactionCode}");
+        await ApplyMatchToOrderAsync(order, tx.Amount, assignedBy, $"Manual match: {tx.TransactionCode}");
 
         _audit.Add("MANUAL_MATCH", "SePayTransaction", tx.Id,
             newValue: order.OrderCode,
@@ -289,8 +305,23 @@ public class SePayService
         if (order != null)
         {
             var oldStatus = order.Status;
-            order.Status = OrderStatus.WaitingTransfer;
-            order.AmountPaid = 0;
+
+            // Tính lại AmountPaid từ các giao dịch còn match trên đơn (loại trừ tx vừa bỏ khớp)
+            // — tránh phá hỏng dữ liệu khi đơn từng được match bởi nhiều CK.
+            var remainingPaid = await _db.SePayTransactions
+                .Where(t => t.OrderId == order.Id
+                         && t.Id != tx.Id
+                         && t.MatchStatus != MatchStatus.Unmatched)
+                .SumAsync(t => (decimal?)t.Amount) ?? 0m;
+
+            order.AmountPaid = Math.Min(remainingPaid, order.Amount);
+            if (remainingPaid <= 0)
+                order.Status = OrderStatus.WaitingTransfer;
+            else if (remainingPaid >= order.Amount)
+                order.Status = OrderStatus.PaidTransfer;
+            else
+                order.Status = OrderStatus.Partial;
+
             order.UpdatedAt = DateTime.UtcNow;
 
             _db.OrderHistories.Add(new OrderHistory
@@ -321,10 +352,19 @@ public class SePayService
         return DateTime.UtcNow;
     }
 
-    private void ApplyMatchToOrder(Order order, decimal paidAmount, string changedBy, string reason)
+    private async Task ApplyMatchToOrderAsync(Order order, decimal newPaymentAmount, string changedBy, string reason)
     {
         var oldStatus = order.Status;
-        if (paidAmount >= order.Amount)
+
+        // Cộng dồn các CK đã match trước đó trên đơn (tx mới chưa add vào DB) để xử lý
+        // đúng kịch bản 1 đơn được thanh toán qua nhiều lần chuyển khoản.
+        var existingMatched = await _db.SePayTransactions
+            .Where(t => t.OrderId == order.Id && t.MatchStatus != MatchStatus.Unmatched)
+            .SumAsync(t => (decimal?)t.Amount) ?? 0m;
+
+        var totalPaid = existingMatched + newPaymentAmount;
+
+        if (totalPaid >= order.Amount)
         {
             order.Status = OrderStatus.PaidTransfer;
             order.AmountPaid = order.Amount;
@@ -332,7 +372,7 @@ public class SePayService
         else
         {
             order.Status = OrderStatus.Partial;
-            order.AmountPaid = paidAmount;
+            order.AmountPaid = totalPaid;
         }
         order.UpdatedAt = DateTime.UtcNow;
 

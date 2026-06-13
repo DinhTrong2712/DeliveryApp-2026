@@ -37,9 +37,20 @@ public class AiChatService
     private static readonly string[] ForbiddenSqlKeywords =
         { "INSERT", "UPDATE", "DELETE", "DROP", "TRUNCATE", "ALTER", "CREATE", "GRANT", "REVOKE", "EXEC", "EXECUTE" };
 
+    private const string OutOfScopeMarker = "[OUT_OF_SCOPE]";
+
+    private const string OutOfScopeAnswer =
+        "Câu hỏi này nằm ngoài phạm vi hỗ trợ của tôi. " +
+        "Tôi chỉ trả lời các câu hỏi liên quan đến hệ thống quản lý giao hàng Khương Phúc, ví dụ:\n" +
+        "• Doanh thu hôm nay/tuần/tháng\n" +
+        "• Đơn hàng theo shipper/tuyến\n" +
+        "• Giao dịch chuyển khoản\n" +
+        "• Tình hình thu - chưa thu";
+
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
     private readonly HttpClient _http;
+    private readonly AuditService _audit;
 
     private static readonly ConcurrentDictionary<string, (List<ChatTurn> History, DateTime LastAccess)> _sessions = new();
 
@@ -110,11 +121,12 @@ LƯU Ý QUAN TRỌNG:
 - JOIN shipper: JOIN ""Users"" u ON u.""Id"" = o.""ShipperId""
 ";
 
-    public AiChatService(AppDbContext db, IConfiguration config, HttpClient http)
+    public AiChatService(AppDbContext db, IConfiguration config, HttpClient http, AuditService audit)
     {
         _db = db;
         _config = config;
         _http = http;
+        _audit = audit;
     }
 
     // ── Session management ────────────────────────────────────────────────────
@@ -162,6 +174,14 @@ LƯU Ý QUAN TRỌNG:
         {
             var sqlPrompt = BuildSqlPrompt(question, history);
             var sqlResult = await CallLlmAsync(sqlPrompt, provider, model, apiKey);
+
+            if (sqlResult.Contains(OutOfScopeMarker, StringComparison.OrdinalIgnoreCase))
+            {
+                AppendToSession(sessionId, question, OutOfScopeAnswer);
+                await LogOutOfScopeAsync(question);
+                return new AiChatResponse { Answer = OutOfScopeAnswer, Success = true, SessionId = sessionId };
+            }
+
             var sql = ExtractSql(sqlResult);
 
             if (string.IsNullOrEmpty(sql))
@@ -237,6 +257,22 @@ LƯU Ý QUAN TRỌNG:
         );
     }
 
+    private async Task LogOutOfScopeAsync(string question)
+    {
+        try
+        {
+            var trimmed = question.Length > 500 ? question[..500] : question;
+            await _audit.LogAsync(
+                action: "AI_OUT_OF_SCOPE",
+                entityType: "AiChat",
+                description: trimmed);
+        }
+        catch
+        {
+            // Audit log is best-effort; never fail the chat response because of it.
+        }
+    }
+
     private static AiChatResponse FailResponse(string sessionId, string question, string answer, string error)
     {
         AppendToSession(sessionId, question, answer);
@@ -263,28 +299,35 @@ LƯU Ý QUAN TRỌNG:
                 history.TakeLast(6).Select(h => $"[{h.Role}]: {h.Content[..Math.Min(h.Content.Length, 200)]}"))
             : "";
 
-        return $@"Bạn là trợ lý kế toán thông minh của doanh nghiệp Khương Phúc.
-Nhiệm vụ: tạo câu SQL PostgreSQL để trả lời câu hỏi, HOẶC trả lời trực tiếp nếu không cần truy vấn.
+        return $@"Bạn là trợ lý kế toán của hệ thống quản lý giao hàng Khương Phúc.
+Bạn CHỈ được phép trả lời các câu hỏi liên quan đến dữ liệu trong cơ sở dữ liệu bên dưới
+(đơn hàng, doanh thu, shipper, giao dịch chuyển khoản, import, lịch sử thay đổi).
 
 {DbSchema}
 {historyCtx}
 
-Quy tắc:
+Quy tắc bắt buộc:
 1. CHỈ dùng SELECT, không INSERT/UPDATE/DELETE/DROP
 2. Luôn dùng dấu ngoặc kép cho tên bảng/cột: ""TableName"".""ColumnName""
 3. LIMIT 50 nếu không chỉ định số lượng
 4. Cột kết quả đặt tên tiếng Việt (dùng AS)
-5. Nếu câu hỏi là chào hỏi, hỏi về hệ thống, hoặc không cần dữ liệu → trả lời trực tiếp KHÔNG dùng SQL
-6. Sử dụng lịch sử hội thoại để hiểu ngữ cảnh câu hỏi hiện tại
+5. Sử dụng lịch sử hội thoại để hiểu ngữ cảnh câu hỏi hiện tại
+6. PHẠM VI:
+   - Nếu câu hỏi liên quan đến dữ liệu hệ thống Khương Phúc → tạo SQL.
+   - Nếu là lời chào (xin chào, hi, hello...) hoặc hỏi về khả năng/cách dùng trợ lý
+     → trả lời ngắn gọn bằng tiếng Việt, KHÔNG dùng SQL.
+   - Nếu câu hỏi NGOÀI phạm vi hệ thống (thời tiết, tin tức, kiến thức chung, toán,
+     code, dịch thuật, tâm sự, công thức nấu ăn, AI khác, v.v.) → CHỈ trả về đúng
+     một chuỗi: {OutOfScopeMarker}
+     Không giải thích thêm, không xin lỗi, không đưa thêm bất kỳ chữ nào khác.
+7. TUYỆT ĐỐI KHÔNG bịa dữ liệu. Mọi con số, tên người, mã đơn... phải đến từ kết quả SQL.
 
-Câu hỏi: {question}
+Câu hỏi của người dùng: {question}
 
 Nếu cần SQL:
 ```sql
 [câu SQL]
-```
-
-Nếu không cần SQL, trả lời trực tiếp bằng tiếng Việt.";
+```";
     }
 
     private static string BuildRetryPrompt(string question, string failedSql, string error) =>
@@ -312,9 +355,14 @@ Tạo lại SQL đúng cú pháp PostgreSQL, nhớ dùng ngoặc kép cho tên b
         return $@"Bạn là trợ lý kế toán của Khương Phúc.
 
 Câu hỏi: {question}
-Kết quả từ DB: {dataJson}
+Kết quả từ DB (JSON): {dataJson}
 
-Tóm tắt ngắn gọn bằng tiếng Việt (3-5 câu), nêu rõ số liệu quan trọng. Nếu không có dữ liệu, nói rõ. Không giải thích kỹ thuật.";
+Yêu cầu:
+- Tóm tắt ngắn gọn bằng tiếng Việt (3-5 câu), chỉ dựa trên kết quả từ DB ở trên.
+- TUYỆT ĐỐI KHÔNG bịa thêm số liệu, tên người, đơn hàng, ngày tháng nằm ngoài dữ liệu.
+- Nếu kết quả rỗng hoặc ""Không có dữ liệu"" → nói thẳng là không có dữ liệu phù hợp,
+  KHÔNG đoán, KHÔNG suy diễn.
+- Không giải thích kỹ thuật, không nhắc đến SQL.";
     }
 
     // ── LLM routing ───────────────────────────────────────────────────────────

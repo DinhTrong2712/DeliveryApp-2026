@@ -38,10 +38,16 @@ public class RoutesController : ControllerBase
             .Where(o => o.RouteCode != null);
 
         if (from.HasValue)
-            q = q.Where(o => o.CreatedAt >= DateTime.SpecifyKind(from.Value.Date, DateTimeKind.Utc));
+        {
+            var fromUtc = new DateTimeOffset(from.Value.Date, TimeSpan.FromHours(7)).UtcDateTime;
+            q = q.Where(o => o.CreatedAt >= fromUtc);
+        }
 
         if (to.HasValue)
-            q = q.Where(o => o.CreatedAt < DateTime.SpecifyKind(to.Value.Date, DateTimeKind.Utc).AddDays(1));
+        {
+            var toUtc = new DateTimeOffset(to.Value.Date, TimeSpan.FromHours(7)).UtcDateTime.AddDays(1);
+            q = q.Where(o => o.CreatedAt < toUtc);
+        }
 
         if (!string.IsNullOrWhiteSpace(search))
             q = q.Where(o => o.RouteCode!.Contains(search));
@@ -143,20 +149,28 @@ public class RoutesController : ControllerBase
         }
 
         var oldShipperName = orders.First().ShipperId?.ToString();
+        var updated = 0;
         foreach (var o in orders)
         {
+            // Chỉ đổi shipper + reset trạng thái cho đơn chưa thanh toán / chưa giao —
+            // tránh xóa dữ liệu thu tiền của các đơn đã PaidCash / PaidTransfer / Partial trong cùng route.
+            if (o.Status is OrderStatus.PaidCash or OrderStatus.PaidTransfer or OrderStatus.Partial
+                or OrderStatus.WaitingTransfer)
+                continue;
+
             o.ShipperId = shipper?.Id;
             o.Status = shipper != null ? OrderStatus.Pending : OrderStatus.Unassigned;
             o.UpdatedAt = DateTime.UtcNow;
+            updated++;
         }
 
         _audit.Add("UPDATE_ROUTE", "Route",
             oldValue: oldShipperName,
             newValue: shipper?.FullName ?? "(không phân công)",
-            description: $"{routeCode}: đổi NV cho {orders.Count} đơn");
+            description: $"{routeCode}: đổi NV cho {updated}/{orders.Count} đơn (bỏ qua đơn đã thanh toán/đang CK)");
 
         await _db.SaveChangesAsync();
-        return Ok(new { updated = orders.Count });
+        return Ok(new { updated, skipped = orders.Count - updated, total = orders.Count });
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using DeliveryApp.API.Data;
 using DeliveryApp.API.Models;
 using DeliveryApp.API.Services;
 using DeliveryApp.Tests.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using Moq.Protected;
@@ -48,7 +49,8 @@ public class AiChatServiceTests
             })
             .Build();
 
-        return new AiChatService(db, config, http);
+        var audit = new AuditService(db, new Mock<IHttpContextAccessor>().Object);
+        return new AiChatService(db, config, http, audit);
     }
 
     private static string GeminiOkResponse(string text) =>
@@ -66,16 +68,19 @@ public class AiChatServiceTests
     public async Task Chat_NoApiKey_ReturnsConfigError()
     {
         var db = TestDbHelper.CreateInMemoryDb();
+        var audit = new AuditService(db, new Mock<IHttpContextAccessor>().Object);
         var svc = new AiChatService(db,
             new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?> { ["AI:ApiKey"] = "" })
                 .Build(),
-            new HttpClient());
+            new HttpClient(),
+            audit);
 
         var resp = await svc.ChatAsync("xin chao", null);
 
         Assert.False(resp.Success);
-        Assert.Contains("chưa được cấu hình", resp.Answer);
+        // Service trả "chưa được kích hoạt" trong Answer và "chưa được cấu hình" trong Error.
+        Assert.Contains("chưa được kích hoạt", resp.Answer);
     }
 
     // ── Câu hỏi thông thường ─────────────────────────────────────────────
