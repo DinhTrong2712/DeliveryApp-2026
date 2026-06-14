@@ -168,7 +168,7 @@ public class ReportService
             ? $"BÁO CÁO DOANH THU — {shipperName!.ToUpperInvariant()} — NGÀY {date:dd/MM/yyyy}"
             : $"BÁO CÁO DOANH THU CUỐI NGÀY — {date:dd/MM/yyyy}";
 
-        ws.Cells[1, 1, 1, 9].Merge = true;
+        ws.Cells[1, 1, 1, 12].Merge = true;
         ws.Cells[1, 1].Value = title;
         ws.Cells[1, 1].Style.Font.Size = 16;
         ws.Cells[1, 1].Style.Font.Bold = true;
@@ -179,7 +179,7 @@ public class ReportService
         ws.Cells[1, 1].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
         ws.Row(1).Height = 28;
 
-        ws.Cells[2, 1, 2, 9].Merge = true;
+        ws.Cells[2, 1, 2, 12].Merge = true;
         ws.Cells[2, 1].Value = $"Công ty TNHH Khương Phúc — NPP Hương Cường   |   Xuất lúc {DateTime.Now:HH:mm dd/MM/yyyy}";
         ws.Cells[2, 1].Style.Font.Italic = true;
         ws.Cells[2, 1].Style.Font.Color.SetColor(Color.Gray);
@@ -200,7 +200,7 @@ public class ReportService
 
         // ── Tiêu đề khối nhân viên ──────────────────────────────────────────
         var sectionRow = summaryStart + 8;
-        ws.Cells[sectionRow, 1, sectionRow, 9].Merge = true;
+        ws.Cells[sectionRow, 1, sectionRow, 12].Merge = true;
         ws.Cells[sectionRow, 1].Value = "CHI TIẾT THEO NHÂN VIÊN";
         ws.Cells[sectionRow, 1].Style.Font.Bold = true;
         ws.Cells[sectionRow, 1].Style.Font.Size = 12;
@@ -210,17 +210,22 @@ public class ReportService
         // Header bảng nhân viên.
         var headerRow = sectionRow + 1;
         string[] headers = ["Nhân viên", "Số đơn", "Tổng cần thu", "Tiền mặt",
-                            "Chuyển khoản", "Còn lại", "Đang CK", "Chưa thu", "Nợ hẹn"];
+                            "Chuyển khoản", "Còn lại", "Đang CK", "Chưa thu", "Nợ hẹn",
+                            "Tổng đã thu", "Tỉ lệ (%)", "Tổng công nợ"];
         for (int c = 0; c < headers.Length; c++)
         {
             ws.Cells[headerRow, c + 1].Value = headers[c];
         }
-        StyleHeaderRow(ws, headerRow, 9);
+        StyleHeaderRow(ws, headerRow, 12);
 
         // Dữ liệu từng shipper.
         var row = headerRow + 1;
         foreach (var s in rows.OrderByDescending(s => s.TotalAmount))
         {
+            var totalCollected = s.CashAmount + s.TransferAmount; // Tổng đã thu
+            var rate = s.TotalAmount > 0 ? (totalCollected / s.TotalAmount * 100) : 0m; // Tỉ lệ %
+            var totalDebt = s.TotalAmount - totalCollected; // Tổng công nợ
+
             ws.Cells[row, 1].Value = s.ShipperName;
             ws.Cells[row, 2].Value = s.TotalOrders;
             ws.Cells[row, 3].Value = s.TotalAmount;
@@ -230,34 +235,48 @@ public class ReportService
             ws.Cells[row, 7].Value = s.WaitingTransferCount;
             ws.Cells[row, 8].Value = s.UnpaidAmount;
             ws.Cells[row, 9].Value = s.ScheduledAmount;
+            ws.Cells[row, 10].Value = totalCollected; // Tổng đã thu
+            ws.Cells[row, 11].Value = rate; // Tỉ lệ %
+            ws.Cells[row, 12].Value = totalDebt; // Tổng công nợ
             row++;
         }
 
         // Hàng tổng cộng.
         if (rows.Count > 0)
         {
+            var sumTotalCollected = rows.Sum(s => s.CashAmount + s.TransferAmount);
+            var sumTotalAmount = rows.Sum(s => s.TotalAmount);
+            var sumRate = sumTotalAmount > 0 ? (sumTotalCollected / sumTotalAmount * 100) : 0m;
+            var sumTotalDebt = sumTotalAmount - sumTotalCollected;
+
             ws.Cells[row, 1].Value = "TỔNG CỘNG";
             ws.Cells[row, 2].Value = rows.Sum(s => s.TotalOrders);
-            ws.Cells[row, 3].Value = rows.Sum(s => s.TotalAmount);
+            ws.Cells[row, 3].Value = sumTotalAmount;
             ws.Cells[row, 4].Value = rows.Sum(s => s.CashAmount);
             ws.Cells[row, 5].Value = rows.Sum(s => s.TransferAmount);
             ws.Cells[row, 6].Value = rows.Sum(s => s.TotalAmount - s.CashAmount - s.TransferAmount);
             ws.Cells[row, 7].Value = rows.Sum(s => s.WaitingTransferCount);
             ws.Cells[row, 8].Value = rows.Sum(s => s.UnpaidAmount);
             ws.Cells[row, 9].Value = rows.Sum(s => s.ScheduledAmount);
-            ws.Cells[row, 1, row, 9].Style.Font.Bold = true;
-            ws.Cells[row, 1, row, 9].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            ws.Cells[row, 1, row, 9].Style.Fill.BackgroundColor.SetColor(BrandHeader);
+            ws.Cells[row, 10].Value = sumTotalCollected; // Tổng đã thu
+            ws.Cells[row, 11].Value = sumRate; // Tỉ lệ %
+            ws.Cells[row, 12].Value = sumTotalDebt; // Tổng công nợ
+            ws.Cells[row, 1, row, 12].Style.Font.Bold = true;
+            ws.Cells[row, 1, row, 12].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            ws.Cells[row, 1, row, 12].Style.Fill.BackgroundColor.SetColor(BrandHeader);
         }
 
         var tableLastRow = row;
-        // Format tiền tệ cho các cột tiền (cột 3..6, 8..9) trong bảng nhân viên.
-        var moneyCols = new[] { 3, 4, 5, 6, 8, 9 };
+        // Format tiền tệ cho các cột tiền (cột 3..6, 8..10, 12) trong bảng nhân viên.
+        var moneyCols = new[] { 3, 4, 5, 6, 8, 9, 10, 12 };
         foreach (var c in moneyCols)
             ws.Cells[headerRow + 1, c, tableLastRow, c].Style.Numberformat.Format = VndFormat;
 
+        // Format tỉ lệ % cho cột 11
+        ws.Cells[headerRow + 1, 11, tableLastRow, 11].Style.Numberformat.Format = "0.00\"%\"";
+
         // Đường viền cho bảng.
-        ApplyBorders(ws.Cells[headerRow, 1, tableLastRow, 9]);
+        ApplyBorders(ws.Cells[headerRow, 1, tableLastRow, 12]);
 
         // ── Chi tiết đơn (chỉ khi xuất theo nhân viên) ─────────────────────
         if (isPerShipper)
@@ -326,6 +345,10 @@ public class ReportService
             ws.Column(1).Width = Math.Min(ws.Column(1).Width, 6);
             ws.Column(7).Width = Math.Max(ws.Column(7).Width, 14);
         }
+        // Set chiều rộng cho 3 cột mới: Tổng đã thu, Tỉ lệ, Tổng công nợ
+        ws.Column(10).Width = 14; // Tổng đã thu
+        ws.Column(11).Width = 10; // Tỉ lệ %
+        ws.Column(12).Width = 14; // Tổng công nợ
 
         return await package.GetAsByteArrayAsync();
     }
@@ -335,7 +358,7 @@ public class ReportService
     private static void WriteSummaryBlock(ExcelWorksheet ws, int startRow,
         IReadOnlyList<(string Label, decimal Value, bool IsCount)> entries)
     {
-        ws.Cells[startRow, 1, startRow, 9].Merge = true;
+        ws.Cells[startRow, 1, startRow, 12].Merge = true;
         ws.Cells[startRow, 1].Value = "TỔNG QUAN";
         ws.Cells[startRow, 1].Style.Font.Bold = true;
         ws.Cells[startRow, 1].Style.Font.Size = 12;
