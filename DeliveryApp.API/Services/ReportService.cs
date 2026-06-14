@@ -229,9 +229,9 @@ public class ReportService
         var row = headerRow + 1;
         foreach (var s in rows.OrderByDescending(s => s.TotalAmount))
         {
-            var totalCollected = s.CashAmount + s.TransferAmount; // Tổng đã thu
-            var rate = s.TotalAmount > 0 ? (totalCollected / s.TotalAmount * 100) : 0m; // Tỉ lệ %
-            var totalDebt = s.TotalAmount - totalCollected; // Tổng công nợ
+            var shipCollected = s.CashAmount + s.TransferAmount; // Tổng đã thu của shipper
+            var shipRate = s.TotalAmount > 0 ? (shipCollected / s.TotalAmount * 100) : 0m; // Tỉ lệ % của shipper
+            var shipDebt = s.TotalAmount - shipCollected; // Tổng công nợ của shipper
 
             ws.Cells[row, 1].Value = s.ShipperName;
             ws.Cells[row, 2].Value = s.TotalOrders;
@@ -242,9 +242,9 @@ public class ReportService
             ws.Cells[row, 7].Value = s.WaitingTransferCount;
             ws.Cells[row, 8].Value = s.UnpaidAmount;
             ws.Cells[row, 9].Value = s.ScheduledAmount;
-            ws.Cells[row, 10].Value = totalCollected; // Tổng đã thu
-            ws.Cells[row, 11].Value = rate; // Tỉ lệ %
-            ws.Cells[row, 12].Value = totalDebt; // Tổng công nợ
+            ws.Cells[row, 10].Value = shipCollected; // Tổng đã thu
+            ws.Cells[row, 11].Value = shipRate; // Tỉ lệ %
+            ws.Cells[row, 12].Value = shipDebt; // Tổng công nợ
             row++;
         }
 
