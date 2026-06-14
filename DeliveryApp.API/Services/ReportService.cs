@@ -187,15 +187,22 @@ public class ReportService
 
         // ── Khối tổng quan ───────────────────────────────────────────────────
         var summaryStart = 4;
-        WriteSummaryBlock(ws, summaryStart, new (string Label, decimal Value, bool IsCount)[]
+        var totalCollected = cash + transfer;
+        var rate = totalAmount > 0 ? (totalCollected / totalAmount * 100) : 0m;
+        var totalDebt = totalAmount - totalCollected;
+
+        WriteSummaryBlock(ws, summaryStart, new (string Label, decimal Value, bool IsCount, bool IsPercent)[]
         {
-            ("Tổng số đơn",       totalOrders,  true),
-            ("Tổng cần thu",      totalAmount,  false),
-            ("Tiền mặt thu được", cash,         false),
-            ("Chuyển khoản",      transfer,     false),
-            ("Còn lại chưa thu",  remaining,    false),
-            ("Nợ hẹn lại",        scheduled,    false),
-            ("Chưa thu được",     unpaid,       false),
+            ("Tổng số đơn",       totalOrders,  true,  false),
+            ("Tổng cần thu",      totalAmount,  false, false),
+            ("Tiền mặt thu được", cash,         false, false),
+            ("Chuyển khoản",      transfer,     false, false),
+            ("Tổng đã thu",       totalCollected, false, false),
+            ("Tỉ lệ (%)",         rate,         false, true),
+            ("Tổng công nợ",      totalDebt,    false, false),
+            ("Còn lại chưa thu",  remaining,    false, false),
+            ("Nợ hẹn lại",        scheduled,    false, false),
+            ("Chưa thu được",     unpaid,       false, false),
         });
 
         // ── Tiêu đề khối nhân viên ──────────────────────────────────────────
@@ -356,7 +363,7 @@ public class ReportService
     // ── Helpers vẽ Excel ──────────────────────────────────────────────────────
 
     private static void WriteSummaryBlock(ExcelWorksheet ws, int startRow,
-        IReadOnlyList<(string Label, decimal Value, bool IsCount)> entries)
+        IReadOnlyList<(string Label, decimal Value, bool IsCount, bool IsPercent)> entries)
     {
         ws.Cells[startRow, 1, startRow, 12].Merge = true;
         ws.Cells[startRow, 1].Value = "TỔNG QUAN";
@@ -375,7 +382,12 @@ public class ReportService
 
             ws.Cells[r, 4, r, 5].Merge = true;
             ws.Cells[r, 4].Value = e.Value;
-            ws.Cells[r, 4].Style.Numberformat.Format = e.IsCount ? "#,##0\" đơn\"" : VndFormat;
+            if (e.IsCount)
+                ws.Cells[r, 4].Style.Numberformat.Format = "#,##0\" đơn\"";
+            else if (e.IsPercent)
+                ws.Cells[r, 4].Style.Numberformat.Format = "0.00\"%\"";
+            else
+                ws.Cells[r, 4].Style.Numberformat.Format = VndFormat;
             ws.Cells[r, 4].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
             r++;
         }
