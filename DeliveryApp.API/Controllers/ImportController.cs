@@ -4,6 +4,7 @@ using DeliveryApp.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace DeliveryApp.API.Controllers;
 
@@ -15,12 +16,14 @@ public class ImportController : ControllerBase
     private readonly ImportService _import;
     private readonly AppDbContext _db;
     private readonly AuditService _audit;
+    private readonly IConfiguration _config;
 
-    public ImportController(ImportService import, AppDbContext db, AuditService audit)
+    public ImportController(ImportService import, AppDbContext db, AuditService audit, IConfiguration config)
     {
         _import = import;
         _db = db;
         _audit = audit;
+        _config = config;
     }
 
     private string CallerName => User.FindFirstValue(ClaimTypes.Name) ?? "";
@@ -63,6 +66,92 @@ public class ImportController : ControllerBase
             .Take(50)
             .ToListAsync();
         return Ok(logs);
+    }
+
+    [HttpPost("import-sql")]
+    [RequestSizeLimit(100 * 1024 * 1024)] // 100MB
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ImportSql(IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest(new { message = "File không được để trống" });
+
+        if (!file.FileName.EndsWith(".sql", StringComparison.OrdinalIgnoreCase))
+            return BadRequest(new { message = "Chỉ chấp nhận file .sql" });
+
+        try
+        {
+            var connectionString = _config.GetConnectionString("DefaultConnection");
+            using var connection = new Npgsql.NpgsqlConnection(connectionString);
+            await connection.OpenAsync();
+
+            using var stream = file.OpenReadStream();
+            using var reader = new StreamReader(stream);
+            var sql = await reader.ReadToEndAsync();
+
+            // Execute COPY commands directly
+            var lines = sql.Split('\n');
+            var currentCopy = new List<string>();
+            var inCopy = false;
+            var executed = 0;
+
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("COPY public."))
+                {
+                    inCopy = true;
+                    currentCopy.Add(line);
+                }
+                else if (inCopy && line.Trim() == "\\.")
+                {
+                    currentCopy.Add(line);
+                    inCopy = false;
+                    // Execute COPY command
+                    try
+                    {
+                        using var cmd = new Npgsql.NpgsqlCommand(string.Join("\n", currentCopy), connection);
+                        cmd.CommandTimeout = 300;
+                        await cmd.ExecuteNonQueryAsync();
+                        executed++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"COPY skipped: {ex.Message}");
+                    }
+                    currentCopy.Clear();
+                }
+                else if (inCopy)
+                {
+                    currentCopy.Add(line);
+                }
+                else if (!line.StartsWith("--") && !string.IsNullOrWhiteSpace(line))
+                {
+                    // Execute other SQL statements
+                    if (line.StartsWith("SET") || line.StartsWith("SELECT") || line.Contains("setval"))
+                        continue;
+                    try
+                    {
+                        using var cmd = new Npgsql.NpgsqlCommand(line, connection);
+                        cmd.CommandTimeout = 120;
+                        await cmd.ExecuteNonQueryAsync();
+                        executed++;
+                    }
+                    catch
+                    {
+                        // Skip failed statements
+                    }
+                }
+            }
+
+            await _audit.LogAsync("IMPORT_SQL", "SystemConfig",
+                description: $"Import SQL file: {file.FileName}, executed: {executed} commands");
+
+            return Ok(new { message = "Import thành công", executed });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = ex.Message });
+        }
     }
 }
 
