@@ -151,7 +151,6 @@ export default function AiAssistantWidget() {
   }
 
   const callAnalysis = async (endpoint: string) => {
-    const sessionId = getOrCreateSessionId()
     const range = getWeekRange()
     setLoading(true)
 
