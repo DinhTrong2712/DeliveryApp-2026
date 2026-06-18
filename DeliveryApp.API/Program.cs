@@ -75,6 +75,7 @@ builder.Services.AddScoped<ImportService>();
 builder.Services.AddScoped<SePayService>();
 builder.Services.AddScoped<PhotoService>();
 builder.Services.AddScoped<ReportService>();
+builder.Services.AddScoped<DataAnalysisService>();
 builder.Services.AddHttpClient<AiChatService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<BackupService>();

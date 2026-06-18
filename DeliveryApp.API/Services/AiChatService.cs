@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using DeliveryApp.API.Data;
+using DeliveryApp.API.DTOs.Analysis;
 using Microsoft.EntityFrameworkCore;
 
 namespace DeliveryApp.API.Services;
@@ -51,6 +52,7 @@ public class AiChatService
     private readonly IConfiguration _config;
     private readonly HttpClient _http;
     private readonly AuditService _audit;
+    private readonly DataAnalysisService _analysis;
 
     private static readonly ConcurrentDictionary<string, (List<ChatTurn> History, DateTime LastAccess)> _sessions = new();
 
@@ -121,12 +123,13 @@ LƯU Ý QUAN TRỌNG:
 - JOIN shipper: JOIN ""Users"" u ON u.""Id"" = o.""ShipperId""
 ";
 
-    public AiChatService(AppDbContext db, IConfiguration config, HttpClient http, AuditService audit)
+    public AiChatService(AppDbContext db, IConfiguration config, HttpClient http, AuditService audit, DataAnalysisService analysis)
     {
         _db = db;
         _config = config;
         _http = http;
         _audit = audit;
+        _analysis = analysis;
     }
 
     // ── Session management ────────────────────────────────────────────────────
@@ -497,5 +500,256 @@ Yêu cầu:
             if (!wasOpen) await conn.CloseAsync();
         }
         return results;
+    }
+
+    // ── Phân tích dữ liệu ───────────────────────────────────────────────────────────────
+
+    public async Task<AiChatResponse> AnalyzeRevenueTrendAsync(DateRangeDto range, string? sessionId)
+    {
+        sessionId ??= Guid.NewGuid().ToString();
+
+        try
+        {
+            var analysis = await _analysis.AnalyzeRevenueTrendAsync(range);
+
+            var aiSummary = await CallLlmAsync(
+                BuildTrendAnalysisPrompt(analysis),
+                await GetProviderAsync(),
+                await GetModelAsync(),
+                await GetApiKeyAsync()
+            );
+
+            AppendToSession(sessionId, $"Phân tích xu hướng {range.Start:dd/MM} - {range.End:dd/MM}", aiSummary);
+
+            return new AiChatResponse
+            {
+                Answer = aiSummary,
+                Success = true,
+                SessionId = sessionId,
+                TableData = new List<Dictionary<string, object?>>(),
+                SqlQuery = null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new AiChatResponse
+            {
+                Success = false,
+                Error = ex.Message,
+                Answer = "Không thể phân tích xu hướng doanh thu lúc này.",
+                SessionId = sessionId
+            };
+        }
+    }
+
+    public async Task<AiChatResponse> AnalyzeShipperPerformanceAsync(DateRangeDto range, string? sessionId)
+    {
+        sessionId ??= Guid.NewGuid().ToString();
+
+        try
+        {
+            var analysis = await _analysis.AnalyzeShipperPerformanceAsync(range);
+
+            var aiSummary = await CallLlmAsync(
+                BuildShipperAnalysisPrompt(analysis),
+                await GetProviderAsync(),
+                await GetModelAsync(),
+                await GetApiKeyAsync()
+            );
+
+            AppendToSession(sessionId, $"Phân tích hiệu quả shipper {range.Start:dd/MM} - {range.End:dd/MM}", aiSummary);
+
+            return new AiChatResponse
+            {
+                Answer = aiSummary,
+                Success = true,
+                SessionId = sessionId,
+                TableData = new List<Dictionary<string, object?>>(),
+                SqlQuery = null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new AiChatResponse
+            {
+                Success = false,
+                Error = ex.Message,
+                Answer = "Không thể phân tích hiệu quả shipper lúc này.",
+                SessionId = sessionId
+            };
+        }
+    }
+
+    public async Task<AiChatResponse> DetectAnomaliesAsync(string? sessionId)
+    {
+        sessionId ??= Guid.NewGuid().ToString();
+
+        try
+        {
+            var anomalies = await _analysis.DetectAnomaliesAsync();
+
+            var aiSummary = await CallLlmAsync(
+                BuildAnomalyAnalysisPrompt(anomalies),
+                await GetProviderAsync(),
+                await GetModelAsync(),
+                await GetApiKeyAsync()
+            );
+
+            AppendToSession(sessionId, "Phát hiện bất thường", aiSummary);
+
+            return new AiChatResponse
+            {
+                Answer = aiSummary,
+                Success = true,
+                SessionId = sessionId,
+                TableData = new List<Dictionary<string, object?>>(),
+                SqlQuery = null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new AiChatResponse
+            {
+                Success = false,
+                Error = ex.Message,
+                Answer = "Không thể phát hiện bất thường lúc này.",
+                SessionId = sessionId
+            };
+        }
+    }
+
+    public async Task<AiChatResponse> GetQuickInsightsAsync(string? sessionId)
+    {
+        sessionId ??= Guid.NewGuid().ToString();
+
+        try
+        {
+            var insights = await _analysis.GetQuickInsightsAsync();
+
+            var aiSummary = await CallLlmAsync(
+                BuildInsightsPrompt(insights),
+                await GetProviderAsync(),
+                await GetModelAsync(),
+                await GetApiKeyAsync()
+            );
+
+            AppendToSession(sessionId, "Tổng quan nhanh", aiSummary);
+
+            return new AiChatResponse
+            {
+                Answer = aiSummary,
+                Success = true,
+                SessionId = sessionId,
+                TableData = new List<Dictionary<string, object?>>(),
+                SqlQuery = null
+            };
+        }
+        catch (Exception ex)
+        {
+            return new AiChatResponse
+            {
+                Success = false,
+                Error = ex.Message,
+                Answer = "Không thể lấy tổng quan lúc này.",
+                SessionId = sessionId
+            };
+        }
+    }
+
+    private async Task<string> GetApiKeyAsync()
+    {
+        var (apiKey, _, _) = await LoadAiConfigAsync();
+        return apiKey;
+    }
+
+    private async Task<string> GetProviderAsync()
+    {
+        var (_, provider, _) = await LoadAiConfigAsync();
+        return provider;
+    }
+
+    private async Task<string> GetModelAsync()
+    {
+        var (_, _, model) = await LoadAiConfigAsync();
+        return model;
+    }
+
+    private static string BuildTrendAnalysisPrompt(DTOs.Analysis.RevenueTrendAnalysis analysis)
+    {
+        var dataJson = JsonSerializer.Serialize(new
+        {
+            analysis.TotalRevenue,
+            analysis.PreviousRevenue,
+            analysis.GrowthRate,
+            analysis.TrendDirection,
+            DailyData = analysis.DailyData.Take(10)
+        });
+
+        return $@"Bạn là chuyên viên phân tích dữ liệu của hệ thống giao hàng Khương Phúc.
+Dưới đây là dữ liệu xu hướng doanh thu:
+
+{dataJson}
+
+Hãy phân tích và viết báo cáo ngắn gọn (3-5 câu) bằng tiếng Việt:
+1. Nhận xét chung về xu hướng
+2. Điểm nổi bật (cao nhất/thấp nhất)
+3. Đề xuất hành động (nếu có)
+
+Không giải thích kỹ thuật, tập trung vào góc độ kinh doanh.";
+    }
+
+    private static string BuildShipperAnalysisPrompt(DTOs.Analysis.ShipperPerformanceAnalysis analysis)
+    {
+        var top5 = analysis.Shippers.Take(5);
+        var dataJson = JsonSerializer.Serialize(new
+        {
+            analysis.TopPerformer,
+            analysis.NeedsImprovement,
+            TopShippers = top5
+        });
+
+        return $@"Bạn là chuyên viên quản lý nhân viên của hệ thống giao hàng Khương Phúc.
+Dưới đây là dữ liệu hiệu quả shipper:
+
+{dataJson}
+
+Hãy phân tích và viết báo cáo ngắn gọn (3-5 câu) bằng tiếng Việt:
+1. Đánh giá chung về hiệu quả team
+2. Shipper xuất sắc nhất
+3. Shipper cần hỗ trợ (nếu có)
+4. Đề xuất đào động/khen thưởng
+
+Không giải thích kỹ thuật.";
+    }
+
+    private static string BuildAnomalyAnalysisPrompt(DTOs.Analysis.AnomalyDetectionResult anomalies)
+    {
+        return $@"Bạn là chuyên viên kiểm soát của hệ thống giao hàng Khương Phúc.
+Phát hiện các bất thường sau:
+
+Tổng: {anomalies.TotalAnomalies} ({anomalies.HighSeverityCount} nghiêm trọng)
+{string.Join("\n", anomalies.Anomalies.Take(10).Select(a => $"- {a.Type}: {a.Description} ({a.Severity})"))}
+
+Hãy tóm tắt (3 câu) bằng tiếng Việt:
+1. Mức độ rủi ro tổng thể
+2. Các vấn đề cần ưu tiên xử lý
+3. Đề xuất hành động ngay";
+    }
+
+    private static string BuildInsightsPrompt(DTOs.Analysis.QuickInsightsDto insights)
+    {
+        return $@"Bạn là trợ lý điều hành của hệ thống giao hàng Khương Phúc.
+Tổng quan nhanh hôm nay:
+
+- Doanh thu: {insights.TodayRevenue:N0} đ
+- Tỉ lệ thu: {insights.TodayCollectionRate:F1}%
+- Giao dịch chưa khớp: {insights.UnmatchedTransactions}
+- Đơn quá hạn: {insights.OverdueCount}
+- Điểm nhấn: {insights.TodayHighlight}
+
+Các insights:
+{string.Join("\n", insights.Insights.Select(i => $"• {i.Message}"))}
+
+Hãy viết tóm tắt ngắn gọn (2-3 câu) bằng tiếng Việt, tập trung vào điều cần lưu ý nhất hôm nay.";
     }
 }

@@ -35,6 +35,24 @@ const SUGGESTIONS_BY_ROLE: Record<string, string[]> = {
   ],
 }
 
+const ANALYSIS_BUTTONS: Record<string, { label: string; description: string; endpoint: string }[]> = {
+  Admin: [
+    { label: '📈 Xu hướng doanh thu', description: 'Phân tích xu hướng 7 ngày qua', endpoint: 'trend' },
+    { label: '👥 Hiệu quả shipper', description: 'So sánh hiệu suất 7 ngày qua', endpoint: 'shipper' },
+    { label: '🔍 Phát hiện bất thường', description: 'Kiểm tra các vấn đề cần lưu ý', endpoint: 'anomaly' },
+    { label: '⚡ Tổng quan nhanh', description: 'Tóm tắt tình hình hiện tại', endpoint: 'insights' },
+  ],
+  Accountant: [
+    { label: '📈 Xu hướng doanh thu', description: 'Phân tích xu hướng 7 ngày qua', endpoint: 'trend' },
+    { label: '👥 Hiệu quả shipper', description: 'So sánh hiệu suất 7 ngày qua', endpoint: 'shipper' },
+    { label: '🔍 Phát hiện bất thường', description: 'Kiểm tra các vấn đề cần lưu ý', endpoint: 'anomaly' },
+    { label: '⚡ Tổng quan nhanh', description: 'Tóm tắt tình hình hiện tại', endpoint: 'insights' },
+  ],
+  Shipper: [
+    { label: '⚡ Tổng quan nhanh', description: 'Tóm tắt tình hình hiện tại', endpoint: 'insights' },
+  ],
+}
+
 const svgProps = { fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' } as const
 
 const IconClose = ({ className }: { className: string }) => (
@@ -107,6 +125,7 @@ export default function AiAssistantWidget() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [tab, setTab] = useState<'chat' | 'analysis'>('chat')
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -122,6 +141,53 @@ export default function AiAssistantWidget() {
   if (location.pathname === '/login' || location.pathname === '/') return null
 
   const suggestions = SUGGESTIONS_BY_ROLE[user.role] ?? []
+  const analysisButtons = ANALYSIS_BUTTONS[user.role] ?? []
+
+  const getWeekRange = () => {
+    const end = new Date()
+    const start = new Date()
+    start.setDate(start.getDate() - 6)
+    return { start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0] }
+  }
+
+  const callAnalysis = async (endpoint: string) => {
+    const sessionId = getOrCreateSessionId()
+    const range = getWeekRange()
+    setLoading(true)
+
+    const urlMap: Record<string, { url: string; method: string; body?: any }> = {
+      trend: { url: '/ai/analyze-trend', method: 'POST', body: { start: range.start, end: range.end } },
+      shipper: { url: '/ai/analyze-shipper', method: 'POST', body: { start: range.start, end: range.end } },
+      anomaly: { url: '/ai/detect-anomalies', method: 'POST' },
+      insights: { url: '/ai/quick-insights', method: 'POST' },
+    }
+
+    const config = urlMap[endpoint]
+    if (!config) return
+
+    const assistantMsg: ChatMessage = { id: Date.now().toString(), role: 'assistant', content: '', loading: true }
+    setMessages(prev => [...prev, assistantMsg])
+
+    try {
+      const res = await api.post(config.url, config.body)
+      const data = res.data
+      setMessages(prev => prev.map(m =>
+        m.id === assistantMsg.id
+          ? { ...m, content: data.answer, tableData: data.tableData, loading: false, error: data.success ? undefined : data.error }
+          : m
+      ))
+      setTab('chat')
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || 'Không thể kết nối AI'
+      setMessages(prev => prev.map(m =>
+        m.id === assistantMsg.id
+          ? { ...m, content: errorMsg, loading: false, error: 'Lỗi kết nối' }
+          : m
+      ))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const sendMessage = async (question: string) => {
     if (!question.trim() || loading) return
@@ -200,7 +266,24 @@ export default function AiAssistantWidget() {
             <div className="w-16 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-sm leading-tight">Trợ lý AI</h2>
-              <p className="text-[11px] text-white/85 leading-tight">Truy vấn dữ liệu bằng tiếng Việt</p>
+              <div className="flex gap-2 mt-1">
+                <button
+                  onClick={() => setTab('chat')}
+                  className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+                    tab === 'chat' ? 'bg-white text-orange-600' : 'bg-white/20 text-white'
+                  }`}
+                >
+                  Chat
+                </button>
+                <button
+                  onClick={() => setTab('analysis')}
+                  className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${
+                    tab === 'analysis' ? 'bg-white text-orange-600' : 'bg-white/20 text-white'
+                  }`}
+                >
+                  Phân tích
+                </button>
+              </div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Đóng"
               className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center flex-shrink-0">
@@ -209,7 +292,20 @@ export default function AiAssistantWidget() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-3 py-3 space-y-3 bg-gray-50 dark:bg-gray-950">
-            {messages.length === 0 && (
+            {tab === 'analysis' && messages.length === 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider px-1">Phân tích dữ liệu</p>
+                {analysisButtons.map((btn, i) => (
+                  <button key={i} onClick={() => callAnalysis(btn.endpoint)} disabled={loading}
+                    className="w-full text-left bg-white dark:bg-gray-900 rounded-xl px-3 py-2.5 shadow-sm text-xs text-gray-700 dark:text-gray-300 hover:bg-orange-50 hover:text-orange-700 transition-colors border border-gray-100 dark:border-gray-800 disabled:opacity-60 disabled:cursor-not-allowed">
+                    <div className="font-medium">{btn.label}</div>
+                    <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{btn.description}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {tab === 'chat' && messages.length === 0 && (
               <div className="space-y-2">
                 <p className="text-[11px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider px-1">Gợi ý</p>
                 {suggestions.map((s, i) => (
