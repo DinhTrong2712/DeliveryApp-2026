@@ -67,39 +67,88 @@ public class ReportService
 
         Console.WriteLine($"[Report] Daily report for {date:yyyy-MM-dd}");
         Console.WriteLine($"[Report] Time range (UTC): {start:yyyy-MM-dd HH:mm:ss} to {end:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"[Report] Current UTC: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"[Report] Current UTC+7: {DateTime.UtcNow.AddHours(7):yyyy-MM-dd HH:mm:ss}");
 
-        var orders = await _db.Orders
+        var ordersQuery = _db.Orders
             .Include(o => o.Shipper)
             .Include(o => o.Import)
-            .Where(o => o.ImportId.HasValue
-                ? o.Import.CreatedAt >= start && o.Import.CreatedAt < end  // Filter theo ngày import
-                : o.CreatedAt >= start && o.CreatedAt < end)  // Fallback: đơn không có ImportId
-            .ToListAsync();
+            .AsQueryable();
+
+        // Filter orders for the given date range based on ImportId
+        if (true)  // Apply filter to all orders
+        {
+            ordersQuery = ordersQuery
+                .Where(o => o.ImportId.HasValue
+                    ? o.Import.CreatedAt >= start && o.Import.CreatedAt < end  // Filter theo ngày import
+                    : o.CreatedAt >= start && o.CreatedAt < end)  // Fallback: đơn không có ImportId
+                ;
+        }
+
+        var orders = await ordersQuery.ToListAsync();
 
         Console.WriteLine($"[Report] Found {orders.Count} orders");
+
+        // Detailed breakdown for debugging
+        foreach (var order in orders.Take(5))  // Log first 5 orders for debugging
+        {
+            var importDate = order.Import?.CreatedAt.HasValue == true
+                ? order.Import.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")
+                : "NULL";
+
+            Console.WriteLine($"[Report] Order: {order.OrderCode}, ImportId: {order.ImportId?.ToString() ?? "NULL"}, " +
+                            $"CreatedAt: {order.CreatedAt:yyyy-MM-dd HH:mm:ss}, " +
+                            $"Import.CreatedAt: {importDate}, " +
+                            $"Shipper: {order.Shipper?.FullName ?? "None"}, " +
+                            $"Status: {order.Status}");
+        }
+
+        Console.WriteLine($"[Report] Total Orders: {orders.Count}");
         var importedCount = orders.Count(o => o.ImportId.HasValue);
         var manualCount = orders.Count(o => !o.ImportId.HasValue);
         Console.WriteLine($"[Report] Imported: {importedCount}, Manual: {manualCount}");
 
+        // Log breakdown by shipper
+        var shipperBreakdown = orders
+            .GroupBy(o => o.ShipperId.HasValue ? o.Shipper?.FullName ?? "Chưa phân công" : "No Shipper")
+            .Select(g => new { Shipper = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count);
+        foreach (var item in shipperBreakdown)
+        {
+            Console.WriteLine($"[Report] - {item.Shipper}: {item.Count} orders");
+        }
+
         // Đơn Partial là CK đã thu được 1 phần (qua SePay) — phần đã thu phải tính vào doanh thu CK,
         // phần còn lại tính vào nợ. Trước đây bị bỏ sót khiến doanh thu hụt.
+
+        Console.WriteLine($"[Report] Processing {orders.Count} orders for byShipper breakdown");
+        Console.WriteLine($"[Report] Orders with ShipperId: {orders.Count(o => o.ShipperId.HasValue)}");
+
         var byShipper = orders
-            .Where(o => o.ShipperId.HasValue)
-            .GroupBy(o => o.ShipperNameXlsx ?? o.Shipper?.FullName ?? "Chưa phân công")
-            .Select(g => new ShipperReportDto(
-                ShipperName: g.Key,
-                TotalOrders: g.Count(),
-                TotalAmount: g.Sum(o => o.Amount),
-                CashAmount: g.Where(o => o.Status == OrderStatus.PaidCash).Sum(o => o.AmountPaid),
-                TransferAmount: g.Where(o => o.Status == OrderStatus.PaidTransfer || o.Status == OrderStatus.Partial)
-                                  .Sum(o => o.AmountPaid),
-                WaitingTransferCount: g.Count(o => o.Status == OrderStatus.WaitingTransfer),
-                UnpaidAmount: g.Where(o => o.Status is OrderStatus.Unpaid or OrderStatus.Partial)
-                               .Sum(o => o.Amount - o.AmountPaid),
-                ScheduledAmount: g.Where(o => o.Status == OrderStatus.Scheduled)
-                                  .Sum(o => o.Amount - o.AmountPaid),
-                UnpaidCount: g.Count(o => o.Status == OrderStatus.Unpaid)
-            )).ToList();
+            .GroupBy(o => o.ShipperId.HasValue
+                ? (o.ShipperNameXlsx ?? o.Shipper?.FullName ?? "Shipper đã gán")
+                : "Chưa phân công")
+            .Select(g => {
+                var shipperName = g.Key;
+                var groupOrders = g.ToList();
+
+                Console.WriteLine($"[Report] - {shipperName}: {groupOrders.Count} orders");
+
+                return new ShipperReportDto(
+                    ShipperName: shipperName,
+                    TotalOrders: groupOrders.Count,
+                    TotalAmount: groupOrders.Sum(o => o.Amount),
+                    CashAmount: groupOrders.Where(o => o.Status == OrderStatus.PaidCash).Sum(o => o.AmountPaid),
+                    TransferAmount: groupOrders.Where(o => o.Status == OrderStatus.PaidTransfer || o.Status == OrderStatus.Partial)
+                                      .Sum(o => o.AmountPaid),
+                    WaitingTransferCount: groupOrders.Count(o => o.Status == OrderStatus.WaitingTransfer),
+                    UnpaidAmount: groupOrders.Where(o => o.Status is OrderStatus.Unpaid or OrderStatus.Partial)
+                                   .Sum(o => o.Amount - o.AmountPaid),
+                    ScheduledAmount: groupOrders.Where(o => o.Status == OrderStatus.Scheduled)
+                                      .Sum(o => o.Amount - o.AmountPaid),
+                    UnpaidCount: groupOrders.Count(o => o.Status == OrderStatus.Unpaid)
+                );
+            }).ToList();
 
         var cash = orders.Where(o => o.Status == OrderStatus.PaidCash).Sum(o => o.AmountPaid);
         var transfer = orders.Where(o => o.Status == OrderStatus.PaidTransfer || o.Status == OrderStatus.Partial)
