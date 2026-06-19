@@ -59,6 +59,7 @@ export default function AccountantDashboard() {
     SePayMatched: fetchData,
     UnmatchedTransaction: fetchData,
     ShiftEnded: fetchData,
+    OrderAssigned: fetchData,  // ✅ MỚI: Reload khi import đơn mới
   }, ['accountants'])
 
   const totalCollected = (report?.cash ?? 0) + (report?.transfer ?? 0)

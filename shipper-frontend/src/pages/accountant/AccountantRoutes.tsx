@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import { formatVND } from '../../lib/formatters'
+import { useSignalR } from '../../hooks/useSignalR'
 import AccountantLayout from '../../components/AccountantLayout'
 
 const SORT_OPTIONS: { value: string; label: string }[] = [
@@ -66,6 +67,14 @@ export default function AccountantRoutes() {
   }, [search, from, to])
 
   useEffect(() => { fetchRoutes() }, [fetchRoutes])
+
+  // SignalR realtime updates
+  useSignalR({
+    OrderStatusUpdated: fetchRoutes,
+    SePayMatched: fetchRoutes,
+    OrderAssigned: fetchRoutes,  // ✅ Reload khi import đơn mới
+    UnmatchedTransaction: fetchRoutes,
+  }, ['accountants'])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()

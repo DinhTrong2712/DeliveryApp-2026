@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../../lib/api'
 import { formatVND } from '../../lib/formatters'
 import { ORDER_STATUS_LABELS, ORDER_STATUS_COLORS } from '../../lib/constants'
+import { useSignalR } from '../../hooks/useSignalR'
 import AccountantLayout from '../../components/AccountantLayout'
 
 interface Order {
@@ -60,6 +61,14 @@ export default function AccountantOrderPool() {
   }, [search, status, sort, page])
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
+
+  // SignalR realtime updates
+  useSignalR({
+    OrderStatusUpdated: fetchOrders,
+    SePayMatched: fetchOrders,
+    OrderAssigned: fetchOrders,  // ✅ Reload khi import đơn mới
+    UnmatchedTransaction: fetchOrders,
+  }, ['accountants'])
 
   // Close filter dropdown on outside click
   useEffect(() => {
