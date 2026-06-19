@@ -86,7 +86,25 @@ export default function ShipperRoutes() {
 
   useEffect(() => { fetchOrders() }, [fetchOrders])
 
-  useSignalR({ OrderStatusUpdated: fetchOrders, SePayMatched: fetchOrders }, ['shipper'])
+  // SignalR realtime updates
+  useSignalR({ OrderStatusUpdated: fetchOrders, SePayMatched: fetchOrders, OrderAssigned: fetchOrders }, ['shipper'])
+
+  // Fallback polling: refresh every 30s to catch missed SignalR events
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrders()
+    }, 30000) // 30 seconds
+    return () => clearInterval(interval)
+  }, [fetchOrders])
+
+  // Auto-refresh when app regains focus (user switches back to tab/app)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchOrders()
+    }
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [fetchOrders])
 
   // Group orders by routeCode
   const groups: RouteGroup[] = (() => {

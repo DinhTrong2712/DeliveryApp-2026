@@ -1,3 +1,4 @@
+using System;
 using System.Security.Cryptography;
 using System.Text;
 using DeliveryApp.API.Data;
@@ -102,15 +103,23 @@ public class SePayService
 
     public async Task<string> ProcessWebhookAsync(SePayWebhookPayload payload, string rawJson)
     {
+        Console.WriteLine($"[SePayWebhook] Received webhook: {payload.Id}, Amount: {payload.TransferAmount:N0}đ, Content: {payload.Content}");
+
         if (!string.Equals(payload.TransferType, "in", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"[SePayWebhook] Skipping non-incoming transfer: {payload.TransferType}");
             return "00";
+        }
 
         var transactionCode = string.IsNullOrEmpty(payload.ReferenceCode)
             ? payload.Id.ToString()
             : payload.ReferenceCode;
 
         if (await _db.SePayTransactions.AnyAsync(t => t.TransactionCode == transactionCode))
+        {
+            Console.WriteLine($"[SePayWebhook] Duplicate transaction: {transactionCode}");
             return "02";
+        }
 
         var tx = new SePayTransaction
         {
@@ -125,11 +134,15 @@ public class SePayService
         };
 
         var contentToSearch = $"{payload.Content} {payload.Description}".Trim().ToUpperInvariant();
+        Console.WriteLine($"[SePayWebhook] Searching for orders with content: {contentToSearch}");
+
         // Match cả đơn WaitingTransfer (chờ CK) lẫn Partial (đã CK 1 phần, đang chờ phần còn lại).
         var candidateOrders = await _db.Orders
             .Where(o => o.Status == OrderStatus.WaitingTransfer || o.Status == OrderStatus.Partial)
-            .Select(o => new { o.Id, o.OrderCode })
+            .Select(o => new { o.Id, o.OrderCode, o.ShipperId })
             .ToListAsync();
+
+        Console.WriteLine($"[SePayWebhook] Found {candidateOrders.Count} candidate orders (WaitingTransfer/Partial)");
 
         // Ưu tiên match OrderCode dài nhất để tránh match nhầm khi 1 code là prefix của code khác (DG2 ⊂ DG2001).
         var matchedId = candidateOrders
@@ -142,6 +155,8 @@ public class SePayService
 
         if (order != null)
         {
+            Console.WriteLine($"[SePayWebhook] ✓ MATCHED: {transactionCode} → {order.OrderCode} (ShipperId: {order.ShipperId?.ToString() ?? "NULL"})");
+
             tx.OrderId = order.Id;
             tx.MatchStatus = MatchStatus.AutoMatched;
             tx.MatchedAt = DateTime.UtcNow;
@@ -161,6 +176,7 @@ public class SePayService
             return "00";
         }
 
+        Console.WriteLine($"[SePayWebhook] ✗ NO MATCH: {transactionCode} - No order found with content {contentToSearch}");
         _db.SePayTransactions.Add(tx);
         await _db.SaveChangesAsync();
 
@@ -392,24 +408,41 @@ public class SePayService
     private async Task EmitMatchedAsync(Order order, string transactionCode, decimal amount)
     {
         var payload = new { order.Id, order.OrderCode, transactionCode, amount };
+
+        // Log debug info
+        Console.WriteLine($"[SePayMatched] Order: {order.OrderCode}, ShipperId: {order.ShipperId?.ToString() ?? "NULL"}, Amount: {amount:N0}đ");
+
         if (order.ShipperId.HasValue)
         {
             try
             {
-                await _hub.Clients.Group($"shipper-{order.ShipperId}").SendAsync("SePayMatched", payload);
+                var groupName = $"shipper-{order.ShipperId}";
+                Console.WriteLine($"[SePayMatched] Sending to group: {groupName}");
+                await _hub.Clients.Group(groupName).SendAsync("SePayMatched", payload);
+                Console.WriteLine($"[SePayMatched] ✓ SignalR sent successfully to {groupName}");
+
                 await _notifications.CreateAsync(
                     order.ShipperId.Value,
                     title: "Đã nhận chuyển khoản",
                     body: $"Đơn {order.OrderCode}: +{amount:N0}đ ({transactionCode})",
                     link: $"/shipper/orders/{order.Id}",
                     type: "SePayMatched");
+                Console.WriteLine($"[SePayMatched] ✓ Notification created for shipper {order.ShipperId}");
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"[SePayMatched] ✗ SignalR/Notification failed: {ex.Message}");
                 // SignalR/notification failure shouldn't fail the match operation
             }
         }
+        else
+        {
+            Console.WriteLine($"[SePayMatched] ⚠ ShipperId is NULL - SignalR NOT sent to shipper, only to accountants");
+        }
+
+        // Always notify accountants
         await _hub.Clients.Group(AccountantsGroup).SendAsync("SePayMatched", payload);
+        Console.WriteLine($"[SePayMatched] ✓ SignalR sent to accountants group");
     }
 }
 

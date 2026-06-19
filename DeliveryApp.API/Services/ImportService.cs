@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using DeliveryApp.API.Data;
+using DeliveryApp.API.Hubs;
 using DeliveryApp.API.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 
@@ -74,6 +77,7 @@ public class ImportService
 
     private readonly AppDbContext _db;
     private readonly NotificationService _notifications;
+    private readonly IHubContext<DeliveryHub> _hub;
     private static readonly ConcurrentDictionary<Guid, (ImportPreviewResponse Data, DateTime CreatedAt)> _pendingImports = new();
 
     private static readonly FieldDef[] FieldDefs =
@@ -100,10 +104,11 @@ public class ImportService
             ["diễn giải", "ghi chú", "dien giai", "ghi chu", "note", "notes", "nội dung", "noi dung", "mô tả", "mo ta"]),
     ];
 
-    public ImportService(AppDbContext db, NotificationService notifications)
+    public ImportService(AppDbContext db, NotificationService notifications, IHubContext<DeliveryHub> hub)
     {
         _db = db;
         _notifications = notifications;
+        _hub = hub;
     }
 
     private static (Dictionary<string, int> colMap, List<ColumnMapping> mappings, List<string> missing, int headerRow)
@@ -435,8 +440,23 @@ public class ImportService
                         body: $"{string.Join(", ", sample)}{more} — tổng {totalAmount:N0}đ",
                         link: "/shipper/orders",
                         type: "ImportAssigned");
+
+                    // Send SignalR event for realtime dashboard update
+                    await _hub.Clients.Group($"shipper-{g.Key}").SendAsync("OrderAssigned", new
+                    {
+                        count,
+                        orderCodes = sample,
+                        totalAmount,
+                        timestamp = DateTime.UtcNow
+                    });
+
+                    Console.WriteLine($"[Import] Sent SignalR to shipper-{g.Key}: {count} new orders");
                 }
-                catch { /* notification lỗi không được làm fail import đã commit */ }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Import] SignalR/Notification error for shipper {g.Key}: {ex.Message}");
+                    /* notification lỗi không được làm fail import đã commit */
+                }
             }
 
             return new ImportConfirmResult

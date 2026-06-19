@@ -59,6 +59,10 @@ export default function NotificationBell() {
       setItems(prev => [item, ...prev].slice(0, 20))
       setUnread(c => c + 1)
     },
+    OrderAssigned: () => {
+      // Reload notifications when new orders are assigned
+      load()
+    },
   }, ['shipper'])
 
   const handleClickItem = async (n: NotificationItem) => {
