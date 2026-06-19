@@ -64,10 +64,22 @@ public class ReportService
     public async Task<DailyReportDto> GetDailyReportAsync(DateTime date)
     {
         var (start, end) = VietnamDayToUtcRange(date);
+
+        Console.WriteLine($"[Report] Daily report for {date:yyyy-MM-dd}");
+        Console.WriteLine($"[Report] Time range (UTC): {start:yyyy-MM-dd HH:mm:ss} to {end:yyyy-MM-dd HH:mm:ss}");
+
         var orders = await _db.Orders
             .Include(o => o.Shipper)
-            .Where(o => o.CreatedAt >= start && o.CreatedAt < end)
+            .Include(o => o.Import)
+            .Where(o => o.ImportId.HasValue
+                ? o.Import.CreatedAt >= start && o.Import.CreatedAt < end  // Filter theo ngày import
+                : o.CreatedAt >= start && o.CreatedAt < end)  // Fallback: đơn không có ImportId
             .ToListAsync();
+
+        Console.WriteLine($"[Report] Found {orders.Count} orders");
+        var importedCount = orders.Count(o => o.ImportId.HasValue);
+        var manualCount = orders.Count(o => !o.ImportId.HasValue);
+        Console.WriteLine($"[Report] Imported: {importedCount}, Manual: {manualCount}");
 
         // Đơn Partial là CK đã thu được 1 phần (qua SePay) — phần đã thu phải tính vào doanh thu CK,
         // phần còn lại tính vào nợ. Trước đây bị bỏ sót khiến doanh thu hụt.
