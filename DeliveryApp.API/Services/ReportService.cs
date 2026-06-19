@@ -79,10 +79,9 @@ public class ReportService
         if (true)  // Apply filter to all orders
         {
             ordersQuery = ordersQuery
-                .Where(o => o.ImportId.HasValue
+                .Where(o => o.ImportId.HasValue && o.Import != null
                     ? o.Import.CreatedAt >= start && o.Import.CreatedAt < end  // Filter theo ngày import
-                    : o.CreatedAt >= start && o.CreatedAt < end)  // Fallback: đơn không có ImportId
-                ;
+                    : o.CreatedAt >= start && o.CreatedAt < end);  // Fallback: đơn không có ImportId
         }
 
         var orders = await ordersQuery.ToListAsync();
@@ -92,9 +91,7 @@ public class ReportService
         // Detailed breakdown for debugging
         foreach (var order in orders.Take(5))  // Log first 5 orders for debugging
         {
-            var importDate = order.Import?.CreatedAt.HasValue == true
-                ? order.Import.CreatedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")
-                : "NULL";
+            var importDate = order.Import?.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") ?? "NULL";
 
             Console.WriteLine($"[Report] Order: {order.OrderCode}, ImportId: {order.ImportId?.ToString() ?? "NULL"}, " +
                             $"CreatedAt: {order.CreatedAt:yyyy-MM-dd HH:mm:ss}, " +
