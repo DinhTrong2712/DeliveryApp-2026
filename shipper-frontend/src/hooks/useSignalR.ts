@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import * as signalR from '@microsoft/signalr'
 import { useAuthStore } from '../stores/authStore'
 
@@ -27,7 +27,7 @@ export function useSignalR(handlers: EventHandlers, groups?: string[]) {
       .build()
 
     // Register handlers using ref to always get latest handlers
-    Object.entries(handlers).forEach(([event, handler]) => {
+    Object.entries(handlers).forEach(([event]) => {
       conn.on(event, (...args: unknown[]) => {
         // Use latest handlers from ref
         const latestHandler = handlersRef.current[event]
