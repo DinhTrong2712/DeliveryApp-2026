@@ -94,6 +94,8 @@ public class ImportController : ControllerBase
             var currentCopy = new List<string>();
             var inCopy = false;
             var executed = 0;
+            var skipped = 0;
+            var errors = new List<string>();
 
             foreach (var line in lines)
             {
@@ -116,7 +118,8 @@ public class ImportController : ControllerBase
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"COPY skipped: {ex.Message}");
+                        errors.Add($"COPY error: {ex.Message}");
+                        skipped++;
                     }
                     currentCopy.Clear();
                 }
@@ -126,9 +129,12 @@ public class ImportController : ControllerBase
                 }
                 else if (!line.StartsWith("--") && !string.IsNullOrWhiteSpace(line))
                 {
-                    // Execute other SQL statements
-                    if (line.StartsWith("SET") || line.StartsWith("SELECT") || line.Contains("setval"))
+                    // Skip SET, SELECT (read-only), and setval statements
+                    if (line.TrimStart().StartsWith("SET", StringComparison.OrdinalIgnoreCase) ||
+                        line.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase) ||
+                        line.Contains("setval", StringComparison.OrdinalIgnoreCase))
                         continue;
+
                     try
                     {
                         using var cmd = new Npgsql.NpgsqlCommand(line, connection);
@@ -136,17 +142,18 @@ public class ImportController : ControllerBase
                         await cmd.ExecuteNonQueryAsync();
                         executed++;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Skip failed statements
+                        errors.Add($"SQL error: {ex.Message}");
+                        skipped++;
                     }
                 }
             }
 
             await _audit.LogAsync("IMPORT_SQL", "SystemConfig",
-                description: $"Import SQL file: {file.FileName}, executed: {executed} commands");
+                description: $"Import SQL file: {file.FileName}, executed: {executed}, skipped: {skipped}, errors: {errors.Count}");
 
-            return Ok(new { message = "Import thành công", executed });
+            return Ok(new { message = "Import hoàn tất", executed, skipped, errors });
         }
         catch (Exception ex)
         {

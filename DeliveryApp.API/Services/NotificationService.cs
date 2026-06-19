@@ -17,8 +17,13 @@ public class NotificationService
         _hub = hub;
     }
 
-    public async Task<Notification> CreateAsync(Guid userId, string title, string body, string? link = null, string? type = null)
+    public async Task<Notification?> CreateAsync(Guid userId, string title, string body, string? link = null, string? type = null)
     {
+        // Check if user exists and is active
+        var user = await _db.Users.FindAsync(userId);
+        if (user == null || !user.IsActive)
+            return null;
+
         var n = new Notification
         {
             UserId = userId,

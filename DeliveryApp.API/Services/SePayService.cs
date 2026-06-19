@@ -358,11 +358,13 @@ public class SePayService
 
         // Cộng dồn các CK đã match trước đó trên đơn (tx mới chưa add vào DB) để xử lý
         // đúng kịch bản 1 đơn được thanh toán qua nhiều lần chuyển khoản.
+        // Lưu ý: tx này chưa có trong DB nên không cần filter ra - chỉ sum các tx đã có.
         var existingMatched = await _db.SePayTransactions
             .Where(t => t.OrderId == order.Id && t.MatchStatus != MatchStatus.Unmatched)
             .SumAsync(t => (decimal?)t.Amount) ?? 0m;
 
-        var totalPaid = existingMatched + newPaymentAmount;
+        // Không cho phép totalPaid vượt quá Amount để tránh overpayment
+        var totalPaid = Math.Min(existingMatched + newPaymentAmount, order.Amount);
 
         if (totalPaid >= order.Amount)
         {
@@ -392,13 +394,20 @@ public class SePayService
         var payload = new { order.Id, order.OrderCode, transactionCode, amount };
         if (order.ShipperId.HasValue)
         {
-            await _hub.Clients.Group($"shipper-{order.ShipperId}").SendAsync("SePayMatched", payload);
-            await _notifications.CreateAsync(
-                order.ShipperId.Value,
-                title: "Đã nhận chuyển khoản",
-                body: $"Đơn {order.OrderCode}: +{amount:N0}đ ({transactionCode})",
-                link: $"/shipper/orders/{order.Id}",
-                type: "SePayMatched");
+            try
+            {
+                await _hub.Clients.Group($"shipper-{order.ShipperId}").SendAsync("SePayMatched", payload);
+                await _notifications.CreateAsync(
+                    order.ShipperId.Value,
+                    title: "Đã nhận chuyển khoản",
+                    body: $"Đơn {order.OrderCode}: +{amount:N0}đ ({transactionCode})",
+                    link: $"/shipper/orders/{order.Id}",
+                    type: "SePayMatched");
+            }
+            catch
+            {
+                // SignalR/notification failure shouldn't fail the match operation
+            }
         }
         await _hub.Clients.Group(AccountantsGroup).SendAsync("SePayMatched", payload);
     }

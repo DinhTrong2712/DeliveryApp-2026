@@ -280,12 +280,19 @@ public class OrderService
 
         if (order.ShipperId.HasValue)
         {
-            await _notifications.CreateAsync(
-                order.ShipperId.Value,
-                title: $"Kế toán điều chỉnh đơn {order.OrderCode}",
-                body: $"{req.Field}: {oldValue ?? "—"} → {req.Value} ({req.Reason})",
-                link: $"/shipper/orders/{order.Id}",
-                type: "OrderOverride");
+            try
+            {
+                await _notifications.CreateAsync(
+                    order.ShipperId.Value,
+                    title: $"Kế toán điều chỉnh đơn {order.OrderCode}",
+                    body: $"{req.Field}: {oldValue ?? "—"} → {req.Value} ({req.Reason})",
+                    link: $"/shipper/orders/{order.Id}",
+                    type: "OrderOverride");
+            }
+            catch
+            {
+                // Notification failure shouldn't fail the override operation
+            }
         }
 
         return order;
@@ -307,7 +314,8 @@ public class OrderService
         if (parts.Length != 2) return false;
         if (!int.TryParse(parts[0], out var lockHour)) return false;
         if (!int.TryParse(parts[1], out var lockMin)) return false;
-        var now = DateTime.Now;
-        return now.Hour > lockHour || (now.Hour == lockHour && now.Minute >= lockMin);
+        // Vietnam time zone (UTC+7) - lock_time config is in Vietnam time
+        var nowVietnam = DateTime.UtcNow.AddHours(7);
+        return nowVietnam.Hour > lockHour || (nowVietnam.Hour == lockHour && nowVietnam.Minute >= lockMin);
     }
 }

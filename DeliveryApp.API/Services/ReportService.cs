@@ -29,6 +29,8 @@ public class ReportService
                 Partial          = g.Count(o => o.Status == OrderStatus.Partial),
                 Scheduled        = g.Count(o => o.Status == OrderStatus.Scheduled),
                 Unpaid           = g.Count(o => o.Status == OrderStatus.Unpaid),
+                // TotalCash: tổng tiền mặt đã thu (PaidCash + phần cash của Partial nếu có)
+                // Hiện tại hệ thống không track riêng cash/transfer trong Partial, nên chỉ tính PaidCash
                 TotalCash        = g.Where(o => o.Status == OrderStatus.PaidCash).Sum(o => (decimal?)o.AmountPaid) ?? 0m,
             })
             .FirstOrDefaultAsync();
